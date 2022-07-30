@@ -1,0 +1,71 @@
+---
+title: "General Workflow"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{general_workflow}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(multiWGCNA)
+```
+
+step 1: read in data and create your design matrix. Let's also set some useful global variables, like the alpha level of significance and the soft thresholding power for our networks. 
+
+```{r}
+expressionFile="/Users/Dario/Desktop/Research/Fogel_Lab/Data/Voineagu_Nature_2011/autism_logTransformed.csv"
+traitFile="/Users/Dario/Desktop/Research/Fogel_Lab/Data/Voineagu_Nature_2011/autism_traitData.csv"
+datExpr=read.csv(expressionFile, header=T)
+datExpr[1:5,1:5]
+sampleTable=read.csv(traitFile, header=T)
+sampleTable
+alphaLevel=0.05
+softPower=10
+detectNumbers=FALSE
+```
+
+step 2: perform network construction, module eigengene calculation, module-trait correlation. Let's use power=10 since Voineagu et al. 2011 used that for all their networks. Also, let's find best trait and identify outlier modules.
+
+```{r}
+conditions1=unique(sampleTable[,2])
+conditions2=unique(sampleTable[,3])
+myNetworks=constructNetworks(datExpr, sampleTable, conditions1, conditions2, TOMType = "unsigned", 
+                                  power = 10, minModuleSize = 40, maxBlockSize = 25000,
+                                  reassignThreshold = 0, minKMEtoSay=0.7, mergeCutHeight = 0.10,
+                                  numericLabels = TRUE, pamRespectsDendro = FALSE, verbose=3)
+```
+
+step 3: compare modules (by hypergeometric overlap) across conditions
+
+```{r}
+results=list()
+results$overlaps=iterate(myNetworks, overlapComparisons, plot=TRUE)
+```
+
+step 4: perform differential module expression analysis
+
+```{r}
+results$diffModExp=runDME(myNetworks[["combined"]], p.adjust="fdr", refCondition="Tissue", testCondition="Status", plot=TRUE)
+results$diffModExp
+```
+
+step 5: perform the module preservation analysis to determine if any modules 
+in one dataset are not preserved in the other. 
+
+```{r}
+results$preservation=iterate(myNetworks[conditions1], preservationComparisons, plot=TRUE)
+```
+
+step 7: summarize interesting results from the analyses, such as non-preserved trait-associated modules and differentially expressed modules. 
+
+```{r}
+summarizeResults(myNetworks, results)
+```

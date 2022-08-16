@@ -4,8 +4,7 @@ Title: What the Package Does (Title Case)
 Version: 0.1.0
 Author: Dario Tommasini
 Maintainer: Dario Tommasini <dtommasini@berkeley.edu>
-Description: an R package for deeping mining gene co-expression
-networks in multi-trait expression data
+Description: an R package for deeping mining gene co-expression networks in multi-trait expression data
 License: GPL-3
 Encoding: UTF-8
 LazyData: true

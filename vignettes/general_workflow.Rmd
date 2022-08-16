@@ -21,11 +21,8 @@ library(multiWGCNA)
 step 1: read in data and create your design matrix. Let's also set some useful global variables, like the alpha level of significance and the soft thresholding power for our networks. 
 
 ```{r}
-expressionFile="/Users/Dario/Desktop/Research/Fogel_Lab/Data/Voineagu_Nature_2011/autism_logTransformed.csv"
-traitFile="/Users/Dario/Desktop/Research/Fogel_Lab/Data/Voineagu_Nature_2011/autism_traitData.csv"
-datExpr=read.csv(expressionFile, header=T)
+data(Voineagu_autism)
 datExpr[1:5,1:5]
-sampleTable=read.csv(traitFile, header=T)
 sampleTable
 alphaLevel=0.05
 softPower=10

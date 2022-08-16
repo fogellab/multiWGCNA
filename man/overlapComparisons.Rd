@@ -10,7 +10,8 @@ overlapComparisons(
   first,
   second,
   element,
-  plot = TRUE
+  plot = TRUE,
+  write = FALSE
 )
 }
 \arguments{

@@ -4,7 +4,7 @@
 \alias{iterate}
 \title{Iterate function across networks}
 \usage{
-iterate(WGCNAlist, FUN, plot = FALSE)
+iterate(WGCNAlist, FUN, plot = FALSE, write = FALSE)
 }
 \arguments{
 \item{WGCNAlist}{a vector of objects of type WGCNAobject}

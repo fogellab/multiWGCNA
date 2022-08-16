@@ -32,6 +32,7 @@ Imports:
     dcanr,
     limma,
     ggplot2,
-    ggpubr
+    ggpubr,
+    goseq
 Depends: 
     ggalluvial

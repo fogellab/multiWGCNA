@@ -16,6 +16,9 @@
 #' moduleExpressionPlot(WGCNAobject, moduleGenes, title=myModule)
 #'
 #' @import ggplot2
+#' @import patchwork
+#' @import WGCNA
+#' @import dplyr
 #' @export
 moduleExpressionPlot <- function(WGCNAobject, geneList, mode="PC1", legend=FALSE, title=NULL, clusterGenes=F){
 
@@ -211,7 +214,7 @@ expressionHeatmap <- function(datExpr, geneList, lower=-2, upper=2, design=NULL,
 #' bidirectionalBestMatches(comparisonList[[element]]$overlap, WGCNAlist[[first]], WGCNAlist[[second]])
 #'
 #' @export
-runDME <- function(WGCNAobject, alpha=get("alpha", envir = parent.frame()), design=sampleTable, testCondition=NULL, refCondition=NULL, p.adjust="fdr", plot=FALSE, write=FALSE){
+runDME <- function(WGCNAobject, alpha=get("alphaLevel", envir = parent.frame()), design=sampleTable, testCondition=NULL, refCondition=NULL, p.adjust="fdr", plot=FALSE, write=FALSE){
 	datExpr=WGCNAobject@datExpr
 	if(is.null(refCondition)) refCondition=colnames(design)[[3]]
 	if(is.null(testCondition)) testCondition=colnames(design)[[2]]
@@ -265,6 +268,7 @@ diffModuleExpression <- function(datExpr, geneList, moduleName=NULL, mode="PC1",
 	#test=testCondition
 
 	cleanDatExpr=t(cleanDatExpr(datExpr))
+	geneList=geneList[geneList %in% rownames(cleanDatExpr)]
 	subset=cleanDatExpr[rownames(cleanDatExpr) %in% geneList,]
 	if(mode=="Zscore"){
 		mean=rowMeans(subset)
@@ -276,12 +280,9 @@ diffModuleExpression <- function(datExpr, geneList, moduleName=NULL, mode="PC1",
 	}
 
 	if(mode=="PC1"){
-		# if(missing(softPower)) {
-			# stop("\nPlease include softPower argument\n")
-		# }
 		PC1=moduleEigengenes(t(subset), colors = rep("Module", length(geneList)), nPC=1)$eigengenes
 		moduleExpression=data.frame(Sample=rownames(PC1), moduleExpression=PC1)
-		colnames(moduleExpression)=c("Sample","moduleExpression")
+		colnames(moduleExpression)=c("Sample", "moduleExpression")
 	}
 
 	mergedData=cbind(moduleExpression, design[match(moduleExpression$Sample, design$Sample),-1])

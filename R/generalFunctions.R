@@ -1,39 +1,29 @@
+printModules <- function(WGCNAobject){
+	name=name(WGCNAobject)
+	dir_name=paste0(name, "_Genes")
+	dir.create(dir_name)
+	datExpr=WGCNAobject@datExpr
+	for(module in sort(unique(datExpr$dynamicLabels))){
+		file_name=paste0(dir_name, "/", module, ".txt")
+		cat("### writing ", file_name, " ###\n")
+		write.table(datExpr$X[datExpr$dynamicLabels==module], 
+			file_name, 
+			quote=F, 
+			row.names=F, 
+			col.names=F)
+	}
+}
+
+#' Name of WGCNAobject
+#'
+#' Returns the name of a WGCNAobject.
+#'
+#' @param WGCNAobject an object of type WGCNAobject
+#'
+#' @import stringr
+#' @export
 name <- function(WGCNAobject){
 	return(str_split_fixed(WGCNAobject@datExpr$dynamicLabels[[1]], "_", 2)[[1]])
-}
-
-loadWGCNAfromDirectory <- function(directory){
-
-	datExpr_file=paste0(directory, grep("datExpr.csv", list.files(directory, recursive=T), value=T))
-	conditions_file=paste0(directory, grep("conditions.csv", list.files(directory, recursive=T), value=T))
-	ME_file=paste0(directory, grep("moduleEigengenes.csv", list.files(directory, recursive=T), value=T))
-	trait_file=paste0(directory, grep("TraitCor", list.files(directory, recursive=T), value=T))
-
-
-	cat("datExpr file: ", datExpr_file, "\n")
-	cat("conditions file: ", conditions_file, "\n")
-	cat("module eigengenes file: ", ME_file, "\n")
-	cat("trait file: ", trait_file, "\n")
-
-	return(new("WGCNA", datExpr=read.csv(datExpr_file),
-		conditions=read.csv(conditions_file),
-		moduleEigengenes=read.csv(ME_file),
-		trait=read.csv(trait_file)))
-}
-
-loadWGCNAfromDirectoryOld <- function(directory){
-
-	datExpr_file=paste0(directory, grep("datExpr2_ksummary_dynamiccolors_dynamiclabels.csv", list.files(directory, recursive=T), value=T))
-	conditions_file=paste0(directory, grep("Trait_edited.csv", list.files(directory, recursive=T), value=T))
-	trait_file=paste0(directory, grep("modulelabelsTraitCor.csv", list.files(directory, recursive=T), value=T))
-
-	cat("datExpr file: ", datExpr_file, "\n")
-	cat("conditions file: ",conditions_file, "\n")
-	cat("trait file: ",trait_file, "\n")
-
-	return(new("WGCNA", datExpr=read.csv(datExpr_file),
-		conditions=read.csv(conditions_file),
-		trait=read.csv(trait_file)))
 }
 
 getLevel <- function(level, design=sampleTable){
@@ -44,7 +34,7 @@ getLevel <- function(level, design=sampleTable){
 }
 
 colors <- function(nColors, random=F){
-	colors=c("grey", "cyan", "blue", "brown", "darkgreen", "darkmagenta", "darkolivegreen", "darkorange", "darkred",
+	colors=c("cyan", "grey", "blue", "brown", "darkgreen", "darkmagenta", "darkolivegreen", "darkorange", "darkred",
 		"darkturquoise", "green", "darkgrey", "greenyellow", "lightgreen", "magenta", "midnightblue", "orange",
 		"paleturquoise", "pink", "purple", "red", "black", "royalblue", "saddlebrown", "salmon", "sienna3", "skyblue",
 		"tan", "turquoise", "violet", "yellowgreen", "gold", "maroon", "yellow")
@@ -306,7 +296,7 @@ summarizeResults <- function(myNetworks, results, alphaLevel=get("alphaLevel", e
 #' iterate(myNetworks, overlapComparisons, plot=TRUE)
 #'
 #' @export
-iterate <- function(WGCNAlist, FUN, plot=FALSE){
+iterate <- function(WGCNAlist, FUN, plot=FALSE, write=FALSE){
 	comparisonList=list()
 	FUN <- match.fun(FUN)
 	element=1
@@ -317,7 +307,8 @@ iterate <- function(WGCNAlist, FUN, plot=FALSE){
 							first,
 							second,
 							element,
-							plot=plot)
+							plot=plot,
+							write=write)
 			element=element+1
 		}
 	}

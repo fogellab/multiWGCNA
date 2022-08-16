@@ -29,7 +29,7 @@ softPower=10
 detectNumbers=FALSE
 ```
 
-step 2: perform network construction, module eigengene calculation, module-trait correlation. Let's use power=10 since Voineagu et al. 2011 used that for all their networks. Also, let's find best trait and identify outlier modules.
+step 2: perform network construction, module eigengene calculation, module-trait correlation. Let's use power=10 since Voineagu et al. 2011 used that for all their networks. Also, let's find best trait and identify outlier modules. This step may take a few minutes. 
 
 ```{r}
 conditions1=unique(sampleTable[,2])
@@ -40,14 +40,15 @@ myNetworks=constructNetworks(datExpr, sampleTable, conditions1, conditions2, TOM
                                   numericLabels = TRUE, pamRespectsDendro = FALSE, verbose=3)
 ```
 
-step 3: compare modules (by hypergeometric overlap) across conditions
+step 3: Compare modules (by hypergeometric overlap) across conditions. We'll save the results in a list. Let's take a look at the autism modules versus control modules after the function is done.
 
 ```{r}
 results=list()
 results$overlaps=iterate(myNetworks, overlapComparisons, plot=TRUE)
+head(results$overlaps$autism_vs_controls)
 ```
 
-step 4: perform differential module expression analysis
+step 4: Perform differential module expression analysis. This uses the linear model module eigengene = trait1 + trait2 + trait1*trait2 and tests for a significant association to the traits using factorial ANOVA. Let's take a look at this data after the function. 
 
 ```{r}
 results$diffModExp=runDME(myNetworks[["combined"]], p.adjust="fdr", refCondition="Tissue", testCondition="Status", plot=TRUE)

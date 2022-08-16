@@ -1,67 +1,3 @@
-flowPlotGeneLevel <- function(WGCNAlist){
-
-	library(data.table)
-     library(flashClust)
-        library(ggalluvial)
-        library(ggpubr)
-
-        conditions=c("2m", "4m", "6m", "8m")
-
-        datasets=list()
-        for(element in 1:length(conditions)){
-                datasets[[element]]=read.csv(paste0(conditions[[element]], "/ModuleSummary/",
-                conditions[[element]], "_datExpr2_ksummary_dynamiccolors_dynamiclabels.csv"), header=T)
-        }
-
-        #allCommonGenes=datasets[[1]]$X[order(datasets[[1]]$X)]
-        allCommonGenes=datasets[[1]]$X
-
-        df=data.frame(paste0("1_", allCommonGenes), paste0("2_", allCommonGenes), paste0("3_", allCommonGenes), paste0("4_", allCommonGenes), rep(1, length(allCommonGenes)))
-        colnames(df)=c("one", "two", "three", "four", "Count")
-
-        #first extract the order from hierarchical clustering
-        orderList=list()
-        for(element in 1:length(conditions)){
-                dissTOM_file= paste0(conditions[[element]],"_dissTOM.csv")
-                dissTOM=fread(dissTOM_file, header=T)
-                dissTOM=dissTOM[,-1]
-                geneTree = flashClust(as.dist(dissTOM), method="average")
-                geneOrder=data.frame(Gene=datasets[[element]]$X, Order=geneTree$order)
-                print(head(geneOrder))
-                sortedOrder=geneOrder[order(geneOrder$Gene),]
-                print(head(sortedOrder))
-                #orderList[[element]]=sortedOrder$Order
-                orderList[[element]]=geneTree$order
-        }
-
-        colors=list()
-        for(element in 1:2){#length(conditions)){
-                df[,element]=factor(df[,element], levels=df[orderList[[element]],element])
-                dynamicColors=datasets[[element]]$dynamicColors[order(datasets[[element]]$X)]
-                #colors[[element]]=rev(dynamicColors[ orderList[[element]] ])
-                #colors[[element]]=rev(dynamicColors)
-                colors[[element]]=rev(datasets[[element]]$dynamicColors)
-        }
-        gc()
-
-        df$ofInterest=FALSE
-        df$ofInterest[allCommonGenes %in% datasets[[4]]$X[datasets[[4]]$dynamicLabels=="8m_01"] ]=TRUE
-        colors=unlist(colors, recursive=F)
-        head(df,10)
-
-	#flow plot
-	png("testFlowPlot.png")
-	ggplot(df, aes(y = Count, axis1 = one, axis2 = two)) +
-	  		geom_flow(width=0.05) +
-	  		geom_stratum(width = .05, fill=)
-	  		ylab("Genes")+
-	 		theme(axis.ticks.x = element_blank(), panel.background = element_blank(),
-	 			panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
-	  		#geom_text(stat = "stratum", aes(label = after_stat(stratum)), size = 0) +
-	  		scale_x_discrete(expand=c(0,0), limits = names(WGCNAlist), labels=names(WGCNAlist))
-	dev.off()
-
-}
 
 computeOverlapsFromWGCNA <- function(datExpr1, datExpr2, convertSymbols1=F, convertSymbols2=F) {
 	datExpr1= datExpr1@datExpr
@@ -341,7 +277,7 @@ bidirectionalBestMatches <- function(overlapDf, plot=TRUE){
 	comparison$overlap$mod2=str_split_fixed(comparison$overlap$mod2,"_",2)[,2]
 	columns=(unique(comparison$overlap$mod1))
 	rows=(unique(comparison$overlap$mod2))
-	padj_matrix=matrix(unlist(comparison$overlap$p.adj),ncol=length(columns),nrow=length(rows))
+	padj_matrix=matrix(unlist(comparison$overlap$p.adj), ncol=length(columns),nrow=length(rows))
 	colnames(padj_matrix)=columns
 	rownames(padj_matrix)=rows
 	bestMod1=list()
@@ -368,14 +304,17 @@ bidirectionalBestMatches <- function(overlapDf, plot=TRUE){
  				y = factor(mod2, levels=rev(rownames(subset_padj_matrix))),
  				fill = (-log10(p.adj)))) +
 				geom_tile(color = "black") +
-				scale_fill_gradient(low = "white", high = "red", na.value="red") +
+				scale_fill_gradient(low = "white", high = "red", na.value="red",
+				                    guide = guide_colorbar(frame.colour = "black",
+				                    frame.linewidth = 1, ticks.linewidth=1,
+				                    ticks.colour = "black")) +
 				geom_text(aes(label = overlap), color = "black") +
 				labs(x=name1, y=name2) +
 				theme(axis.text.x = element_text(angle = 90, vjust=(0.5)), panel.background=element_blank())+
 				coord_fixed())
 	}
 	colnames(bestMatchesSorted)=c(name1, name2, "p.adj")
-	bestMatchesSorted
+	return(bestMatchesSorted)
 }
 
 #' Overlap comparisons
@@ -397,12 +336,13 @@ bidirectionalBestMatches <- function(overlapDf, plot=TRUE){
 #' iterate(myNetworks, overlapComparisons, plot=TRUE)
 #'
 #' @export
-overlapComparisons <- function(comparisonList, WGCNAlist, first, second, element, plot=TRUE){
+overlapComparisons <- function(comparisonList, WGCNAlist, first, second, element, plot=TRUE, write=FALSE){
 	comparisonList[[element]]=list()
 	comparisonList[[element]]=append(comparisonList[[element]],
 					list(computeOverlapsFromWGCNA(WGCNAlist[[first]], WGCNAlist[[second]])))
 	names(comparisonList[[element]])=append(names(comparisonList[[element]]), c("overlap"))
 	names(comparisonList)[[element]]=paste0(names(WGCNAlist)[[first]], "_vs_", names(WGCNAlist)[[second]])
+	if(write) write.csv(comparisonList[[element]]$overlap, paste0(names(WGCNAlist)[[first]], "_vs_", names(WGCNAlist)[[second]], ".csv"), row.names=F)
 	cat("\n#### comparing ", names(WGCNAlist)[[first]], " and ", names(WGCNAlist)[[second]], "####\n")
 	if(plot){
 		moduleComparisonPlot(comparisonList[[element]]$overlap,

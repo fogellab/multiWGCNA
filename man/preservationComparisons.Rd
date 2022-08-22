@@ -11,7 +11,9 @@ preservationComparisons(
   second,
   element,
   plot = FALSE,
-  alpha = get("alpha", envir = parent.frame())
+  write = FALSE,
+  alphaLevel = get("alphaLevel", envir = parent.frame()),
+  nPermutations = 100
 )
 }
 \arguments{
@@ -26,6 +28,12 @@ preservationComparisons(
 \item{element}{element position in the comparison list (passed by iterate function)}
 
 \item{plot}{generate plots?}
+
+\item{write}{}
+
+\item{alphaLevel}{alpha level of significance for module-trait correlation}
+
+\item{nPermutations}{number of permutations, defaults to 100}
 }
 \description{
 A high level function that performs a perservation comparison between two

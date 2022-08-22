@@ -27,7 +27,22 @@ preservationScatterplot <- function(WGCNAobject, preservationTable){
                 geom_hline(yintercept=(10), linetype="dashed", color = "black", size=1)
 }
 
-#performs preservation of reference modules in test dataset
+#' Module preservation analysis
+#'
+#' Performs preservation of reference modules in test dataset
+#'
+#' @param comparison a data.frame resulting from a call to computeOverlapsFromWGCNA
+#' @param dataset1 an object of class WGCNAobject to compare with dataset2
+#' @param dataset2 an object of class WGCNAobject to compare with dataset1
+#' 
+#' @author Dario Tommasini
+#'
+#' @examples
+#' getPreservation(referenceDatExpr, testDatExpr, nPermutations=50)
+#'
+#' @import WGCNA
+#' @import stringr
+#' @export
 getPreservation <- function(reference, test, nPermutations=100, write=FALSE) {
 
 	reference=reference@datExpr
@@ -75,7 +90,7 @@ getPreservation <- function(reference, test, nPermutations=100, write=FALSE) {
 #' @param comparison a data.frame resulting from a call to computeOverlapsFromWGCNA
 #' @param dataset1 an object of class WGCNAobject to compare with dataset2
 #' @param dataset2 an object of class WGCNAobject to compare with dataset1
-#' @param alpha alpha level of significance
+#' @param alphaLevel alpha level of significance
 #' @param outliers leave outlier modules? By default these are removed
 #'
 #' @author Dario Tommasini
@@ -88,7 +103,7 @@ getPreservation <- function(reference, test, nPermutations=100, write=FALSE) {
 #' @import stringr
 #' @import ggrepel
 #' @export
-preservationComparisonPlot <- function(comparison, dataset1, dataset2, alpha, outliers=FALSE){
+preservationComparisonPlot <- function(comparison, dataset1, dataset2, alphaLevel, outliers=FALSE){
 	name1=str_split_fixed(rownames(comparison$mod1Preservation[rownames(comparison$mod1Preservation) != "gold",]),"_",2)[,1][[1]]
 	name2=str_split_fixed(rownames(comparison$mod2Preservation[rownames(comparison$mod2Preservation) != "gold",]),"_",2)[,1][[1]]
 
@@ -114,7 +129,7 @@ preservationComparisonPlot <- function(comparison, dataset1, dataset2, alpha, ou
 				aes(label=paste0(gsub("^0+","",substr(Module, nchar(Module[[1]])-1, nchar(Module[[1]]))))))+
 			geom_hline(yintercept=(2), linetype="dashed", color = "red", size=1)+
 			geom_hline(yintercept=(10), linetype="dashed", color = "black", size=1)+
-			geom_vline(xintercept=(-log10(alpha)), linetype="dashed", color = "red", size=1)
+			geom_vline(xintercept=(-log10(alphaLevel)), linetype="dashed", color = "red", size=1)
 
 	dataset2Plot <-ggplot(input2, aes(log10Pvalue, Zsum, fill=trait)) +
 		geom_point(shape=21, size=2)+
@@ -131,7 +146,7 @@ preservationComparisonPlot <- function(comparison, dataset1, dataset2, alpha, ou
 				aes(label=paste0(gsub("^0+","", substr(Module, nchar(Module[[1]])-1, nchar(Module[[1]]))))))+
 			geom_hline(yintercept=(2), linetype="dashed", color = "red", size=1)+
 			geom_hline(yintercept=(10), linetype="dashed", color = "black", size=1)+
-			geom_vline(xintercept=(-log10(alpha)), linetype="dashed", color = "red", size=1)
+			geom_vline(xintercept=(-log10(alphaLevel)), linetype="dashed", color = "red", size=1)
 
 	print(ggarrange(dataset1Plot, dataset2Plot, ncol=2))
 }
@@ -208,6 +223,9 @@ drawNetwork <- function(reference_set, module_number, test_set) {
 #' @param second index of second WGCNAobject
 #' @param element element position in the comparison list (passed by iterate function)
 #' @param plot generate plots?
+#' @param write 
+#' @param alphaLevel alpha level of significance for module-trait correlation
+#' @param nPermutations number of permutations, defaults to 100
 #'
 #' @author Dario Tommasini
 #'
@@ -216,15 +234,14 @@ drawNetwork <- function(reference_set, module_number, test_set) {
 #' results$preservation=iterate(myNetworks[conditions1], preservationComparisons, plot=TRUE)
 #'
 #' @export
-preservationComparisons <- function(comparisonList, WGCNAlist, first, second, element, plot=FALSE, alpha=get("alpha", envir = parent.frame())){
+preservationComparisons <- function(comparisonList, WGCNAlist, first, second, element, plot=FALSE, write=FALSE, alphaLevel=get("alphaLevel", envir = parent.frame()), nPermutations=100){
 	comparisonList[[element]]=list()
-	print(alphaLevel)
 	comparisonList[[element]]=append(comparisonList[[element]],
 								list(getPreservation(WGCNAlist[[first]],
-									WGCNAlist[[second]], write=T)))
+									WGCNAlist[[second]], write=write, nPermutations=nPermutations)))
 	comparisonList[[element]]=append(comparisonList[[element]],
 								list(getPreservation(WGCNAlist[[second]],
-									WGCNAlist[[first]], write=T)))
+									WGCNAlist[[first]], write=write, nPermutations=nPermutations)))
 	names(comparisonList)[[element]]=paste0(names(WGCNAlist)[[first]], "_vs_", names(WGCNAlist)[[second]])
 	names(comparisonList[[element]])[[1]]="mod1Preservation"
 	names(comparisonList[[element]])[[2]]="mod2Preservation"
@@ -411,14 +428,13 @@ correlationComparisonBoxplot <- function(diseaseDatExpr, healthyDatExpr, geneLis
 		scale_y_continuous(position="right")+
 		theme(legend.position="none") +
 		scale_fill_manual(values=c("magenta", "cyan")) +
-		#geom_line(alpha=0.1)
 		stat_boxplot(geom = 'errorbar', lwd=1, width = 0.3, coef = 3) +
 		geom_boxplot(notch = TRUE, outlier.shape=NA)
 		#geom_dotplot(binaxis='y', stackdir='center', stackratio=1.5,
 		#			binwidth=0.01, dotsize=1)
 }
 
-correlationComparisonHeatmaps <- function(diseaseDatExpr, healthyDatExpr, geneList, label=F, method="pearson", alpha=0.05, p.adjust=T, z.score.limit=3){
+correlationComparisonHeatmaps <- function(diseaseDatExpr, healthyDatExpr, geneList, label=F, method="pearson", alphaLevel=0.05, p.adjust=T, z.score.limit=3){
 	geneList=geneList[geneList %in% diseaseDatExpr$X & geneList %in% healthyDatExpr$X ]
 	diseaseMatrix= cleanDatExpr(diseaseDatExpr[match(geneList, diseaseDatExpr$X),])
 	healthyMatrix= cleanDatExpr(healthyDatExpr[match(geneList, healthyDatExpr$X),])
@@ -441,7 +457,7 @@ correlationComparisonHeatmaps <- function(diseaseDatExpr, healthyDatExpr, geneLi
 	melted$Correlation=as.numeric(melted$Correlation)
 
 	dc=diffCoexpression(cbind(t(diseaseMatrix), t(healthyMatrix)),
-		c(rep(1, nrow(diseaseMatrix)),rep(2, nrow(healthyMatrix))), plot=F, FDR.threshold=alpha)
+		c(rep(1, nrow(diseaseMatrix)),rep(2, nrow(healthyMatrix))), plot=F, FDR.threshold=alphaLevel)
 	z_scores=dc[[1]]
 	z_scores[z_scores > z.score.limit]=z.score.limit
 	z_scores[z_scores < -z.score.limit]=-z.score.limit
@@ -450,9 +466,9 @@ correlationComparisonHeatmaps <- function(diseaseDatExpr, healthyDatExpr, geneLi
 	z.table$p.adj=as.list(dc[[3]])
 	z.table$signif=FALSE
 	if(p.adjust==T) {
-		z.table$signif[z.table$p.adj<alpha]=TRUE
+		z.table$signif[z.table$p.adj<alphaLevel]=TRUE
 	} else {
-		z.table$signif[z.table$p.value<alpha]=TRUE
+		z.table$signif[z.table$p.value<alphaLevel]=TRUE
 	}
 
 	meltedDs=reshape2::melt(diseaseCorMatrix)
@@ -564,11 +580,5 @@ diffCoexpression <- function(datExpr, conditions, geneList=NULL, plot=F, method=
 		list(z_scores, raw_p, adj_p, summaryDf %>% arrange(p.adj))
 	}
 }
-
-#~/scripts/makeTOMplot.R Mixed_dissTOM.csv ModuleSummary/Mixed_datExpr2_ksummary_dynamiccolors_dynamiclabels.csv ModuleSummary/Mixed_datExpr2_ksummary_dynamiccolors_dynamiclabels.csv Mixed_01
-
-#~/scripts/makeTOMplot.R ../sod1/sod1_dissTOM.csv ../sod1/ModuleSummary/sod1_datExpr2_ksummary_dynamiccolors_dynamiclabels.csv ModuleSummary/Mixed_datExpr2_ksummary_dynamiccolors_dynamiclabels.csv Mixed_01
-
-#~/scripts/makeTOMplot.R ../WT/WT_dissTOM.csv ../WT/ModuleSummary/WT_datExpr2_ksummary_dynamiccolors_dynamiclabels.csv ModuleSummary/Mixed_datExpr2_ksummary_dynamiccolors_dynamiclabels.csv Mixed_01
 
 

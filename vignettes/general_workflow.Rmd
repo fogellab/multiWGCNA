@@ -18,10 +18,12 @@ knitr::opts_chunk$set(
 library(multiWGCNA)
 ```
 
-step 1: read in data and create your design matrix. Let's also set some useful global variables, like the alpha level of significance and the soft thresholding power for our networks. 
+Step 1: Read in autism microarray data from Voineagu et al. 2011. For the sake of time, we are going to limit our analysis to 5000 randomly selected probes. Let's also set some useful global variables, like the alpha level of significance and the soft thresholding power for our networks. 
 
 ```{r}
 data(Voineagu_autism)
+set.seed(1)
+datExpr=datExpr[sample(rownames(datExpr), 5000),]
 datExpr[1:5,1:5]
 sampleTable
 alphaLevel=0.05
@@ -29,7 +31,8 @@ softPower=10
 detectNumbers=FALSE
 ```
 
-step 2: perform network construction, module eigengene calculation, module-trait correlation. Let's use power=10 since Voineagu et al. 2011 used that for all their networks. Also, let's find best trait and identify outlier modules. This step may take a few minutes. 
+
+step 2: perform network construction, module eigengene calculation, module-trait correlation. Let's use power=10 since Voineagu et al. 2011 used that for all their networks. Also, let's find best trait and identify outlier modules. This step may take a couple minutes. 
 
 ```{r}
 conditions1=unique(sampleTable[,2])
@@ -40,29 +43,29 @@ myNetworks=constructNetworks(datExpr, sampleTable, conditions1, conditions2, TOM
                                   numericLabels = TRUE, pamRespectsDendro = FALSE, verbose=3)
 ```
 
-step 3: Compare modules (by hypergeometric overlap) across conditions. We'll save the results in a list. Let's take a look at the autism modules versus control modules after the function is done.
+Step 3: Compare modules (by hypergeometric overlap) across conditions. We'll save the results in a list. Then, let's take a look at the best matches between autism modules and control modules. 
 
 ```{r}
 results=list()
 results$overlaps=iterate(myNetworks, overlapComparisons, plot=TRUE)
-head(results$overlaps$autism_vs_controls)
+head(results$overlaps$autism_vs_controls$bestMatches)
 ```
 
-step 4: Perform differential module expression analysis. This uses the linear model module eigengene = trait1 + trait2 + trait1*trait2 and tests for a significant association to the traits using factorial ANOVA. Let's take a look at this data after the function. 
+Step 4: Perform differential module expression analysis. This uses the linear model module eigengene = trait1 + trait2 + trait1*trait2 and tests for a significant association to the traits using factorial ANOVA. Let's take a look at this data after the function. By setting plot to true, this function generates a PDF file called "combined_DME.pdf" in the current directory with the DME plots. 
 
 ```{r}
 results$diffModExp=runDME(myNetworks[["combined"]], p.adjust="fdr", refCondition="Tissue", testCondition="Status", plot=TRUE)
 results$diffModExp
 ```
 
-step 5: perform the module preservation analysis to determine if any modules 
-in one dataset are not preserved in the other. 
+Step 5: Perform the module preservation analysis to determine if any  modules in the autism data are not preserved in the healthy data (and vice versa). This is the slowest step as the calculation of permuted statistics takes a while. Typically this can be parallelized using the enableWGCNAThreads function, but for this vignette we'll just do 20 permutations so one core should be fine.   
 
 ```{r}
-results$preservation=iterate(myNetworks[conditions1], preservationComparisons, plot=TRUE)
+results$preservation=iterate(myNetworks[conditions1], preservationComparisons, 
+                             write=FALSE, plot=TRUE, nPermutations=20)
 ```
 
-step 7: summarize interesting results from the analyses, such as non-preserved trait-associated modules and differentially expressed modules. 
+Step 6: Summarize interesting results from the analyses, such as non-preserved trait-associated modules and differentially expressed modules. 
 
 ```{r}
 summarizeResults(myNetworks, results)

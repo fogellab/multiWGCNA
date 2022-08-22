@@ -4,14 +4,14 @@
 \alias{iterate}
 \title{Iterate function across networks}
 \usage{
-iterate(WGCNAlist, FUN, plot = FALSE, write = FALSE)
+iterate(WGCNAlist, FUN, ...)
 }
 \arguments{
 \item{WGCNAlist}{a vector of objects of type WGCNAobject}
 
 \item{FUN}{function to iterate, either overlapComparisons or preservationComparisons}
 
-\item{plot}{generate plots?}
+\item{...}{argmuents to be passed on to overlapComparisons or preservationComparisons}
 }
 \description{
 A high level function that iterates functions across

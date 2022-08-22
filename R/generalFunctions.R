@@ -155,42 +155,6 @@ removeOutlierModules <- function(WGCNAobject, outlierModules=NULL){
 }
 
 
-loadDependencies <- function(){
-	library(WGCNA)
-	library(ggrepel)
-	library(ggpubr)
-	library(stringr)
-	library(dplyr)
-	library(reshape2)
-	library(RColorBrewer)
-	library(tidyverse)
-	library(data.table)
-	library(ggalluvial)
-	library(readr)
-	library(psych)
-	library(patchwork)
-	library(doParallel)
-	library(scales)
-	library(igraph)
-	library(flashClust)
-	library(filesstrings)
-	library(biomaRt)
-	library(dcanr)
-	library(limma)
-}
-
-sourceFiles <- function(){
-	source("~/projects/novelNetworkApproaches/generalFunctions.R")
-	source("~/projects/novelNetworkApproaches/runWGCNA.R")
-	source("~/projects/novelNetworkApproaches/overlaps.R")
-	source("~/projects/novelNetworkApproaches/preservation.R")
-	source("~/projects/novelNetworkApproaches/diffModuleExpAnalysis.R")
-	source("~/projects/novelNetworkApproaches/networks.R")
-	source("~/projects/novelNetworkApproaches/classes.R")
-	source("~/projects/novelNetworkApproaches/geneOntology.R")
-
-}
-
 #' generate a trait table from a design table
 #' @export
 makeTraitTable <- function(inputTable, column, detectNumbers=get("detectNumbers", envir = parent.frame())) {
@@ -221,6 +185,21 @@ makeTraitTable <- function(inputTable, column, detectNumbers=get("detectNumbers"
 	traitTable
 }
 
+#' Clean datExpr
+#'
+#' A function that converts a data.frame where row 1 is gene symbols to a 
+#' numeric matrix where columns are genes and rows are samples
+#'
+#' @param datExpr a data.frame were columns are samples and rows are samples and the gene symbols are in the first row
+#' @param checkGenesSamples call the WGCNA function checkGenesSamples?
+#'
+#' @author Dario Tommasini
+#'
+#' @examples
+#'
+#' cleanDatExpr(datExpr)
+#'
+#' @export
 cleanDatExpr <- function(datExpr, checkGenesSamples=F) {
 	cleanDatExpr <- t(datExpr[ ,!colnames(datExpr) %in% c("X","kTotal","kWithin","kOut","kDiff","dynamicColors","dynamicLabels")])
 	colnames(cleanDatExpr) = datExpr$X
@@ -287,7 +266,8 @@ summarizeResults <- function(myNetworks, results, alphaLevel=get("alphaLevel", e
 #'
 #' @param WGCNAlist a vector of objects of type WGCNAobject
 #' @param FUN function to iterate, either overlapComparisons or preservationComparisons
-#' @param plot generate plots?
+#' @param ... argmuents to be passed on to overlapComparisons or preservationComparisons
+#' 
 #'
 #' @author Dario Tommasini
 #'
@@ -296,7 +276,7 @@ summarizeResults <- function(myNetworks, results, alphaLevel=get("alphaLevel", e
 #' iterate(myNetworks, overlapComparisons, plot=TRUE)
 #'
 #' @export
-iterate <- function(WGCNAlist, FUN, plot=FALSE, write=FALSE){
+iterate <- function(WGCNAlist, FUN, ...){
 	comparisonList=list()
 	FUN <- match.fun(FUN)
 	element=1
@@ -307,8 +287,7 @@ iterate <- function(WGCNAlist, FUN, plot=FALSE, write=FALSE){
 							first,
 							second,
 							element,
-							plot=plot,
-							write=write)
+							...)
 			element=element+1
 		}
 	}

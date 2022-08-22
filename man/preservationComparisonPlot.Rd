@@ -8,7 +8,7 @@ preservationComparisonPlot(
   comparison,
   dataset1,
   dataset2,
-  alpha,
+  alphaLevel,
   outliers = FALSE
 )
 }
@@ -19,7 +19,7 @@ preservationComparisonPlot(
 
 \item{dataset2}{an object of class WGCNAobject to compare with dataset1}
 
-\item{alpha}{alpha level of significance}
+\item{alphaLevel}{alpha level of significance}
 
 \item{outliers}{leave outlier modules? By default these are removed}
 }

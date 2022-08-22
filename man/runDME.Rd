@@ -6,7 +6,7 @@
 \usage{
 runDME(
   WGCNAobject,
-  alpha = get("alpha", envir = parent.frame()),
+  alpha = get("alphaLevel", envir = parent.frame()),
   design = sampleTable,
   testCondition = NULL,
   refCondition = NULL,

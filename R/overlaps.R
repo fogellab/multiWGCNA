@@ -90,7 +90,7 @@ moduleComparisonPlot <- function(overlapDf, dataset1, dataset2) {
 
 	#draw flow plot
 	flowPlot <- ggplot(data, aes(y = overlap, axis1 = mod1, axis3 = mod2)) +
-		geom_flow(aes(fill = -log10(p.adj), alpha= -log10(p.adj)), width = .2, curve_type = "linear") +
+		geom_flow(aes(fill = -log10(p.adj), alpha = -log10(p.adj)), width = .2, curve_type = "linear") +
 		ylab("Genes") +
 		scale_fill_gradient(name="Overlap", low="cyan", high="magenta")+
 		theme(axis.ticks.x=element_blank(), legend.position = "none", axis.text.x=element_text(size=12),
@@ -193,7 +193,22 @@ continuousFlowPlot <- function(WGCNAlist){
 
 }
 
-moduleToModuleHeatmap <- function(comparisonDf, dataset1=NULL, dataset2=NULL, trait1=NULL, trait2=NULL, list1=NULL, list2=NULL, filterByTrait=T, alpha=0.05){
+#' Module to module heatmap
+#'
+#' Returns a heatmap where color corresponds to FDR-adjusted overlap (hypergeometric test) and the label corresponds to the number of overlapping genes
+#'
+#' @param comparisonDf the output of computeOverlapFromWGCNA
+#' @param dataset1 WGCNAobject for dataset 1
+#' @param dataset2 WGCNAobject for dataset 2
+#' @param trait1 subset to modules correlated to this trait for dataset 1
+#' @param trait2 subset to modules correlated to this trait for dataset 2
+#' @param list1 subset to this list of modules for dataset 1
+#' @param list2 subset to this list of modules for dataset 2
+#' @param filterByTrait only plot for modules that correlate with some trait?
+#' @param alphaLevel the alpha level of significance for module-trait correlation, defaults to 0.05
+#'
+#' @export
+moduleToModuleHeatmap <- function(comparisonDf, dataset1=NULL, dataset2=NULL, trait1=NULL, trait2=NULL, list1=NULL, list2=NULL, filterByTrait=FALSE, alphaLevel=0.05){
 
 	#filter by trait if desired
 	if(!is.null(dataset1)){
@@ -203,10 +218,10 @@ moduleToModuleHeatmap <- function(comparisonDf, dataset1=NULL, dataset2=NULL, tr
 		} else if(!is.null(trait1)){
 			association1=paste0("p.value.", trait1)
 			index=which(colnames(dataset1@trait)==association1)
-			mod1ToKeep=gsub("ME", "", dataset1@trait$Module[dataset1@trait[,index]<0.05])
+			mod1ToKeep=gsub("ME", "", dataset1@trait$Module[dataset1@trait[,index]<alphaLevel])
 			comparisonDf=comparisonDf[comparisonDf$mod1 %in% mod1ToKeep,]
 		} else if(filterByTrait){
-			mod1ToKeep=gsub("ME", "", dataset1@trait$Module[dataset1@trait$p.value.interest_trait_code<0.05])
+			mod1ToKeep=gsub("ME", "", dataset1@trait$Module[dataset1@trait$p.value.interest_trait_code<alphaLevel])
 			comparisonDf=comparisonDf[comparisonDf$mod1 %in% mod1ToKeep,]
 		}
 	}
@@ -217,10 +232,10 @@ moduleToModuleHeatmap <- function(comparisonDf, dataset1=NULL, dataset2=NULL, tr
 		} else if(!is.null(trait2)){
 			association2=paste0("p.value.", trait2)
 			index=which(colnames(dataset2@trait)==association2)
-			mod2ToKeep=gsub("ME", "", dataset2@trait$Module[dataset2@trait[,index]<0.05])
+			mod2ToKeep=gsub("ME", "", dataset2@trait$Module[dataset2@trait[,index]<alphaLevel])
 			comparisonDf=comparisonDf[comparisonDf$mod2 %in% mod2ToKeep,]
 		} else if(filterByTrait){
-			mod2ToKeep=gsub("ME", "", dataset2@trait$Module[dataset2@trait$p.value.interest_trait_code<0.05])
+			mod2ToKeep=gsub("ME", "", dataset2@trait$Module[dataset2@trait$p.value.interest_trait_code<alphaLevel])
 			comparisonDf=comparisonDf[comparisonDf$mod2 %in% mod2ToKeep,]
 		}
 	}
@@ -351,8 +366,6 @@ overlapComparisons <- function(comparisonList, WGCNAlist, first, second, element
 	}
 	comparisonList[[element]]=append(comparisonList[[element]],
 								list(bidirectionalBestMatches(comparisonList[[element]],
-									#WGCNAlist[[first]],
-									#WGCNAlist[[second]],
 									plot=plot)))
 	names(comparisonList[[element]])[[2]]=("bestMatches")
 	comparisonList

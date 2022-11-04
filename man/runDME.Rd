@@ -2,31 +2,46 @@
 % Please edit documentation in R/diffModuleExpAnalysis.R
 \name{runDME}
 \alias{runDME}
-\title{Best matching modules}
+\title{Run differential module expression}
 \usage{
 runDME(
   WGCNAobject,
-  alpha = get("alphaLevel", envir = parent.frame()),
+  alphalevel = get("alphaLevel", envir = parent.frame()),
   design = sampleTable,
   testCondition = NULL,
   refCondition = NULL,
   p.adjust = "fdr",
   plot = FALSE,
-  write = FALSE
+  test = "ANOVA",
+  write = FALSE,
+  out = NULL
 )
 }
 \arguments{
-\item{plot}{generate a heatmap of best matching modules?}
+\item{WGCNAobject}{object of class WGCNA with the modules to run DME on}
 
-\item{overlapDf}{a data.frame resulting from a call to computeOverlapsFromWGCNA}
+\item{design}{the sampleTable}
+
+\item{p.adjust}{adjust for multiple comparisons, argument to pass to p.adjust function}
+
+\item{plot}{generate a plot?}
+
+\item{test}{statistical test to perform, either "ANOVA" or "PERMANOVA"}
+
+\item{write}{write results to a file?}
+
+\item{alphaLevel}{level of significance}
+
+\item{testColumn}{the column of the sampleTable to be resolved}
+
+\item{refColumn}{the column of the sampleTable to be used as biological variation}
 }
 \description{
-Find all the modules from dataset1 that have a best match to a module in dataset2
-if that module in dataset2 is also a best match to the module in dataset1
+A wrapper to run diffModuleExpression on all the modules in a network
 }
 \examples{
 
-bidirectionalBestMatches(comparisonList[[element]]$overlap, WGCNAlist[[first]], WGCNAlist[[second]])
+runDME(myNetworks$combined, alpha=0.05)
 
 }
 \author{

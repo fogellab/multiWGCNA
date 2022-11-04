@@ -64,8 +64,13 @@ topNGenes <- function(WGCNAobject, module, nGenes=NULL){
 	if(missing(nGenes)){
 		orderedDatExpr$X
 	} else{
-		head(orderedDatExpr$X, nGenes)
+		head(orderedDatExpr$X, geneList)
 	}
+}
+
+subsetDatExpr <- function(WGCNAobject, geneList){
+  datExpr= WGCNAobject@datExpr
+  return(cleanDatExpr(datExpr[datExpr$X %in% geneList,]))
 }
 
 prepareWGCNA <- function(WGCNAobject){

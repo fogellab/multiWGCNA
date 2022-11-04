@@ -31,7 +31,7 @@ diffModuleExpression(
 
 \item{refColumn}{the column of the sampleTable to be used as biological variation}
 
-\item{test}{currently only ANOVA is supported}
+\item{test}{statistical test to perform, either "ANOVA" or "PERMANOVA"}
 
 \item{plot}{generate a plot?}
 }

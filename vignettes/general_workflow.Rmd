@@ -51,11 +51,14 @@ results$overlaps=iterate(myNetworks, overlapComparisons, plot=TRUE)
 head(results$overlaps$autism_vs_controls$bestMatches)
 ```
 
-Step 4: Perform differential module expression analysis. This uses the linear model module eigengene = trait1 + trait2 + trait1*trait2 and tests for a significant association to the traits using factorial ANOVA. Let's take a look at this data after the function. By setting plot to true, this function generates a PDF file called "combined_DME.pdf" in the current directory with the DME plots. 
+Step 4: Perform differential module expression analysis. This uses the linear model module eigengene = trait1 + trait2 + trait1*trait2 and tests for a significant association to the traits using factorial ANOVA. Let's take a look at this data after the function. By setting plot to true, this function generates a PDF file called "combined_DME.pdf" in the current directory with the DME plots. It can also perform PERMANOVA, which is a multivariate distances and can thus be applied to the module rather than the module eigengene. 
 
 ```{r}
-results$diffModExp=runDME(myNetworks[["combined"]], p.adjust="fdr", refCondition="Tissue", testCondition="Status", plot=TRUE)
+results$diffModExp=runDME(myNetworks[["combined"]], p.adjust="fdr", refCondition="Tissue", 
+                          testCondition="Status", plot=TRUE, out="ANOVA_DME.pdf")
 results$diffModExp
+runDME(myNetworks[["combined"]], p.adjust="fdr", refCondition="Tissue", 
+                          testCondition="Status", plot=TRUE, test="PERMANOVA", out="PERMANOVA_DME.pdf")
 ```
 
 Step 5: Perform the module preservation analysis to determine if any  modules in the autism data are not preserved in the healthy data (and vice versa). This is the slowest step as the calculation of permuted statistics takes a while. Typically this can be parallelized using the enableWGCNAThreads function, but for this vignette we'll just do 20 permutations so one core should be fine.   

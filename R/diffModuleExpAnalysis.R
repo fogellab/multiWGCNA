@@ -198,34 +198,42 @@ expressionHeatmap <- function(datExpr, geneList, lower=-2, upper=2, design=NULL,
 
 }
 
-#' Best matching modules
+#' Run differential module expression
 #'
-#' Find all the modules from dataset1 that have a best match to a module in dataset2
-#' if that module in dataset2 is also a best match to the module in dataset1
+#' A wrapper to run diffModuleExpression on all the modules in a network
 #'
 #'
-#' @param overlapDf a data.frame resulting from a call to computeOverlapsFromWGCNA
-#' @param plot generate a heatmap of best matching modules?
+#' @param WGCNAobject object of class WGCNA with the modules to run DME on
+#' @param alphaLevel level of significance
+#' @param design the sampleTable
+#' @param testColumn the column of the sampleTable to be resolved
+#' @param refColumn the column of the sampleTable to be used as biological variation
+#' @param test statistical test to perform, either "ANOVA" or "PERMANOVA"
+#' @param p.adjust adjust for multiple comparisons, argument to pass to p.adjust function
+#' @param plot generate a plot?
+#' @param write write results to a file?
 #'
 #' @author Dario Tommasini
 #'
 #' @examples
 #'
-#' bidirectionalBestMatches(comparisonList[[element]]$overlap, WGCNAlist[[first]], WGCNAlist[[second]])
+#' runDME(myNetworks$combined, alpha=0.05)
 #'
 #' @export
-runDME <- function(WGCNAobject, alpha=get("alphaLevel", envir = parent.frame()), design=sampleTable, testCondition=NULL, refCondition=NULL, p.adjust="fdr", plot=FALSE, write=FALSE){
+runDME <- function(WGCNAobject, alphalevel=get("alphaLevel", envir = parent.frame()), design=sampleTable, testCondition=NULL, refCondition=NULL, p.adjust="fdr", plot=FALSE, test="ANOVA", write=FALSE, out=NULL){
 	datExpr=WGCNAobject@datExpr
 	if(is.null(refCondition)) refCondition=colnames(design)[[3]]
 	if(is.null(testCondition)) testCondition=colnames(design)[[2]]
 	modules=sort(unique(datExpr$dynamicLabels))
 	modulePrefix=name(WGCNAobject)
 	pval.dfs=list()
-	if(plot) pdf(paste0(modulePrefix,"_DME.pdf"))
+	if(plot) {
+	  if(is.null(out)) pdf(paste0(modulePrefix,"_DME.pdf")) else pdf(paste0(out))
+	}
 	element=1
 	for(module in modules){
 		moduleGenes=datExpr$X[datExpr$dynamicLabels==module]
-		pval.dfs[[element]]=diffModuleExpression(datExpr, moduleGenes, moduleName=module, plot=plot)
+		pval.dfs[[element]]=diffModuleExpression(datExpr, moduleGenes, moduleName=module, plot=plot, test=test)
 		colnames(pval.dfs[[element]])=c("Factors", module)
 		element=element+1
 	}
@@ -253,11 +261,12 @@ runDME <- function(WGCNAobject, alpha=get("alphaLevel", envir = parent.frame()),
 #' @param design the sampleTable
 #' @param testColumn the column of the sampleTable to be resolved
 #' @param refColumn the column of the sampleTable to be used as biological variation
-#' @param test currently only ANOVA is supported
+#' @param test statistical test to perform, either "ANOVA" or "PERMANOVA"
 #' @param plot generate a plot?
 #'
 #' @import patchwork
 #' @import ggplot2
+#' @import vegan
 #' @export
 diffModuleExpression <- function(datExpr, geneList, moduleName=NULL, mode="PC1", design=sampleTable, testColumn=2, refColumn=3, test="ANOVA", plot=TRUE){
 	#test=design[1, testColumn], ref=design[1, refColumn]
@@ -304,6 +313,13 @@ diffModuleExpression <- function(datExpr, geneList, moduleName=NULL, mode="PC1",
 	if(test=="ANOVA"){
 		pval.df <- performANOVA(moduleExpression, testCondition, refCondition) #category1=test, category2=ref)
 	}
+	
+	if(test=="PERMANOVA"){
+	  permanova=adonis(t(subset) ~ sampleTable[[testCondition]] + sampleTable[[refCondition]] + sampleTable[[testCondition]]*sampleTable[[refCondition]], method = "euclidean", permutations = 9999)
+	  Factors=c(testCondition, refCondition, paste0(testCondition, "*", refCondition))
+	  p.value=c(permanova$aov.tab$`Pr(>F)`[1:3])
+	  pval.df=data.frame(Factors, p.value)
+	}
 
 	boxplot <- ggplot(data=mergedData, aes(x=eval(parse(text=refCondition)), y=moduleExpression, color=eval(parse(text=testCondition)))) +
     				labs(title=paste0("p: ", paste(pval.df$Factors, signif(pval.df$p.value,2), sep = '=', collapse = ', ')),
@@ -317,27 +333,37 @@ diffModuleExpression <- function(datExpr, geneList, moduleName=NULL, mode="PC1",
 
 	if(plot){
 		print(heatmap / bargraph / boxplot)
-		print(paste0("#### plotting ", moduleName, " ####"))
+		cat(paste0("#### plotting ", moduleName, " ####\n"))
 	}
 
 	return(pval.df)
 }
 
-performANOVA <- function(expressionDf, testCondition, refCondition, design=get("design", envir = parent.frame()), alphaLevel=get("alphaLevel", envir = parent.frame())){ #category1, category2
-	mergedData=cbind(expressionDf, test=design[match(expressionDf$Sample, design$Sample), testCondition],
-		ref=design[match(expressionDf$Sample, design$Sample), refCondition])
+#' Differential module expression
+#'
+#' Runs (and plots if turned on) the differential module expression analysis
+#'
+#' @param datExpr expression data.frame
+#' @param testCondition test column in sampleTable
+#' @param refCondition reference column in sampleTable
+#' @param design the sampleTable
+#' @param alphalevel the significance level
+#'
+#' @export
+performANOVA <- function(datExpr, testCondition, refCondition, design=get("design", envir = parent.frame()), alphaLevel=get("alphaLevel", envir = parent.frame())){ #category1, category2
+	mergedData=cbind(datExpr, test=design[match(datExpr$Sample, design$Sample), testCondition],
+		ref=design[match(datExpr$Sample, design$Sample), refCondition])
 
-
-	H1=lm(as.numeric(expressionDf$moduleExpression) ~ sampleTable[[testCondition]] + sampleTable[[refCondition]] +
+	H1=lm(as.numeric(datExpr$moduleExpression) ~ sampleTable[[testCondition]] + sampleTable[[refCondition]] +
 	      sampleTable[[testCondition]]*sampleTable[[refCondition]])
-	H0=lm(as.numeric(expressionDf$moduleExpression) ~ sampleTable[[testCondition]] + sampleTable[[refCondition]])
-	H0_2=lm(as.numeric(expressionDf$moduleExpression) ~ sampleTable[[testCondition]])
+	H0=lm(as.numeric(datExpr$moduleExpression) ~ sampleTable[[testCondition]] + sampleTable[[refCondition]])
+	H0_2=lm(as.numeric(datExpr$moduleExpression) ~ sampleTable[[testCondition]])
 
 	Factors=c(testCondition, refCondition, paste0(testCondition, "*", refCondition))
-	p.value=c(summary(H0)$coefficients[2,4], anova(H0,H0_2)[2,6], anova(H0,H1)[2,6])
+	p.value=c(summary(H0)$coefficients[2,4], anova(H0, H0_2)[2,6], anova(H0, H1)[2,6])
 	pval.df=data.frame(Factors, p.value)
 
-	pval.df
+	return(pval.df)
 }
 
 

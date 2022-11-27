@@ -13,6 +13,7 @@ Suggests:
     rmarkdown
 VignetteBuilder: knitr
 RoxygenNote: 7.1.2
+biocViews:
 Imports: 
     stringr,
     readr,
@@ -27,11 +28,11 @@ Imports:
     igraph,
     flashClust,
     filesstrings,
-    biomaRt,
-    dcanr,
-    limma,
     ggplot2,
     ggpubr,
-    goseq
+    biomaRt,
+    dcanr,
+    goseq,
+    limma
 Depends: 
     ggalluvial

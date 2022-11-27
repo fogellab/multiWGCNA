@@ -11,8 +11,8 @@
 #' @import biomaRt
 #' @export
 computeOverlapsFromWGCNA <- function(dataset1, dataset2, convertSymbols1=F, convertSymbols2=F) {
-	datExpr1= datExpr1@datExpr
-	datExpr2= datExpr2@datExpr
+	datExpr1= dataset1@datExpr
+	datExpr2= dataset2@datExpr
 	treatDat <- datExpr1
 	controlDat <- datExpr2
 

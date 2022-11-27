@@ -1,5 +1,16 @@
-
-computeOverlapsFromWGCNA <- function(datExpr1, datExpr2, convertSymbols1=F, convertSymbols2=F) {
+#' computeOverlapsFromWGCNA
+#'
+#' Computes overlap between the modules of two objects of class WGCNA
+#'
+#' @param dataset1 an object of class WGCNA to compare with dataset2
+#' @param dataset2 an object of class WGCNA to compare with dataset1
+#' @param convertSymbols1 convert symbols for first WGCNA
+#' @param convertSymbols2 convert symbols for second WGCNA
+#' @author Dario Tommasini
+#'
+#' @import biomaRt
+#' @export
+computeOverlapsFromWGCNA <- function(dataset1, dataset2, convertSymbols1=F, convertSymbols2=F) {
 	datExpr1= datExpr1@datExpr
 	datExpr2= datExpr2@datExpr
 	treatDat <- datExpr1

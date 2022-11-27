@@ -529,6 +529,31 @@ correlationComparisonHeatmaps <- function(diseaseDatExpr, healthyDatExpr, geneLi
 		axis = "tb", rel_widths = c(2, 2, 2, 1))
 }
 
+#' Differential co-expresison analysis 
+#'
+#' Performs a differential co-expression ananlysis given an expression data.frame 
+#' and a conditions vector
+#'
+#' @param datExpr a data.frame containing expression values
+#' @param conditions a vector containing conditions for the samples
+#' @param geneList vector of genes, will use all genes if NULL (default)
+#' @param plot plot a network?
+#' @param method either "pearson" or "spearman" 
+#' @param removeFreeNodes remove free nodes from network?
+#' @param labelSize label size
+#' @param labelDist distance from labels to nodes
+#' @param shape shape of nodes
+#' @param degreeForSize should node size correspond to degree?
+#' @param label label nodes?
+#' @param onlyPositive only draw positive correlations?
+#' @param z.threshold z-score threshold
+#' @param FDR.threshold FDR threshold
+#' @param nodeSize size of node
+#' 
+#' @author Dario Tommasini
+#'
+#' @import dcanr
+#' @export
 diffCoexpression <- function(datExpr, conditions, geneList=NULL, plot=F, method="pearson", removeFreeNodes=TRUE, labelSize=0.5, labelDist=0,
 						shape="circle", degreeForSize=F, label=F, onlyPositive=F, z.threshold=NULL, FDR.threshold=0.05, nodeSize=3){
 
@@ -545,10 +570,6 @@ diffCoexpression <- function(datExpr, conditions, geneList=NULL, plot=F, method=
 	names2 <- geneList[indices[,2]]
 	summaryDf=	data.frame(gene1=names1, gene2=names2, cor1= cor1[upper.tri(cor1)], cor2=cor2[upper.tri(cor2)],
 					z.score=z_scores[upper.tri(z_scores)], p.value=raw_p[upper.tri(raw_p)], p.adj=adj_p[upper.tri(adj_p)])
-
-	#dcnet <- dcNetwork(z_scores, adj_p, thresh=0.05)
-	#plot(dcnet, vertex.label = '')
-	#z_scores=rescale(z_scores, to=c(0,1))
 
 	adj_mat= z_scores
 	adj_mat[diag(adj_mat)]=0

@@ -21,9 +21,10 @@ library(multiWGCNA)
 Step 1: Read in autism microarray data from Voineagu et al. 2011. For the sake of time, we are going to limit our analysis to 5000 randomly selected probes. Let's also set some useful global variables, like the alpha level of significance and the soft thresholding power for our networks. 
 
 ```{r}
-data("Voineagu_autism")
+data("datExpr")
+data("sampleTable")
 set.seed(1)
-datExpr=Voineagu_autism[sample(rownames(Voineagu_autism), 5000),]
+datExpr=datExpr[sample(rownames(datExpr), 5000),]
 datExpr[1:5,1:5]
 sampleTable
 alphaLevel=0.05

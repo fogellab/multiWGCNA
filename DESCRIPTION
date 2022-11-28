@@ -33,6 +33,7 @@ Imports:
     biomaRt,
     dcanr,
     goseq,
-    limma
+    limma,
+    vegan
 Depends: 
     ggalluvial

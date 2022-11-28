@@ -10,6 +10,7 @@ Encoding: UTF-8
 LazyData: true
 Suggests: 
     knitr,
+    markdown,
     rmarkdown
 VignetteBuilder: knitr
 RoxygenNote: 7.1.2
@@ -36,4 +37,5 @@ Imports:
     limma,
     vegan
 Depends: 
+    R (>= 2.10),
     ggalluvial

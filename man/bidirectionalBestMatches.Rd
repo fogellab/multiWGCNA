@@ -15,11 +15,6 @@ bidirectionalBestMatches(overlapDf, plot = TRUE)
 Find all the modules from dataset1 that have a best match to a module in dataset2
 if that module in dataset2 is also a best match to the module in dataset1
 }
-\examples{
-
-bidirectionalBestMatches(comparisonList[[element]]$overlap, WGCNAlist[[first]], WGCNAlist[[second]])
-
-}
 \author{
 Dario Tommasini
 }

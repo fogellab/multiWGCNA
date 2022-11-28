@@ -1,5 +1,20 @@
-#!/usr/bin/env Rscript
-
+#' Disease preservation permutation test
+#'
+#' Tests whether the disease
+#'
+#' @param referenceDatExpr data.frame containing expression levels
+#' @param design a data.frame with the columns corresponding to sample traits of referenceDatExpr
+#' @param nPermutations number of permutations to perform
+#' @param refColumn column of design table with reference traits
+#' @param testColumn column of design table with test traits
+#' @param nCores number of cores to use, default is 1
+#' @param saveRData save objects to an RData file?
+#' 
+#' @author Dario Tommasini
+#'
+#' @import WGCNA
+#' @import stringr
+#' @export
 diseasePreservationPtest <- function(referenceDatExpr, design, nPermutations=20, refColumn=3, testColumn=2, nCores=1, saveRData=T){
 
   registerDoParallel(cores=nCores)
@@ -14,6 +29,7 @@ diseasePreservationPtest <- function(referenceDatExpr, design, nPermutations=20,
   filteredPreservationData=list()
 
   for(permutation in 1:nPermutations){
+    
     #assign phenotype labels randomly
     WT.indices=list()
     conditions=unique(design[, refColumn])
@@ -50,7 +66,7 @@ diseasePreservationPtest <- function(referenceDatExpr, design, nPermutations=20,
     filteredPreservationData[[permutation]]=preservationData[[permutation]][[2]][!rownames(preservationData[[permutation]][[2]]) %in% WGCNAobjects[[permutation]]@outlierModules,]
     dir.create("filteredPreservation")
     write.csv(filteredPreservationData[[permutation]], paste0("filteredPreservation/filt", permutation, ".csv"), row.names=F)
-    gc()
+    
     save.image("presPermutation.RData")
   }
 
@@ -62,14 +78,9 @@ diseasePreservationPtest <- function(referenceDatExpr, design, nPermutations=20,
     module.size[[permutation]]=myPerm$moduleSize[which.min(abs(myPerm$moduleSize-297))]
   }
 
-  #z.summary.dist=unlist(z.summary.dist)
-  #below=length(z.summary.dist[z.summary.dist<9.16261490617938])
-  #probability= below/nPermutations
-  #returnprobability
-
   if(saveRData) save.image("presPermutation.RData")
 
-  return(cbind(z.summary.dist, module.size))
+  return(data.frame(Z.summary=z.summary.dist, module.size=module.size))
 }
 
 minSamplesForPreservation <- function(){

@@ -2,23 +2,21 @@
 % Please edit documentation in R/preservation.R
 \name{getPreservation}
 \alias{getPreservation}
-\title{Module preservation analysis}
+\title{getPreservation}
 \usage{
 getPreservation(reference, test, nPermutations = 100, write = FALSE)
 }
 \arguments{
-\item{comparison}{a data.frame resulting from a call to computeOverlapsFromWGCNA}
+\item{reference}{reference network of class WGCNA}
 
-\item{dataset1}{an object of class WGCNAobject to compare with dataset2}
+\item{test}{test network of class WGCNA}
 
-\item{dataset2}{an object of class WGCNAobject to compare with dataset1}
+\item{nPermutations}{number of permutations to perform}
+
+\item{write}{write to file?}
 }
 \description{
-Performs preservation of reference modules in test dataset
-}
-\examples{
-getPreservation(referenceDatExpr, testDatExpr, nPermutations=50)
-
+Performs a network preservation analysis
 }
 \author{
 Dario Tommasini

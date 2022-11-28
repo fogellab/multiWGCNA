@@ -288,10 +288,6 @@ moduleToModuleHeatmap <- function(comparisonDf, dataset1=NULL, dataset2=NULL, tr
 #'
 #' @author Dario Tommasini
 #'
-#' @examples
-#'
-#' bidirectionalBestMatches(comparisonList[[element]]$overlap, WGCNAlist[[first]], WGCNAlist[[second]])
-#'
 #' @import ggplot2
 #' @import dplyr
 #' @export

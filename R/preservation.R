@@ -27,18 +27,16 @@ preservationScatterplot <- function(WGCNAobject, preservationTable){
                 geom_hline(yintercept=(10), linetype="dashed", color = "black", size=1)
 }
 
-#' Module preservation analysis
+#' getPreservation
 #'
-#' Performs preservation of reference modules in test dataset
+#' Performs a network preservation analysis
 #'
-#' @param comparison a data.frame resulting from a call to computeOverlapsFromWGCNA
-#' @param dataset1 an object of class WGCNAobject to compare with dataset2
-#' @param dataset2 an object of class WGCNAobject to compare with dataset1
+#' @param reference reference network of class WGCNA
+#' @param test test network of class WGCNA
+#' @param nPermutations number of permutations to perform
+#' @param write write to file?
 #' 
 #' @author Dario Tommasini
-#'
-#' @examples
-#' getPreservation(referenceDatExpr, testDatExpr, nPermutations=50)
 #'
 #' @import WGCNA
 #' @import stringr
@@ -252,49 +250,6 @@ preservationComparisons <- function(comparisonList, WGCNAlist, first, second, el
 								alphaLevel)
 	}
 	comparisonList
-}
-
-preservationPermutationTest <- function(dataset1, design=sampleTable, testColumn=2, refColumn=3, nPermutations=100, nCores=36){
-	doParallel::registerDoParallel(cores=nCores)
-	enableWGCNAThreads(nThreads=nCores)
-
-	referenceDatExpr=dataset1
-
-	preservationData=list()
-	for(permutation in 1:nPermutations){
-
-		#assign phenotype labels randomly
-		datExpr=referenceDatExpr[, !colnames(referenceDatExpr) %in% c("X","kTotal","kWithin","kOut","kDiff","dynamicColors","dynamicLabels")]
-		WT.indices=list()
-		conditions=unique(design[, refColumn])
-		for(condition in conditions){
-			conditionalDesign=design[design[, refColumn]==condition,]
-			nSamples=nrow(conditionalDesign)
-			nWT=nrow(conditionalDesign[conditionalDesign[, testColumn]=="WT",])
-			sampleIndices=which(design[, refColumn]==condition)
-			WT.indices=append(WT.indices, sampleIndices[sample(1:nSamples, nWT, replace=F)])
-		}
-		WT.indices=unlist(WT.indices)
-		randomDisease=datExpr[, WT.indices]
-		randomDisease$X=referenceDatExpr$X
-		randomHealthy=datExpr[, !(1:ncol(datExpr) %in% WT.indices)]
-		randomHealthy$X=referenceDatExpr$X
-
-		#perform preservation
-		preservationData[[permutation]]=list()
-		preservationData[[permutation]][[1]] <- getPreservation(referenceDatExpr, randomDisease)
-		preservationData[[permutation]][[2]] <- getPreservation(referenceDatExpr, randomHealthy)
-
-	}
-
-	preservationDrops=list()
-	for(element in 1:length(preservationData)){
-		preservationDrops[[element]]=preservationData[[element]][[1]]$Zsummary.pres-preservationData[[element]][[2]]$Zsummary.pres
-	}
-	preservationDrops=as.data.frame(preservationDrops)
-	colnames(preservationDrops)=paste0('permutation', 1:nPermutations)
-
-	list(preservationData, preservationDrops)
 }
 
 differentialPreservationPlot <- function(design=sampleTable, refColumn=3, testColumn=2){

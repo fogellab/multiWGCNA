@@ -2,7 +2,7 @@
 % Please edit documentation in R/generalFunctions.R
 \name{summarizeResults}
 \alias{summarizeResults}
-\title{Summarize results from a results list object}
+\title{summarizeResults: Summarize results from a results list object}
 \usage{
 summarizeResults(
   myNetworks,

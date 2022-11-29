@@ -29,11 +29,6 @@ moduleExpressionPlot(
 \description{
 A plotting function that returns a heatmap and barplot for a module
 }
-\examples{
-
-moduleExpressionPlot(WGCNAobject, moduleGenes, title=myModule)
-
-}
 \author{
 Dario Tommasini
 }

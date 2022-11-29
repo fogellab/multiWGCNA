@@ -27,11 +27,6 @@ preservationComparisonPlot(
 A plotting  function that draws a scatterplot of preservation scores between
 two WGCNAobjects
 }
-\examples{
-
-preservationComparisonPlot(comparisonList[[1]], WGCNAlist[[1]], WGCNAlist[[2]], 0.05)
-
-}
 \author{
 Dario Tommasini
 }

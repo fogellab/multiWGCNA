@@ -9,12 +9,6 @@ run_goseq(WGCNAobject, module, organism = "mm10", id = "geneSymbol")
 \description{
 Performs a goseq gene ontology analysis of a module
 }
-\examples{
-
-myNetworks=constructNetworks(datExpr, sampleTable, conditions1, conditions2, softPower=10, blockWise=T, nCores=nCores)
-
-
-}
 \author{
 Dario Tommasini
 }

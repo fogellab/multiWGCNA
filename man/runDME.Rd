@@ -39,11 +39,6 @@ runDME(
 \description{
 A wrapper to run diffModuleExpression on all the modules in a network
 }
-\examples{
-
-runDME(myNetworks$combined, alpha=0.05)
-
-}
 \author{
 Dario Tommasini
 }

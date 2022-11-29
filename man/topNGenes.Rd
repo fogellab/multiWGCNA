@@ -2,7 +2,7 @@
 % Please edit documentation in R/generalFunctions.R
 \name{topNGenes}
 \alias{topNGenes}
-\title{Top N genes of a module}
+\title{topNGenes: Top N genes of a module}
 \usage{
 topNGenes(WGCNAobject, module, nGenes = NULL)
 }

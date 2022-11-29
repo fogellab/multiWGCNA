@@ -16,11 +16,6 @@ moduleComparisonPlot(overlapDf, dataset1, dataset2)
 \description{
 A plotting function that returns a heatmap and barplot for a module
 }
-\examples{
-
-moduleComparisonPlot(comparisonList[[element]]$overlap, WGCNAlist[[first]], WGCNAlist[[second]])
-
-}
 \author{
 Dario Tommasini
 }

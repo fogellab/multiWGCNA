@@ -10,7 +10,7 @@ constructNetworks(
   conditions1,
   conditions2,
   write = FALSE,
-  alphaLevel = get("alphaLevel", envir = parent.frame()),
+  alphaLevel = 0.05,
   plot = FALSE,
   ...
 )
@@ -35,11 +35,6 @@ constructNetworks(
 \description{
 A high level function that returns all networks
 possible for a given experimental design
-}
-\examples{
-
-myNetworks=constructNetworks(datExpr, sampleTable, conditions1, conditions2, softPower=10, blockWise=T, nCores=nCores)
-
 }
 \author{
 Dario Tommasini

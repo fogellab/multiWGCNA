@@ -2,7 +2,7 @@
 % Please edit documentation in R/generalFunctions.R
 \name{iterate}
 \alias{iterate}
-\title{Iterate function across networks}
+\title{iterate: Iterate function across networks}
 \usage{
 iterate(WGCNAlist, FUN, ...)
 }
@@ -16,11 +16,6 @@ iterate(WGCNAlist, FUN, ...)
 \description{
 A high level function that iterates functions across
 a list of WGCNA objects
-}
-\examples{
-
-iterate(myNetworks, overlapComparisons, plot=TRUE)
-
 }
 \author{
 Dario Tommasini

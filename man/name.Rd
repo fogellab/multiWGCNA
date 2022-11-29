@@ -2,7 +2,7 @@
 % Please edit documentation in R/generalFunctions.R
 \name{name}
 \alias{name}
-\title{Name of WGCNAobject}
+\title{name: Name of WGCNAobject}
 \usage{
 name(WGCNAobject)
 }

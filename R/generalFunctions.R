@@ -14,7 +14,7 @@ printModules <- function(WGCNAobject){
 	}
 }
 
-#' Name of WGCNAobject
+#' name: Name of WGCNAobject
 #'
 #' Returns the name of a WGCNAobject.
 #'
@@ -45,7 +45,7 @@ colors <- function(nColors, random=F){
 	}
 }
 
-#' Top N genes of a module
+#' topNGenes: Top N genes of a module
 #'
 #' Returns the top N number of genes of a module.
 #' All genes returned if no number is specified.
@@ -193,7 +193,8 @@ makeTraitTable <- function(inputTable, column, detectNumbers=get("detectNumbers"
 #' cleanDatExpr
 #'
 #' A function that converts a data.frame where row 1 is gene symbols to a 
-#' numeric matrix where columns are genes and rows are samples
+#' numeric matrix where columns are genes and rows are samples for compatibility 
+#' with most WGCNA functions. 
 #'
 #' @param datExpr a data.frame were columns are samples and rows are samples and the gene symbols are in the first row
 #' @param checkGenesSamples call the WGCNA function checkGenesSamples?
@@ -226,7 +227,7 @@ keyModules <- function(WGCNAobject){
 	return(keyModules)
 }
 
-#' Summarize results from a results list object
+#' summarizeResults: Summarize results from a results list object
 #'
 #' Prints (or writes) a summary of the results from a results list object
 #'
@@ -266,7 +267,7 @@ summarizeResults <- function(myNetworks, results, alphaLevel=get("alphaLevel", e
 	if(write) sink()
 }
 
-#' Iterate function across networks
+#' iterate: Iterate function across networks
 #'
 #' A high level function that iterates functions across
 #' a list of WGCNA objects

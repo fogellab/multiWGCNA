@@ -31,11 +31,6 @@ overlapComparisons(
 Compares modules between two objects of type WGCNAobjects
 within a WGCNAobject list given the indices
 }
-\examples{
-
-iterate(myNetworks, overlapComparisons, plot=TRUE)
-
-}
 \author{
 Dario Tommasini
 }

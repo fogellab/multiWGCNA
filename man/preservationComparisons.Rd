@@ -39,11 +39,6 @@ preservationComparisons(
 A high level function that performs a perservation comparison between two
 WGCNAobjects in a WGCNAlist, usually supplied by iterate function
 }
-\examples{
-
-results$preservation=iterate(myNetworks[conditions1], preservationComparisons, plot=TRUE)
-
-}
 \author{
 Dario Tommasini
 }

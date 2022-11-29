@@ -93,10 +93,6 @@ getPreservation <- function(reference, test, nPermutations=100, write=FALSE) {
 #'
 #' @author Dario Tommasini
 #'
-#' @examples
-#'
-#' preservationComparisonPlot(comparisonList[[1]], WGCNAlist[[1]], WGCNAlist[[2]], 0.05)
-#'
 #' @import ggplot2
 #' @import stringr
 #' @import ggrepel
@@ -226,10 +222,6 @@ drawNetwork <- function(reference_set, module_number, test_set) {
 #' @param nPermutations number of permutations, defaults to 100
 #'
 #' @author Dario Tommasini
-#'
-#' @examples
-#'
-#' results$preservation=iterate(myNetworks[conditions1], preservationComparisons, plot=TRUE)
 #'
 #' @export
 preservationComparisons <- function(comparisonList, WGCNAlist, first, second, element, plot=FALSE, write=FALSE, alphaLevel=get("alphaLevel", envir = parent.frame()), nPermutations=100){

@@ -24,11 +24,6 @@ convertHumanGeneList <- function(x){
 #'
 #' @author Dario Tommasini
 #'
-#' @examples
-#'
-#' myNetworks=constructNetworks(datExpr, sampleTable, conditions1, conditions2, softPower=10, blockWise=T, nCores=nCores)
-#'
-#'
 #' @import goseq
 #' @export
 #'

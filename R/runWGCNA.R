@@ -1,11 +1,5 @@
 performWGCNA <- function(datExpr, traitData, identifier, alphaLevel=0.05, write=FALSE, plot=FALSE, ...){
-# 	my_net=blockwiseModules(cleanDatExpr(datExpr), power = softPower,
-#                         TOMType = "signed", minModuleSize = 40, maxBlockSize = 25000,
-#                         reassignThreshold = 0, minKMEtoSay=0.7, mergeCutHeight = 0.10,
-#                         numericLabels = TRUE, pamRespectsDendro = FALSE,
-#                         saveTOMs = FALSE,
-#                         saveTOMFileBase = identifier,
-#                         verbose = 3, nThreads=nCores)
+  
   arguments=list(...)
   my_net=blockwiseModules(cleanDatExpr(datExpr), ...)
   degrees1=intramodularConnectivity.fromExpr(cleanDatExpr(datExpr), my_net$colors,
@@ -54,7 +48,7 @@ findOutlierModules <- function(WGCNAobject, byName=TRUE, method="Var", varCutoff
         WGCNAobject
 }
 
-findBestTrait <- function(WGCNAobject, alphaLevel=get("alphaLevel", envir=parent.frame()), p.adjust=FALSE, write=FALSE) {
+findBestTrait <- function(WGCNAobject, alphaLevel=0.05, p.adjust=FALSE, write=FALSE) {
         traitTable=WGCNAobject@trait
         #identifier=name(WGCNAobject)
         group=apply(traitTable[,which(startsWith(colnames(traitTable),"p.value"))], 1, which.min)
@@ -129,16 +123,12 @@ plotModules <- function(WGCNAobject, mode="PC1"){
 #'
 #' @author Dario Tommasini
 #'
-#' @examples
-#'
-#' myNetworks=constructNetworks(datExpr, sampleTable, conditions1, conditions2, softPower=10, blockWise=T, nCores=nCores)
-#'
 #' @import stringr
 #' @import readr
 #' @import WGCNA
 #' @import flashClust
 #' @export
-constructNetworks <- function(datExpr, sampleTable, conditions1, conditions2, write=FALSE, alphaLevel=get("alphaLevel", envir=parent.frame()), plot=FALSE, ...){
+constructNetworks <- function(datExpr, sampleTable, conditions1, conditions2, write=FALSE, alphaLevel=0.05, plot=FALSE, ...){
 
 	conditions1TraitTable=makeTraitTable(sampleTable, 3) #subset by conditions1, resolve conditions2
 	conditions2TraitTable=makeTraitTable(sampleTable, 2) #subset by conditions2, resolve conditions1

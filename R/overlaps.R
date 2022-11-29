@@ -75,10 +75,6 @@ computeOverlapsFromWGCNA <- function(dataset1, dataset2, convertSymbols1=F, conv
 #'
 #' @author Dario Tommasini
 #'
-#' @examples
-#'
-#' moduleComparisonPlot(comparisonList[[element]]$overlap, WGCNAlist[[first]], WGCNAlist[[second]])
-#'
 #' @import ggplot2
 #' @import ggalluvial
 #' @import stringr
@@ -352,10 +348,6 @@ bidirectionalBestMatches <- function(overlapDf, plot=TRUE){
 #' @param plot generate plots?
 #'
 #' @author Dario Tommasini
-#'
-#' @examples
-#'
-#' iterate(myNetworks, overlapComparisons, plot=TRUE)
 #'
 #' @export
 overlapComparisons <- function(comparisonList, WGCNAlist, first, second, element, plot=TRUE, write=FALSE){

@@ -11,10 +11,6 @@
 #'
 #' @author Dario Tommasini
 #'
-#' @examples
-#'
-#' moduleExpressionPlot(WGCNAobject, moduleGenes, title=myModule)
-#'
 #' @import ggplot2
 #' @import patchwork
 #' @import WGCNA
@@ -214,10 +210,6 @@ expressionHeatmap <- function(datExpr, geneList, lower=-2, upper=2, design=NULL,
 #' @param write write results to a file?
 #'
 #' @author Dario Tommasini
-#'
-#' @examples
-#'
-#' runDME(myNetworks$combined, alpha=0.05)
 #'
 #' @export
 runDME <- function(WGCNAobject, alphalevel=get("alphaLevel", envir = parent.frame()), design=sampleTable, testCondition=NULL, refCondition=NULL, p.adjust="fdr", plot=FALSE, test="ANOVA", write=FALSE, out=NULL){

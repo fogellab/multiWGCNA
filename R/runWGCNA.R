@@ -107,7 +107,7 @@ plotModules <- function(WGCNAobject, mode="PC1"){
         dev.off()
 }
 
-#' Construct all the weighted gene correlation networks
+#' constructNetworks: Construct all the weighted gene correlation networks
 #'
 #' A high level function that returns all networks
 #' possible for a given experimental design

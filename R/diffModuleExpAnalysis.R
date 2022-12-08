@@ -161,7 +161,7 @@ zScoreMatrix <- function(matrix){
 	na.omit(zScoreMatrix)
 }
 
-#heatmap of z-scored expression for a given expression dataframe and list of genes
+#heatmap of z-scored expression for a given expression data.frame and list of genes
 expressionHeatmap <- function(datExpr, geneList, lower=-2, upper=2, design=NULL, column.labels=TRUE, row.labels=FALSE, legend=FALSE, axis.titles=TRUE, moduleName=NULL, clusterGenes=F, title=NULL){
 	datExpr=t(cleanDatExpr(datExpr))
 	subset=datExpr[toupper(rownames(datExpr)) %in% toupper(geneList),]

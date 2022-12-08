@@ -9,6 +9,7 @@
 #' @author Dario Tommasini
 #'
 #' @import biomaRt
+#' @import stringr
 #' @export
 computeOverlapsFromWGCNA <- function(dataset1, dataset2, convertSymbols1=F, convertSymbols2=F) {
 	datExpr1= dataset1@datExpr
@@ -37,14 +38,14 @@ computeOverlapsFromWGCNA <- function(dataset1, dataset2, convertSymbols1=F, conv
 	                if(convertSymbols1){
 	                	mod1Genes=toupper(treatDat$X[treatDat$dynamicLabels==treatment])
 	                	mod1Genes=toupper(unique(getLDS(attributes = c("hgnc_symbol"), filters = "hgnc_symbol", values = mod1Genes,
-	                		mart = human, attributesL = c("mgi_symbol"), martL = mouse, uniqueRows=T)))
+	                		mart = human, attributesL = c("mgi_symbol"), martL = mouse, uniqueRows=T)$MGI.symbol))
 	                } else {
 	                	mod1Genes=toupper(treatDat$X[treatDat$dynamicLabels==treatment])
 	                }
 	                if(convertSymbols2){
 	                		mod2Genes=toupper(controlDat$X[controlDat$dynamicLabels==control])
 	                		mod2Genes=toupper(unique(getLDS(attributes = c("hgnc_symbol"), filters = "hgnc_symbol", values = mod2Genes,
-	                			mart = human, attributesL = c("mgi_symbol"), martL = mouse, uniqueRows=T)))
+	                			mart = human, attributesL = c("mgi_symbol"), martL = mouse, uniqueRows=T)$MGI.symbol))
 	                } else {
 	                	mod2Genes=toupper(controlDat$X[controlDat$dynamicLabels==control])
 	                }
@@ -214,6 +215,8 @@ continuousFlowPlot <- function(WGCNAlist){
 #' @param filterByTrait only plot for modules that correlate with some trait?
 #' @param alphaLevel the alpha level of significance for module-trait correlation, defaults to 0.05
 #'
+#' @import stringr
+#' @import ggpubr
 #' @export
 moduleToModuleHeatmap <- function(comparisonDf, dataset1=NULL, dataset2=NULL, trait1=NULL, trait2=NULL, list1=NULL, list2=NULL, filterByTrait=FALSE, alphaLevel=0.05){
 

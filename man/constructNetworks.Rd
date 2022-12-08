@@ -2,7 +2,7 @@
 % Please edit documentation in R/runWGCNA.R
 \name{constructNetworks}
 \alias{constructNetworks}
-\title{Construct all the weighted gene correlation networks}
+\title{constructNetworks: Construct all the weighted gene correlation networks}
 \usage{
 constructNetworks(
   datExpr,

@@ -1,5 +1,4 @@
-# multiWGCNA
-an R package for deep mining gene co-expression networks in multi-trait expression data
+# multiWGCNA: an R package for deep mining gene co-expression networks in multi-trait expression data
 
 ```
 if (!requireNamespace("BiocManager", quietly = TRUE))

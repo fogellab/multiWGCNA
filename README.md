@@ -13,4 +13,4 @@ Alternatively, multiWGCNA can be installed from source by downloading this repos
 R CMD INSTALL --preclean --no-multiarch --with-keep.source multiWGCNA
 ```
 
-Please refer to the vignette, generalWorkflow.Rmd, for a detailed example of how to use multiWGCNA!
+Please refer to the vignette, generalWorkflow.Rmd, for a detailed example of how to use multiWGCNA.

@@ -261,8 +261,8 @@ moduleToModuleHeatmap <- function(comparisonDf, dataset1=NULL, dataset2=NULL, tr
 				geom_tile(color = "black") +
 				scale_fill_gradient(name="-log10(FDR)", low = "white",
 					high = "red", na.value="red", #limits=c(0, 50),
-					guide = guide_colorbar(frame.colour = "black", frame.linewidth = 1,
-							ticks.linewidth=1, ticks.colour = "black")) +
+					guide = guide_colorbar(frame.colour = "black", frame.linewidth = 0.5,
+							ticks.linewidth = 0.5, ticks.colour = "black")) +
 				geom_text(aes(label = overlap), color = "black", size=2) +
 				labs(x=columns, y=rows) +
 				theme_classic()+
@@ -325,10 +325,10 @@ bidirectionalBestMatches <- function(overlapDf, plot=TRUE){
  				y = factor(mod2, levels=rev(rownames(subset_padj_matrix))),
  				fill = (-log10(p.adj)))) +
 				geom_tile(color = "black") +
-				scale_fill_gradient(low = "white", high = "red", na.value="red",
-				                    guide = guide_colorbar(frame.colour = "black",
-				                    frame.linewidth = 1, ticks.linewidth=1,
-				                    ticks.colour = "black")) +
+				scale_fill_gradient(name="-log10(FDR)", low = "white",
+				                      high = "red", na.value="red", #limits=c(0, 50),
+				                      guide = guide_colorbar(frame.colour = "black", frame.linewidth = 0.5,
+				                                             ticks.linewidth = 0.5, ticks.colour = "black")) +
 				geom_text(aes(label = overlap), color = "black") +
 				labs(x=name1, y=name2) +
 				theme(axis.text.x = element_text(angle = 90, vjust=(0.5)), panel.background=element_blank())+
@@ -349,6 +349,7 @@ bidirectionalBestMatches <- function(overlapDf, plot=TRUE){
 #' @param second index of second WGCNAobject
 #' @param element element position in the comparison list (passed by iterate function)
 #' @param plot generate plots?
+#' @param write write results to file?
 #'
 #' @author Dario Tommasini
 #'

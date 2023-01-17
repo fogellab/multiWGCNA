@@ -26,6 +26,8 @@ overlapComparisons(
 \item{element}{element position in the comparison list (passed by iterate function)}
 
 \item{plot}{generate plots?}
+
+\item{write}{write results to file?}
 }
 \description{
 Compares modules between two objects of type WGCNAobjects

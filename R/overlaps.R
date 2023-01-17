@@ -8,7 +8,7 @@
 #' @param convertSymbols2 convert symbols for second WGCNA
 #' @author Dario Tommasini
 #'
-#' @import biomaRt
+#' @importFrom biomaRt select
 #' @import stringr
 #' @export
 computeOverlapsFromWGCNA <- function(dataset1, dataset2, convertSymbols1=F, convertSymbols2=F) {

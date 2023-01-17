@@ -35,7 +35,8 @@ Imports:
     dcanr,
     goseq,
     limma,
-    vegan
+    vegan,
+    GO.db
 Depends: 
     R (>= 2.10),
     ggalluvial

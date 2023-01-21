@@ -1,6 +1,6 @@
 # multiWGCNA: an R package for deep mining gene co-expression networks in multi-trait expression data
 
-multiWGCNA can be installed from GitHub like this: 
+The multiWGCNA R package can be installed from GitHub like this: 
 ```
 if(!require(devtools)) install.packages("devtools")
 devtools::install_github("fogellab/multiWGCNA")

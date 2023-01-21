@@ -106,11 +106,11 @@ Step 5: Perform the module preservation analysis to determine if any  modules in
 
 ```{r, fig.height = 3, fig.width = 7}
 # To enable multi-threading
-library(doParallel)
-library(WGCNA)
-nCores=2
-registerDoParallel(cores = nCores)
-enableWGCNAThreads(nThreads = nCores)
+# library(doParallel)
+# library(WGCNA)
+# nCores=2
+# registerDoParallel(cores = nCores)
+# enableWGCNAThreads(nThreads = nCores)
 
 # Calculate preservation statistics
 results$preservation=iterate(myNetworks[conditions1], # change to conditions2 to perform comparison between FC and TC

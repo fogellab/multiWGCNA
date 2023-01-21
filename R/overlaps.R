@@ -80,7 +80,7 @@ computeOverlapsFromWGCNA <- function(dataset1, dataset2, convertSymbols1=F, conv
 #' @import ggalluvial
 #' @import stringr
 #' @import ggrepel
-#' @import ggpubr
+#' @import cowplot
 #' @export
 moduleComparisonPlot <- function(overlapDf, dataset1, dataset2) {
 	data=overlapDf
@@ -112,8 +112,9 @@ moduleComparisonPlot <- function(overlapDf, dataset1, dataset2) {
 		coord_cartesian(xlim = c(0.9, 2.5), clip = "off") +
 		#ggfittext::geom_fit_text(stat = "stratum", aes(label = after_stat(stratum)), min.size = 1) +
  		scale_x_discrete(expand=c(0,0), limits = c("Mod1", "Mod2"), labels=c(name1,name2))
-
-	print(ggarrange(flowPlot, heatmap, nrow=1, ncol=2, widths=c(1,2.5)))
+  
+	# print(ggarrange(flowPlot, heatmap, nrow=1, ncol=2, widths=c(1,2.5)))
+	print(plot_grid(flowPlot, heatmap, labels = "AUTO", rel_widths = c(1, 2.5)))
 }
 
 
@@ -192,13 +193,10 @@ continuousFlowPlot <- function(WGCNAlist){
 	data$ofInterest=FALSE
 	data$ofInterest[as.character(data$mod3)==as.character(args[7])]=TRUE
 
-
-
 	} else {
 		error("only WGCNAlist length of four implemented at the moment")
 	}
-
-
+	
 }
 
 #' Module to module heatmap
@@ -216,7 +214,7 @@ continuousFlowPlot <- function(WGCNAlist){
 #' @param alphaLevel the alpha level of significance for module-trait correlation, defaults to 0.05
 #'
 #' @import stringr
-#' @import ggpubr
+#' @import ggplot2
 #' @export
 moduleToModuleHeatmap <- function(comparisonDf, dataset1=NULL, dataset2=NULL, trait1=NULL, trait2=NULL, list1=NULL, list2=NULL, filterByTrait=FALSE, alphaLevel=0.05){
 

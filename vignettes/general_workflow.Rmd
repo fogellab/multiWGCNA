@@ -52,15 +52,39 @@ results$overlaps=iterate(myNetworks, overlapComparisons, plot=TRUE)
 head(results$overlaps$autism_vs_controls$bestMatches)
 ```
 
-Step 4: Perform differential module expression analysis. This uses the linear model module eigengene = trait1 + trait2 + trait1*trait2 and tests for a significant association to the traits using factorial ANOVA. Let's take a look at this data after the function. By setting plot to true, this function generates a PDF file called "combined_DME.pdf" in the current directory with the DME plots. It can also perform PERMANOVA, which uses multivariate distances and can thus be applied to the module expression rather than just the first principal component (module eigengene). 
+Step 4: Perform differential module expression analysis. This test for an association between the module eigengene (ME) and the two sample traits or their interaction. Therefore, the model is ME = trait1 + trait2 + trait1*trait2 and tests for a significant association to the traits using factorial ANOVA. These results can be stored in the diffModExp component of the results list. It can also perform PERMANOVA, which uses multivariate distances and can thus be applied to the module expression rather than just the first principal component (module eigengene). 
 
-```{r}
-results$diffModExp=runDME(myNetworks[["combined"]], p.adjust="fdr", refCondition="Tissue", 
-                          testCondition="Status", plot=TRUE, out="ANOVA_DME.pdf")
+Module combined_006 seems to be the module most significantly associated with disease status using standard ANOVA (module combined_000 represents genes that do not belong to any module so ignore this). Let's use the moduleExpressionPlot function to visually check this module for an association to autism status. 
+
+Note: By setting plot = TRUE, this function generates a PDF file called "combined_DME.pdf" in the current directory with these plots for all the modules. 
+
+```{r, fig.height = 6, fig.width = 7}
+# Run differential module expression analysis (DME) on combined networks
+results$diffModExp = runDME(myNetworks[["combined"]], 
+                            p.adjust="fdr", 
+                            refCondition="Tissue", 
+                            testCondition="Status") 
+                            # plot=TRUE, 
+                            # out="ANOVA_DME.pdf")
+
+# to run PERMANNOVA
+# results$diffModExp = runDME(myNetworks[["combined"]], p.adjust="fdr", refCondition="Tissue", 
+#                          testCondition="Status", plot=TRUE, test="PERMANOVA", out="PERMANOVA_DME.pdf")
+
+# Check FDR-adjusted associations to the two sample traits
 results$diffModExp
-runDME(myNetworks[["combined"]], p.adjust="fdr", refCondition="Tissue", 
-                          testCondition="Status", plot=TRUE, test="PERMANOVA", out="PERMANOVA_DME.pdf")
+
+# You can check the expression of a specific module like this
+diffModuleExpression(myNetworks[["combined"]], 
+                     geneList = topNGenes(myNetworks[["combined"]], "combined_006"), 
+                     test = "ANOVA",
+                     design = sampleTable,
+                     moduleName = "combined_006",
+                     plot = TRUE)
+
 ```
+
+
 
 Step 5: Perform the module preservation analysis to determine if any  modules in the autism data are not preserved in the healthy data (and vice versa). This is the slowest step as the calculation of permuted statistics takes a while. Typically, this can be parallelized using the enableWGCNAThreads function, but for this vignette we'll just do 20 permutations so one core should be fine.   
 

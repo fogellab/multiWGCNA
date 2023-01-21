@@ -5,7 +5,7 @@
 \title{Differential module expression}
 \usage{
 diffModuleExpression(
-  datExpr,
+  WGCNAobject,
   geneList,
   moduleName = NULL,
   mode = "PC1",
@@ -17,11 +17,11 @@ diffModuleExpression(
 )
 }
 \arguments{
-\item{datExpr}{expression data.frame}
+\item{WGCNAobject}{WGCNA object}
 
-\item{geneList}{vector of genes in datExpr}
+\item{geneList}{vector of genes in WGCNAobject}
 
-\item{moduleName}{name of the module for title}
+\item{moduleName}{name of the module for the title}
 
 \item{mode}{either PC1 or Zscore, default is PC1}
 

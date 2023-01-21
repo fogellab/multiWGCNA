@@ -142,7 +142,7 @@ preservationComparisonPlot <- function(comparison, dataset1, dataset2, alphaLeve
 			geom_hline(yintercept=(10), linetype="dashed", color = "black", size=1)+
 			geom_vline(xintercept=(-log10(alphaLevel)), linetype="dashed", color = "red", size=1)
 
-	print(ggarrange(dataset1Plot, dataset2Plot, ncol=2))
+	print(dataset1Plot | dataset2Plot)
 }
 
 #plots perservation Z-scores in a bargraph

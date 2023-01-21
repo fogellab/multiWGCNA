@@ -225,7 +225,7 @@ runDME <- function(WGCNAobject, alphalevel=get("alphaLevel", envir = parent.fram
 	element=1
 	for(module in modules){
 		moduleGenes=datExpr$X[datExpr$dynamicLabels==module]
-		pval.dfs[[element]]=diffModuleExpression(datExpr, moduleGenes, moduleName=module, plot=plot, test=test)
+		pval.dfs[[element]]=diffModuleExpression(WGCNAobject, moduleGenes, moduleName=module, plot=plot, test=test)
 		colnames(pval.dfs[[element]])=c("Factors", module)
 		element=element+1
 	}
@@ -246,9 +246,9 @@ runDME <- function(WGCNAobject, alphalevel=get("alphaLevel", envir = parent.fram
 #'
 #' Runs (and plots if turned on) the differential module expression analysis
 #'
-#' @param datExpr expression data.frame
-#' @param geneList vector of genes in datExpr
-#' @param moduleName name of the module for title
+#' @param WGCNAobject WGCNA object
+#' @param geneList vector of genes in WGCNAobject
+#' @param moduleName name of the module for the title
 #' @param mode either PC1 or Zscore, default is PC1
 #' @param design the sampleTable
 #' @param testColumn the column of the sampleTable to be resolved
@@ -258,11 +258,15 @@ runDME <- function(WGCNAobject, alphalevel=get("alphaLevel", envir = parent.fram
 #'
 #' @import patchwork
 #' @import ggplot2
+#' @import WGCNA
+#' @import dplyr
 #' @import vegan
 #' @export
-diffModuleExpression <- function(datExpr, geneList, moduleName=NULL, mode="PC1", design=sampleTable, testColumn=2, refColumn=3, test="ANOVA", plot=TRUE){
+diffModuleExpression <- function(WGCNAobject, geneList, moduleName=NULL, mode="PC1", design=sampleTable, testColumn=2, refColumn=3, test="ANOVA", plot=TRUE){
 	#test=design[1, testColumn], ref=design[1, refColumn]
 
+  datExpr=WGCNAobject@datExpr
+  
 	refCondition=colnames(design)[[refColumn]]
 	testCondition=colnames(design)[[testColumn]]
 	#ref=refCondition

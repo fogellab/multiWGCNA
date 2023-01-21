@@ -30,13 +30,13 @@ Imports:
     flashClust,
     filesstrings,
     ggplot2,
-    ggpubr,
     biomaRt,
     dcanr,
     goseq,
     limma,
     vegan,
-    GO.db
+    GO.db,
+    cowplot
 Depends: 
     R (>= 2.10),
     ggalluvial

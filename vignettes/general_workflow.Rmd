@@ -107,6 +107,7 @@ Step 5: Perform the module preservation analysis to determine if any  modules in
 ```{r, fig.height = 3, fig.width = 7}
 # To enable multi-threading
 library(doParallel)
+library(WGCNA)
 nCores=2
 registerDoParallel(cores = nCores)
 enableWGCNAThreads(nThreads = nCores)

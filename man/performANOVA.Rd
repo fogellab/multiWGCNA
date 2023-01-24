@@ -2,7 +2,7 @@
 % Please edit documentation in R/diffModuleExpAnalysis.R
 \name{performANOVA}
 \alias{performANOVA}
-\title{Differential module expression}
+\title{Perform ANOVA}
 \usage{
 performANOVA(
   datExpr,
@@ -24,5 +24,5 @@ performANOVA(
 \item{alphalevel}{the significance level}
 }
 \description{
-Runs (and plots if turned on) the differential module expression analysis
+Test association between module expression to traits using ANOVA
 }

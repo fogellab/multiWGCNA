@@ -52,9 +52,36 @@ flowNetwork <- function(comparisonList, continuousTraits, overlapCutoff=NULL, pa
 		vertex.label.cex=.5, layout=layout_in_circle, add=TRUE)
 }
 
+#' constructNetworks: Construct all the weighted gene correlation networks
+#'
+#' A high level function that returns all networks
+#' possible for a given experimental design
+#'
+#' @param WGCNAlist list of WGCNA objects
+#' @param comparisonList the list of overlap comparisons ie from iterate(myNetworks, overlapComparisons, ...) 
+#' @param moduleOfInterest module of interest, ie "combined_001"
+#' @param design the sampleTable design matrix
+#' @param overlapCutoff cutoff to remove module correspondences with less than this number of genes
+#' @param padjCutoff cutoff to remove module correspondences above this significance value
+#' @param removeOutliers remove outlier modules? 
+#' @param alpha alpha level of significance
+#' @param layout layout of network to be passed to plot function of igraph object, defaults to multiWGCNA custom layout
+#' @param hjust horizontal justification of labels
+#' @param vjust vertical justification of labels
+#' @param width width of labels
+#' @param colors colors to use for modules, should be the same length as the number of WGCNA objects in the WGCNAlist. Defaults to random colors for each condition. 
+#'
+#' @author Dario Tommasini
+#'
+#' @import igraph
+#' @import stringr 
+#' @import scales
+#' @export
+drawMultiWGCNAnetwork <- function(WGCNAlist, comparisonList, moduleOfInterest, design = sampleTable, 
+                                  overlapCutoff = 0, padjCutoff = 1, removeOutliers = T, alpha = 1e-50, 
+                                  layout = NULL, hjust = 0.4, vjust = 0.3, width = 0.5, colors = NULL){
 
-drawMultiWGCNAnetwork <- function(WGCNAlist, comparisonList, moduleOfInterest, design=sampleTable, overlapCutoff=0, padjCutoff=1, removeOutliers=T, alpha=1e-50, layout=NULL, hjust=0.4, vjust=0.3, width=0.5){
-	#extract the overlaps objects into a list
+  	#extract the overlaps objects into a list
 	overlapList=lapply(comparisonList, function(x) x$overlap)
 	overlapList=do.call(rbind, overlapList)
 	#filteredOverlapList=overlapList[overlapList$overlap>overlapCutoff & overlapList$p.adj<padjCutoff, ]
@@ -95,7 +122,12 @@ drawMultiWGCNAnetwork <- function(WGCNAlist, comparisonList, moduleOfInterest, d
 	vcol=str_split_fixed(V(graph)$name, "_", 2)[,1]
 	conditions=unique(vcol)
 	#V(graph)$name=str_split_fixed(V(graph)$name, "_", 2)[,2]
-	palette=colors(length(conditions), random=T)
+	
+	# Colors of modules by condition
+	if(is.null(colors)) palette = colors(length(conditions), random = T)
+	if(!is.null(colors)) palette = colors
+	# if(random.colors) palette = colors(length(conditions), random = F)
+	
 	for(condition in 1:length(conditions)){
 		vcol[vcol==conditions[[condition]] ]=palette[[condition]]
 	}
@@ -121,22 +153,23 @@ drawMultiWGCNAnetwork <- function(WGCNAlist, comparisonList, moduleOfInterest, d
 	#E(graph)[!(filteredOverlapList$mod1==moduleOfInterest | filteredOverlapList$mod2==moduleOfInterest)]$color  <- NA
 	modulesOfInterest=unique(c(filteredOverlapList$mod2[filteredOverlapList$mod1==moduleOfInterest & filteredOverlapList$p.adj<alpha], 
 		filteredOverlapList$mod1[filteredOverlapList$mod2==moduleOfInterest & filteredOverlapList$p.adj<alpha]))
-	print(modulesOfInterest)
+	# print(modulesOfInterest)
 	#E(graph)[!(filteredOverlapList$mod1 %in% modulesOfInterest | filteredOverlapList$mod2 %in% modulesOfInterest)]$color  <- NA
 	
 	#delete edges
 	#graph <- delete.edges(graph, which(E(graph)$p.adj>padjCutoff | E(graph)$overlap<overlapCutoff))
 	graph <- delete.edges(graph, which(!(filteredOverlapList$mod1 %in% modulesOfInterest | filteredOverlapList$mod2 %in% modulesOfInterest)))
-	print(which(!(E(graph)$mod1 %in% modulesOfInterest | E(graph)$mod2 %in% modulesOfInterest)))
+	# print(which(!(E(graph)$mod1 %in% modulesOfInterest | E(graph)$mod2 %in% modulesOfInterest)))
 	#neighborhood <- neighborhood(graph, 1, nodes=modulesOfInterest, mindist=1)
 	#res.tokeep <- lapply(res, function(x) which(E(graph)[x]$weight>100))
 	#res.todelete <- lapply(res, function(x) which(E(graph)[x]$weight<=100))
 	#ntwrk <- delete.vertices(graph, unique(unlist(res.todelete)))
 
-	plot(graph, vertex.label.color="black", vertex.size=3, vertex.label=NA, 
-		vertex.label.cex=.5, layout=layout)#, add=TRUE)
-	legend("right", legend = conditions, pch=21,
-		col=palette, pt.bg=palette, pt.cex=1, cex=.8, bty="n", ncol=1)
+	plot = plot(graph, vertex.label.color="black", vertex.size=3, vertex.label=NA, 
+	            vertex.label.cex=.5, layout=layout) 
+	legend("right", legend = conditions, pch=21, col=palette, pt.bg=palette, 
+	       pt.cex=1, cex=.8, bty="n", ncol=1)
+  return(plot)
 
 	#filteredOverlapList[filteredOverlapList$mod1 %in% modulesOfInterest | filteredOverlapList$mod2 %in% modulesOfInterest,]
 	

@@ -10,20 +10,29 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "##"
 )
 ```
 
-```{r setup}
-library(multiWGCNA)
+Step 0: Install the multiWGCNA R package. 
+
+```{r eval=FALSE}
+if(!require(devtools)) install.packages("devtools")
+devtools::install_github("fogellab/multiWGCNA")
 ```
 
 Step 1: Read in microarray data from human post-mortem brains from Voineagu et al. 2011 (https://www.nature.com/articles/nature10110), which has two sample traits: 1) autism versus control, and 2) temporal cortex versus frontal cortex. Since this is purely an example of how to run the entire analysis from start to finish, we are going to limit our analysis to 2000 randomly selected probes (so do not take the results too seriously since we are downsampling so much). Let's also set some useful global variables, like the alpha level of significance and the soft thresholding power for our network. Notice that the gene names in datExpr should be in column 1 named "X".  
 
 ```{r}
+# Load the multiWGCNA R package
+library(multiWGCNA)
+
 # Load the data provided in the package
-data(datExpr) # expression matrix
-data(sampleTable) # metadata
+data(autism_data) # expression matrix
+data(autism_metadata) # metadata
+
+datExpr = autism_data
+sampleTable = autism_metadata
 
 # Randomly sample 2000 genes from the expression matrix
 set.seed(1)
@@ -42,18 +51,19 @@ softPower = 10
 detectNumbers = FALSE
 ```
 
+step 2: Perform network construction, module eigengene calculation, module-trait correlation. Also, let's find best trait for each module and identify outlier modules (ie modules driven by a single sample). 
 
-step 2: Perform network construction, module eigengene calculation, module-trait correlation. Let's use power=10 since Voineagu et al. 2011 used that for all their networks. Also, let's find best trait and identify outlier modules. This step may take a couple minutes. 
+Let's use power = 10 since Voineagu et al. 2011 used that for all their networks. They also constructed "unsigned" networks and a mergeCutHeight of 0.10 so that modules with similar expression are merged. This step may take a while. 
 
 ```{r}
 # Define our conditions for trait 1 (disease) and 2 (brain region)
 conditions1=unique(sampleTable[,2])
 conditions2=unique(sampleTable[,3])
 
-# Construct the combined networks and all the subnetworks (autism only, controls only, FC only, and TC only)
-myNetworks=constructNetworks(datExpr, sampleTable, conditions1, conditions2, TOMType = "unsigned", 
+# Construct the combined networks and all the sub-networks (autism only, controls only, FC only, and TC only)
+myNetworks=constructNetworks(datExpr, sampleTable, conditions1, conditions2, networkType = "unsigned", 
                                   power = 10, minModuleSize = 40, maxBlockSize = 25000,
-                                  reassignThreshold = 0, minKMEtoSay=0.7, mergeCutHeight = 0.10,
+                                  reassignThreshold = 0, minKMEtoStay = 0.7, mergeCutHeight = 0.10,
                                   numericLabels = TRUE, pamRespectsDendro = FALSE, verbose=3)
 ```
 
@@ -70,9 +80,9 @@ head(results$overlaps$autism_vs_controls$bestMatches)
 
 Step 4: Perform differential module expression analysis. This test for an association between the module eigengene (ME) and the two sample traits or their interaction. Therefore, the model is ME = trait1 + trait2 + trait1*trait2 and tests for a significant association to the traits using factorial ANOVA. These results can be stored in the diffModExp component of the results list. It can also perform PERMANOVA, which uses multivariate distances and can thus be applied to the module expression rather than just the first principal component (module eigengene). 
 
-Module combined_006 seems to be the module most significantly associated with disease status using standard ANOVA (module combined_000 represents genes that were unassigned so disregard this module). Let's use the diffModuleExpression function to visually check this module for an association to autism status. 
+Module combined_005 seems to be the module most significantly associated with disease status using standard ANOVA (module combined_000 represents genes that were unassigned so disregard this module). Let's use the diffModuleExpression function to visually check this module for an association to autism status. 
 
-Note: By setting plot = TRUE, this function generates a PDF file called "combined_DME.pdf" in the current directory with these plots for all the modules. 
+Note: By setting plot = TRUE, the runDME function generates a PDF file called "combined_DME.pdf" in the current directory with these plots for all the modules. 
 
 ```{r, fig.height = 6, fig.width = 7}
 # Run differential module expression analysis (DME) on combined networks
@@ -90,17 +100,15 @@ results$diffModExp = runDME(myNetworks[["combined"]],
 # Check FDR-adjusted associations to the two sample traits
 results$diffModExp
 
-# You can check the expression of a specific module like this
+# You can check the expression of a specific module like this. Note that the values reported in the bottom panel title are p-values and not FDR-adjusted like in results$diffModExp
 diffModuleExpression(myNetworks[["combined"]], 
-                     geneList = topNGenes(myNetworks[["combined"]], "combined_006"), 
+                     geneList = topNGenes(myNetworks[["combined"]], "combined_005"), 
                      test = "ANOVA",
                      design = sampleTable,
-                     moduleName = "combined_006",
+                     moduleName = "combined_005",
                      plot = TRUE)
 
 ```
-
-
 
 Step 5: Perform the module preservation analysis to determine if any  modules in the autism data are not preserved in the healthy data (or vice versa). This is the slowest step as the calculation of permuted statistics takes a while. Typically, this can be parallelized using the enableWGCNAThreads function, but for this vignette we'll just do 20 permutations so two cores should be fine.   
 
@@ -108,7 +116,7 @@ Step 5: Perform the module preservation analysis to determine if any  modules in
 # To enable multi-threading
 # library(doParallel)
 # library(WGCNA)
-# nCores=2
+# nCores = 2
 # registerDoParallel(cores = nCores)
 # enableWGCNAThreads(nThreads = nCores)
 

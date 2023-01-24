@@ -1,11 +1,12 @@
 performWGCNA <- function(datExpr, traitData, identifier, alphaLevel=0.05, write=FALSE, plot=FALSE, ...){
-  
   arguments=list(...)
-  my_net=blockwiseModules(cleanDatExpr(datExpr), ...)
-  degrees1=intramodularConnectivity.fromExpr(cleanDatExpr(datExpr), my_net$colors,
-                                            networkType=arguments$TOMType, power=arguments$power)
+  
+  datExpr = t(cleanDatExpr(datExpr, checkGenesSamples = T))
+  my_net = blockwiseModules(t(datExpr), ...)
+  degrees1=intramodularConnectivity.fromExpr(t(datExpr), my_net$colors,
+                                            networkType=arguments$networkType, power=arguments$power)
   dynamicLabels=paste(identifier, "_", str_pad(my_net$colors, 3, pad="0"), sep="")
-  summary = cbind(datExpr, degrees1, dynamicLabels)
+  summary = cbind(data.frame(X = rownames(datExpr), datExpr), degrees1, dynamicLabels)
   if(write) write.csv(summary, file=paste0(identifier, "_summary.csv"), row.names=F)
   myWGCNA <- new("WGCNA", datExpr=summary, conditions=traitData)
 	myWGCNA=findModuleEigengenes(myWGCNA, write=write)
@@ -139,9 +140,9 @@ constructNetworks <- function(datExpr, sampleTable, conditions1, conditions2, wr
 	  dir.create("combined")
 	  setwd("combined")
 	}
-	myNetworks=append(myNetworks, performWGCNA(datExpr, combinedTraitTable, "combined", alphaLevel=alphaLevel, plot=plot, ...))
+	myNetworks = append(myNetworks, performWGCNA(datExpr, combinedTraitTable, "combined", alphaLevel = alphaLevel, plot = plot, ...))
 	if(write) setwd("..")
-
+	
 	#first dimension
 	for(trait in unique(conditions1)){
 	  if(write) {
@@ -166,7 +167,7 @@ constructNetworks <- function(datExpr, sampleTable, conditions1, conditions2, wr
 	return(myNetworks)
 }
 
-
+# Used for astrocyte data in the paper
 runWGCNA_minimal <- function(expressionMatrix, identifier, traitData=as.data.frame(NULL), minModuleSize=100, MEDissThres=0, softPower=12, softPowerCalculation=T, saveTOM=F) {
 
 	options(stringsAsFactors=FALSE)
@@ -194,7 +195,7 @@ runWGCNA_minimal <- function(expressionMatrix, identifier, traitData=as.data.fra
 	nSamples = nrow(datExpr2);
 
 	if(softPowerCalculation){
-	pdf(file=paste0("2-", identifier, "_power_dynamic.pdf"),height=10,width=18)
+	pdf(file=paste0("2-", identifier, "_power_dynamic.pdf"), height=10, width=18)
 	powers = c(c(1:10), seq(from = 12, to=40, by=2))
 	sft = pickSoftThreshold(datExpr2, RsquaredCut = 0.92, powerVector = powers, verbose = 5)
 	par(mfrow = c(1,2));
@@ -204,7 +205,7 @@ runWGCNA_minimal <- function(expressionMatrix, identifier, traitData=as.data.fra
 		main = paste("Scale independence"));
 	text(sft$fitIndices[,1], -sign(sft$fitIndices[,3])*sft$fitIndices[,2],
 		labels=powers,cex=cex1,col="red");
-	abline(h=0.90,col="red")
+	abline(h=0.90, col="red")
 	plot(sft$fitIndices[,1], sft$fitIndices[,5],
 		xlab="Soft Threshold (power)",ylab="Mean Connectivity", type="n",
 		main = paste("Mean connectivity"))

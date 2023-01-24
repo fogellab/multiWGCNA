@@ -287,6 +287,7 @@ diffModuleExpression <- function(WGCNAobject, geneList, moduleName=NULL, mode="P
 	if(mode=="PC1"){
 		PC1=moduleEigengenes(t(subset), colors = rep("Module", length(geneList)), nPC=1)$eigengenes
 		moduleExpression=data.frame(Sample=rownames(PC1), moduleExpression=PC1)
+		# print(moduleExpression %>% arrange(Sample))
 		colnames(moduleExpression)=c("Sample", "moduleExpression")
 	}
 
@@ -335,9 +336,9 @@ diffModuleExpression <- function(WGCNAobject, geneList, moduleName=NULL, mode="P
 	return(pval.df)
 }
 
-#' Differential module expression
+#' Perform ANOVA
 #'
-#' Runs (and plots if turned on) the differential module expression analysis
+#' Test association between module expression to traits using ANOVA
 #'
 #' @param datExpr expression data.frame
 #' @param testCondition test column in sampleTable
@@ -347,18 +348,25 @@ diffModuleExpression <- function(WGCNAobject, geneList, moduleName=NULL, mode="P
 #'
 #' @export
 performANOVA <- function(datExpr, testCondition, refCondition, design=get("design", envir = parent.frame()), alphaLevel=get("alphaLevel", envir = parent.frame())){ #category1, category2
-	mergedData=cbind(datExpr, test=design[match(datExpr$Sample, design$Sample), testCondition],
-		ref=design[match(datExpr$Sample, design$Sample), refCondition])
+	mergedData = cbind(datExpr, 
+	                   test=design[match(datExpr$Sample, design$Sample), testCondition],
+	                   ref=design[match(datExpr$Sample, design$Sample), refCondition])
 
-	H1=lm(as.numeric(datExpr$moduleExpression) ~ sampleTable[[testCondition]] + sampleTable[[refCondition]] +
-	      sampleTable[[testCondition]]*sampleTable[[refCondition]])
-	H0=lm(as.numeric(datExpr$moduleExpression) ~ sampleTable[[testCondition]] + sampleTable[[refCondition]])
-	H0_2=lm(as.numeric(datExpr$moduleExpression) ~ sampleTable[[testCondition]])
-
+	# Bug found 20230122: should use matched categorical variable from mergedData
+	# H1=lm(as.numeric(datExpr$moduleExpression) ~ sampleTable[[testCondition]] + sampleTable[[refCondition]] +
+	#       sampleTable[[testCondition]]*sampleTable[[refCondition]])
+	# H0=lm(as.numeric(datExpr$moduleExpression) ~ sampleTable[[testCondition]] + sampleTable[[refCondition]])
+	# H0_2=lm(as.numeric(datExpr$moduleExpression) ~ sampleTable[[testCondition]])
+	
+	H1=lm(as.numeric(mergedData$moduleExpression) ~ mergedData$test + mergedData$ref +
+	        mergedData$test*mergedData$ref)
+	H0=lm(as.numeric(mergedData$moduleExpression) ~ mergedData$test + mergedData$ref)
+	H0_2=lm(as.numeric(mergedData$moduleExpression) ~ mergedData$test)
+	
 	Factors=c(testCondition, refCondition, paste0(testCondition, "*", refCondition))
 	p.value=c(summary(H0)$coefficients[2,4], anova(H0, H0_2)[2,6], anova(H0, H1)[2,6])
 	pval.df=data.frame(Factors, p.value)
-
+  
 	return(pval.df)
 }
 

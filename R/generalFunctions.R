@@ -58,9 +58,9 @@ colors <- function(nColors, random=F){
 #' @import dplyr
 #' @export
 topNGenes <- function(WGCNAobject, module, nGenes=NULL){
-	datExpr= WGCNAobject@datExpr
-	subsetDatExpr=datExpr[datExpr$dynamicLabels==module,]
-	orderedDatExpr=subsetDatExpr %>% arrange(-kWithin)
+	datExpr = WGCNAobject@datExpr
+	subsetDatExpr = datExpr[datExpr$dynamicLabels==module,]
+	orderedDatExpr = subsetDatExpr %>% arrange(-kWithin)
 	if(missing(nGenes)){
 		orderedDatExpr$X
 	} else{

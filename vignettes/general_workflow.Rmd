@@ -1,8 +1,10 @@
 ---
 title: "General Workflow"
+author: "Dario Tommasini"
+date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{general_workflow}
+  %\VignetteIndexEntry{General Workflow}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -10,7 +12,7 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "##"
+  comment = "#>"
 )
 ```
 

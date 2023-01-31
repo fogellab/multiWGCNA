@@ -7,6 +7,13 @@ if(!require(devtools)) install.packages("devtools")
 devtools::install_github("fogellab/multiWGCNA")
 ```
 
+If you would like to build the vignettes, you must specify build_vignettes = TRUE. 
+```
+if(!require(devtools)) install.packages("devtools")
+devtools::install_github("fogellab/multiWGCNA", build_vignettes = TRUE)
+```
+
+
 # Dependencies
 
 Imports: 

@@ -9,19 +9,20 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r setup, include = FALSE}
+```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
 ```
 
+```{r setup}
+library(multiWGCNA)
+```
+
 In this vignette, we will be showing how users can draw a multiWGCNA network (Figure 2C from Tommasini and Fogel. BMC Bioinformatics. 2023.), which highlights the presence or absence of a biological network in the different conditions of their experiment. We will be using the astrocyte Ribotag data from Itoh et al. PNAS. 2018 (https://doi.org/10.1073/pnas.1716032115). This data comes with the multiWGCNA package and can be accessed as shown below. 
 
 ```{r}
-# Load multiWGCNA
-library(multiWGCNA)
-
 # Load expression matrix and metadata
 data(astrocyte_data)
 data(astrocyte_metadata)
@@ -50,8 +51,9 @@ conditions1 = unique(sampleTable[,2])
 conditions2 = unique(sampleTable[,3])
 
 # Construct the combined networks and all the sub-networks (autism only, controls only, FC only, and TC only)
+# Same parameters as Tommasini and Fogel. BMC Bioinformatics
 myNetworks = constructNetworks(datExpr, sampleTable, conditions1, conditions2, 
-                                  TOMType = "signed", networkType = "signed",
+                                  networkType = "signed", TOMType = "unsigned", 
                                   power = softPower, minModuleSize = 100, maxBlockSize = 25000,
                                   reassignThreshold = 0, minKMEtoStay = 0, mergeCutHeight = 0,
                                   numericLabels = TRUE, pamRespectsDendro = FALSE, 
@@ -68,7 +70,6 @@ data(astrocyte_networks)
 # Check one of the WGCNA objects
 myNetworks[["combined"]]
 ```
-
 
 Next, we compare modules (by hypergeometric overlap) across conditions. We'll save the results in a list. 
 

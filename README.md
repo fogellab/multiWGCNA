@@ -7,6 +7,7 @@ if(!require(devtools)) install.packages("devtools")
 devtools::install_github("fogellab/multiWGCNA")
 ```
 
+<<<<<<< Updated upstream
 If you would like to build the vignettes, you must specify build_vignettes = TRUE. 
 ```
 if(!require(devtools)) install.packages("devtools")
@@ -40,6 +41,34 @@ multiWGCNA has been tried and tested successfully using the following dependency
 20. GO.db_3.12.1
 21. cowplot_1.1.1
 22. ggalluvial_0.12.3
+=======
+# Dependencies
+
+Imports: 
+    stringr,
+    readr,
+    WGCNA,
+    ggrepel,
+    dplyr,
+    reshape2,
+    data.table,
+    patchwork,
+    doParallel,
+    scales,
+    igraph,
+    flashClust,
+    filesstrings,
+    ggplot2,
+    biomaRt,
+    dcanr,
+    goseq,
+    limma,
+    vegan,
+    GO.db,
+    cowplot
+Depends: 
+    ggalluvial
+>>>>>>> Stashed changes
 
 # Quick Start
 
@@ -47,7 +76,10 @@ Please refer to the vignette, generalWorkflow.Rmd, for a detailed example of how
 
 For a tutorial using the astrocyte Ribotag data discussed in the manuscript (Tommasini and Fogel. BMC Bioinformatics. 2023), please refer to astrocyte_map2.Rmd.  
 
+<<<<<<< Updated upstream
 ![Uploading drawmultiWGCNA.png…]()
 
 # Citation
 
+=======
+>>>>>>> Stashed changes

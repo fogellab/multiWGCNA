@@ -16,6 +16,10 @@ knitr::opts_chunk$set(
 )
 ```
 
+```{r setup}
+library(multiWGCNA)
+```
+
 Step 0: Install the multiWGCNA R package. 
 
 ```{r eval=FALSE}
@@ -26,9 +30,6 @@ devtools::install_github("fogellab/multiWGCNA")
 Step 1: Read in microarray data from human post-mortem brains from Voineagu et al. 2011 (https://www.nature.com/articles/nature10110), which has two sample traits: 1) autism versus control, and 2) temporal cortex versus frontal cortex. Since this is purely an example of how to run the entire analysis from start to finish, we are going to limit our analysis to 2000 randomly selected probes (so do not take the results too seriously since we are downsampling so much). Let's also set some useful global variables, like the alpha level of significance and the soft thresholding power for our network. Notice that the gene names in datExpr should be in column 1 named "X".  
 
 ```{r}
-# Load the multiWGCNA R package
-library(multiWGCNA)
-
 # Load the data provided in the package
 data(autism_data) # expression matrix
 data(autism_metadata) # metadata
@@ -63,10 +64,13 @@ conditions1=unique(sampleTable[,2])
 conditions2=unique(sampleTable[,3])
 
 # Construct the combined networks and all the sub-networks (autism only, controls only, FC only, and TC only)
-myNetworks=constructNetworks(datExpr, sampleTable, conditions1, conditions2, networkType = "unsigned", 
-                                  power = 10, minModuleSize = 40, maxBlockSize = 25000,
-                                  reassignThreshold = 0, minKMEtoStay = 0.7, mergeCutHeight = 0.10,
-                                  numericLabels = TRUE, pamRespectsDendro = FALSE, verbose=3)
+# We use the same parameters from Voineagu et al. Nature. 2011. 
+myNetworks=constructNetworks(datExpr, sampleTable, conditions1, conditions2, 
+                                  networkType = "unsigned", power = 10, 
+                                  minModuleSize = 40, maxBlockSize = 25000, 
+                                  reassignThreshold = 0, minKMEtoStay = 0.7, 
+                                  mergeCutHeight = 0.10, numericLabels = TRUE, 
+                                  pamRespectsDendro = FALSE, verbose=3)
 ```
 
 Step 3: Compare modules (by hypergeometric overlap) across conditions. We'll save the results in a list. Then, let's take a look at the mutual best matches between autism modules and control modules. 

@@ -3,6 +3,7 @@
 .RData
 .Ruserdata
 inst/doc
-*.Rproj
+.Rproj
 /doc/
 /Meta/
+.DS_Store

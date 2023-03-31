@@ -47,7 +47,7 @@ Please refer to the vignette, generalWorkflow.Rmd, for a detailed example of how
 
 For a tutorial using the astrocyte Ribotag data discussed in the manuscript (Tommasini and Fogel. BMC Bioinformatics. 2023), please refer to astrocyte_map2.Rmd.  
 
-![My Remote Image](https://berkeley.app.box.com/file/1178603177756)
+![Uploading drawmultiWGCNA.png…]()
 
 # Citation
 

@@ -96,6 +96,7 @@ To cite multiWGCNA in publications use:
 
 A BibTeX entry for LaTeX users is
 
+```
   @Article{,
     title = {multiWGCNA: an R package for deep mining gene co-expression networks in multi-trait expression data},
     author = {Dario Tommasini and Brent L. Fogel},
@@ -105,3 +106,4 @@ A BibTeX entry for LaTeX users is
     number = {1},
     pages = {115},
   }
+```

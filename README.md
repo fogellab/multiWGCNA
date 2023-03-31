@@ -41,38 +41,49 @@ multiWGCNA has been tried and tested successfully using the following dependency
 21. cowplot_1.1.1
 22. ggalluvial_0.12.3
 
-# Dependencies
-
-Imports: 
-    stringr,
-    readr,
-    WGCNA,
-    ggrepel,
-    dplyr,
-    reshape2,
-    data.table,
-    patchwork,
-    doParallel,
-    scales,
-    igraph,
-    flashClust,
-    filesstrings,
-    ggplot2,
-    biomaRt,
-    dcanr,
-    goseq,
-    limma,
-    vegan,
-    GO.db,
-    cowplot
-Depends: 
-    ggalluvial
-
-# Quick Start
+# Vignettes
 
 Please refer to the vignette, generalWorkflow.Rmd, for a detailed example of how to use multiWGCNA.
 
 For a tutorial using the astrocyte Ribotag data discussed in the manuscript (Tommasini and Fogel. BMC Bioinformatics. 2023), please refer to astrocyte_map2.Rmd.  
+
+# Quickstart
+
+Load astrocyte Ribotag data
+```
+# Load data
+data(astrocyte_networks)
+```
+Next, we compare modules (by hypergeometric overlap) across conditions. We’ll save the results in a list.
+
+```
+results = list()
+results$overlaps = iterate(myNetworks, overlapComparisons, plot=FALSE)
+
+# You can check the expression of module M13 from Tommasini and Fogel. BMC Bioinformatics. 2023 like this. Note that the values reported in the bottom panel title are p-values and not FDR-adjusted like in results$diffModExp
+diffModuleExpression(myNetworks[["combined"]], 
+                     geneList = topNGenes(myNetworks[[1]], "combined_013"), 
+                     test = "ANOVA",
+                     design = sampleTable,
+                     moduleName = "combined_013",
+                     plot = TRUE)
+```
+![My Image](images/combined_013.png)
+
+```
+drawMultiWGCNAnetwork(myNetworks, 
+                      results$overlaps, 
+                      "combined_013", 
+                      design = sampleTable, 
+                      overlapCutoff = 0, 
+                      padjCutoff = 1, 
+                      removeOutliers = T, 
+                      alpha = 1e-50, 
+                      layout = NULL, 
+                      hjust = 0.4, 
+                      vjust = 0.3, 
+                      width = 0.5)
+```
 
 ![My Image](images/drawmultiWGCNA.png)
 

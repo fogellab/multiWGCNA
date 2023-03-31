@@ -88,3 +88,20 @@ drawMultiWGCNAnetwork(myNetworks,
 ![My Image](images/drawmultiWGCNA.png)
 
 # Citation
+
+To cite multiWGCNA in publications use:
+
+  Tommasini, D, Fogel, BL (2023). multiWGCNA: an R package for deep mining gene co-expression networks in multi-trait expression data. BMC Bioinformatics, 24,
+  1:115.
+
+A BibTeX entry for LaTeX users is
+
+  @Article{,
+    title = {multiWGCNA: an R package for deep mining gene co-expression networks in multi-trait expression data},
+    author = {Dario Tommasini and Brent L. Fogel},
+    journal = {BMC Bioinformatics},
+    year = {2023},
+    volume = {24},
+    number = {1},
+    pages = {115},
+  }

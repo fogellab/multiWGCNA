@@ -29,7 +29,7 @@ preservationComparisons(
 
 \item{plot}{generate plots?}
 
-\item{write}{}
+\item{write}{write results to file?}
 
 \item{alphaLevel}{alpha level of significance for module-trait correlation}
 

@@ -2,7 +2,7 @@
 % Please edit documentation in R/generalFunctions.R
 \name{makeTraitTable}
 \alias{makeTraitTable}
-\title{generate a trait table from a design table}
+\title{Generate a trait table from a sample table}
 \usage{
 makeTraitTable(
   inputTable,
@@ -10,6 +10,13 @@ makeTraitTable(
   detectNumbers = get("detectNumbers", envir = parent.frame())
 )
 }
+\arguments{
+\item{inputTable}{the sampleTable dataframe}
+
+\item{column}{the column from the sampleTable to use as traits}
+
+\item{detectNumbers}{whether to consider traits with numbers as numerical rather than categorical variables}
+}
 \description{
-generate a trait table from a design table
+Generates a WGCNA-compatible trait table from a sampleTable dataframe
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/networks.R
 \name{drawMultiWGCNAnetwork}
 \alias{drawMultiWGCNAnetwork}
-\title{constructNetworks: Construct all the weighted gene correlation networks}
+\title{Draw multiWGCNA network}
 \usage{
 drawMultiWGCNAnetwork(
   WGCNAlist,
@@ -48,8 +48,8 @@ drawMultiWGCNAnetwork(
 \item{colors}{colors to use for modules, should be the same length as the number of WGCNA objects in the WGCNAlist. Defaults to random colors for each condition.}
 }
 \description{
-A high level function that returns all networks
-possible for a given experimental design
+Draw a network where nodes are modules and edges represent significant gene overlap. 
+Modules are sorted by levels 1, 2, and 3.
 }
 \author{
 Dario Tommasini

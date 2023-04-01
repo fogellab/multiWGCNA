@@ -24,13 +24,13 @@ constructNetworks(
 
 \item{conditions2}{second design conditions, ie frontal lobe/temporal lobe}
 
-\item{softPower}{thresholding power used for network construction}
+\item{write}{write results out to files?}
 
-\item{originalDirectory}{directory to output files, defaults to getwd()}
+\item{alphaLevel}{significance value passed to findBestTrait function, default is 0.05}
 
-\item{blockWise}{use the blockwiseModules function? default is TRUE}
+\item{plot}{plot modules? Default is false}
 
-\item{nCores}{number of cores to use for multithreaded network construction}
+\item{...}{Arguments to pass to blockwiseModules function}
 }
 \description{
 A high level function that returns all networks

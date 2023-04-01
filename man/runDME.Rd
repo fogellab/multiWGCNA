@@ -6,7 +6,7 @@
 \usage{
 runDME(
   WGCNAobject,
-  alphalevel = get("alphaLevel", envir = parent.frame()),
+  alphaLevel = get("alphaLevel", envir = parent.frame()),
   design = sampleTable,
   testCondition = NULL,
   refCondition = NULL,
@@ -20,7 +20,13 @@ runDME(
 \arguments{
 \item{WGCNAobject}{object of class WGCNA with the modules to run DME on}
 
+\item{alphaLevel}{level of significance}
+
 \item{design}{the sampleTable}
+
+\item{testCondition}{the column of the sampleTable to be resolved}
+
+\item{refCondition}{the column of the sampleTable to be used as biological variation}
 
 \item{p.adjust}{adjust for multiple comparisons, argument to pass to p.adjust function}
 
@@ -30,11 +36,7 @@ runDME(
 
 \item{write}{write results to a file?}
 
-\item{alphaLevel}{level of significance}
-
-\item{testColumn}{the column of the sampleTable to be resolved}
-
-\item{refColumn}{the column of the sampleTable to be used as biological variation}
+\item{out}{file name for DME plots, only used if write is TRUE}
 }
 \description{
 A wrapper to run diffModuleExpression on all the modules in a network

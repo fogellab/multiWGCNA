@@ -12,7 +12,7 @@ NULL
 
 #' Autism dataset metadata
 #'
-#' The metadata for the autism dataset (Voineagu et al. 2011). See ?datExpr for expression data. 
+#' The metadata for the autism dataset (Voineagu et al. 2011). See ?autism_data for expression data. 
 #'
 #'#' \itemize{
 #'   \item Sample the sample name corresponding to columns of datExpr
@@ -26,6 +26,7 @@ NULL
 #' @usage data(autism_metadata)
 #' @format A data frame with 58 rows (samples) and 3 columns (metadata)
 NULL
+
 #' Astrocyte dataset
 #'
 #' The astrocyte dataset from Itoh et al. PNAS. 2018, extracted from the supplementary materials.  
@@ -40,7 +41,7 @@ NULL
 
 #' Astrocyte dataset metadata
 #'
-#' The metadata for the autism dataset (Voineagu et al. 2011). See ?datExpr for expression data. 
+#' The metadata for the astrocyte Ribotag dataset (Itoh et al. PNAS. 2018). See ?astrocyte_data for expression data. 
 #'
 #'#' \itemize{
 #'   \item Sample the sample name corresponding to columns of datExpr
@@ -50,7 +51,19 @@ NULL
 #' 
 #' @docType data
 #' @keywords datasets
-#' @name astrocyte_data
-#' @usage data(astrocyte_data)
+#' @name astrocyte_metadata
+#' @usage data(astrocyte_metadata)
 #' @format A data frame with 36 rows (samples) and 3 columns (metadata)
+NULL
+
+#' Astrocyte networks
+#'
+#' The astrocyte networks from Tommasini and Fogel, BMC Bioinformatics, 2023. 
+#' derived from the astrocyte Ribotag data from Itoh et al. PNAS. 2018. 
+#'
+#' @docType data
+#' @keywords datasets
+#' @name astrocyte_networks
+#' @usage data(astrocyte_networks)
+#' @format A list of WGCNA objects (level 1: combined; level 2: EAE, WT; and level 3: Cbl, Ctx, Hippo, Sc)
 NULL

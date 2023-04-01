@@ -4,10 +4,10 @@
 #'
 #' @param WGCNAobject an object of class WGCNAobject
 #' @param geneList a vector of gene names to be extracted from WGCNAobject
-#' @param mode="PC1" use first principal component or averageZscore?
-#' @param legend=FALSE plot legend?
-#' @param title=NULL title of the plot
-#' @param clusterGenes=F cluster heatmap genes by hierarchical clustering?
+#' @param mode use first principal component or averageZscore?
+#' @param legend plot legend?
+#' @param title title of the plot
+#' @param clusterGenes cluster heatmap genes by hierarchical clustering?
 #'
 #' @author Dario Tommasini
 #'
@@ -65,40 +65,7 @@ moduleExpressionPlot <- function(WGCNAobject, geneList, mode="PC1", legend=FALSE
 	      			geom_hline(yintercept=0, linetype="solid", color = "black", size=0.5)
 	return(heatmap / bargraph)
 	}
-
 }
-
-
-targetCumulativeDistribution <- function(DEobject, geneList, alternative="two.sided"){
-
-	DEobject=na.omit(DEobject)
-	DEobject$inList=FALSE
-	DEobject$inList[toupper(rownames(DEobject)) %in% toupper(geneList)]=TRUE
-	#cumulativeDat=data.frame(Gene=bothDat$X, kWithin=bothDat$kWithin, inTreatment=bothDat$X %in% treatDat$X)
-	ksTestGreater=ks.test(DEobject$log2FoldChange[DEobject$inList], DEobject$log2FoldChange[!DEobject$inList], alternative="greater")
-	ksTestLess=ks.test(DEobject$log2FoldChange[DEobject$inList], DEobject$log2FoldChange[!DEobject$inList], alternative="less")
-	ksTest=ks.test(DEobject$log2FoldChange[DEobject$inList], DEobject$log2FoldChange[!DEobject$inList], alternative=alternative)
-	print(ksTest)
-
-	cumulative <- ggplot(DEobject, aes(log2FoldChange, colour=inList))+
-                stat_ecdf(geom = "step") +
-                ylab("Cumulative Fraction") +
-                xlab("Log2 fold change") +
-                xlim(-1,1)+
-                scale_color_manual(values=c("black", "red")) +
-                theme(panel.grid.major = element_blank(),legend.position="none",
-                	panel.grid.minor = element_blank(),
-                	panel.background=element_blank(),panel.border = element_rect(colour = "black", fill=NA)) +
-                #theme(plot.title = element_text(hjust = 0.5)) +
-                annotate("text", x = 0, y = 0.9, hjust=1, parse=T,
-                	label = paste0("italic(P) == ", pretty10exp(signif(ksTestGreater$p.value,1)))) +
-                annotate("text", x = 0, y = 0.2, hjust=0, parse=T,
-                	label = paste0("italic(P) == ", pretty10exp(signif(ksTestLess$p.value,1))))
-
-	cumulative
-}
-
-
 
 geneExpBarPlot <- function(datExpr, gene, clean=F, group=NULL){
 	if(clean) {
@@ -202,17 +169,18 @@ expressionHeatmap <- function(datExpr, geneList, lower=-2, upper=2, design=NULL,
 #' @param WGCNAobject object of class WGCNA with the modules to run DME on
 #' @param alphaLevel level of significance
 #' @param design the sampleTable
-#' @param testColumn the column of the sampleTable to be resolved
-#' @param refColumn the column of the sampleTable to be used as biological variation
+#' @param testCondition the column of the sampleTable to be resolved
+#' @param refCondition the column of the sampleTable to be used as biological variation
 #' @param test statistical test to perform, either "ANOVA" or "PERMANOVA"
 #' @param p.adjust adjust for multiple comparisons, argument to pass to p.adjust function
 #' @param plot generate a plot?
 #' @param write write results to a file?
+#' @param out file name for DME plots, only used if write is TRUE
 #'
 #' @author Dario Tommasini
 #'
 #' @export
-runDME <- function(WGCNAobject, alphalevel=get("alphaLevel", envir = parent.frame()), design=sampleTable, testCondition=NULL, refCondition=NULL, p.adjust="fdr", plot=FALSE, test="ANOVA", write=FALSE, out=NULL){
+runDME <- function(WGCNAobject, alphaLevel=get("alphaLevel", envir = parent.frame()), design=sampleTable, testCondition=NULL, refCondition=NULL, p.adjust="fdr", plot=FALSE, test="ANOVA", write=FALSE, out=NULL){
 	datExpr=WGCNAobject@datExpr
 	if(is.null(refCondition)) refCondition=colnames(design)[[3]]
 	if(is.null(testCondition)) testCondition=colnames(design)[[2]]
@@ -260,7 +228,6 @@ runDME <- function(WGCNAobject, alphalevel=get("alphaLevel", envir = parent.fram
 #' @import ggplot2
 #' @import WGCNA
 #' @import dplyr
-#' @import vegan
 #' @export
 diffModuleExpression <- function(WGCNAobject, geneList, moduleName=NULL, mode="PC1", design=sampleTable, testColumn=2, refColumn=3, test="ANOVA", plot=TRUE){
 	#test=design[1, testColumn], ref=design[1, refColumn]
@@ -312,7 +279,8 @@ diffModuleExpression <- function(WGCNAobject, geneList, moduleName=NULL, mode="P
 	}
 	
 	if(test=="PERMANOVA"){
-	  permanova=adonis(t(subset) ~ sampleTable[[testCondition]] + sampleTable[[refCondition]] + sampleTable[[testCondition]]*sampleTable[[refCondition]], method = "euclidean", permutations = 9999)
+	  requireNamespace("vegan", quietly = TRUE)
+	  permanova=vegan::adonis(t(subset) ~ design[[testCondition]] + design[[refCondition]] + design[[testCondition]]*design[[refCondition]], method = "euclidean", permutations = 9999)
 	  Factors=c(testCondition, refCondition, paste0(testCondition, "*", refCondition))
 	  p.value=c(permanova$aov.tab$`Pr(>F)`[1:3])
 	  pval.df=data.frame(Factors, p.value)
@@ -344,7 +312,7 @@ diffModuleExpression <- function(WGCNAobject, geneList, moduleName=NULL, mode="P
 #' @param testCondition test column in sampleTable
 #' @param refCondition reference column in sampleTable
 #' @param design the sampleTable
-#' @param alphalevel the significance level
+#' @param alphaLevel the significance level
 #'
 #' @export
 performANOVA <- function(datExpr, testCondition, refCondition, design=get("design", envir = parent.frame()), alphaLevel=get("alphaLevel", envir = parent.frame())){ #category1, category2

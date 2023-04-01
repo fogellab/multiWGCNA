@@ -18,13 +18,13 @@ moduleExpressionPlot(
 
 \item{geneList}{a vector of gene names to be extracted from WGCNAobject}
 
-\item{mode="PC1"}{use first principal component or averageZscore?}
+\item{mode}{use first principal component or averageZscore?}
 
-\item{legend=FALSE}{plot legend?}
+\item{legend}{plot legend?}
 
-\item{title=NULL}{title of the plot}
+\item{title}{title of the plot}
 
-\item{clusterGenes=F}{cluster heatmap genes by hierarchical clustering?}
+\item{clusterGenes}{cluster heatmap genes by hierarchical clustering?}
 }
 \description{
 A plotting function that returns a heatmap and barplot for a module

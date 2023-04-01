@@ -16,13 +16,6 @@ A function that converts a data.frame where row 1 is gene symbols to a
 numeric matrix where columns are genes and rows are samples for compatibility 
 with most WGCNA functions.
 }
-\examples{
-
-datExpr=data.frame(c("A", "B", "C"), matrix(sample.int(100, size=12, replace=TRUE),nrow=3,ncol=4), c("mod_1", "mod_2", "mod_1"))
-colnames(datExpr)=c("X", "sample.1", "sample.2", "sample.3", "sample.4", "dynamicLabels")
-cleanDatExpr(datExpr)
-
-}
 \author{
 Dario Tommasini
 }

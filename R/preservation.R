@@ -217,7 +217,7 @@ drawNetwork <- function(reference_set, module_number, test_set) {
 #' @param second index of second WGCNAobject
 #' @param element element position in the comparison list (passed by iterate function)
 #' @param plot generate plots?
-#' @param write 
+#' @param write write results to file? 
 #' @param alphaLevel alpha level of significance for module-trait correlation
 #' @param nPermutations number of permutations, defaults to 100
 #'
@@ -284,31 +284,27 @@ differentialPreservationPlot <- function(design=sampleTable, refColumn=3, testCo
 
 }
 
-makeTOMplot.R <- function(refDatExpr_file, testDatExpr_file, dissTOM_file, module){
-	library(WGCNA)
-	library(data.table)
-	library(flashClust)
-
-	dissTOM=fread(dissTOM_file, header=T)
-	dissTOM=dissTOM[,-1]
-	matrix=as.matrix(dissTOM)
-	refDatExpr=read.csv(refDatExpr_file, header=T)
-	testDatExpr=read.csv(testDatExpr_file, header=T)
-	rownames(matrix)=refDatExpr$X
-	colnames(matrix)=refDatExpr$X
-	genesOfInterest=testDatExpr$X[testDatExpr$dynamicLabels==module]
-	genesOfInterest=genesOfInterest[genesOfInterest %in% refDatExpr$X]
-	ColorsLeft=rep("grey",nrow(refDatExpr))
-	ColorsLeft[refDatExpr$X %in% genesOfInterest]="black"
-	#subsetDissTOM=matrix[genesOfInterest, genesOfInterest]
-	subsetDissTOM=matrix
-	dim(subsetDissTOM)
-	gc()
-	subsetGeneTree=flashClust(as.dist(subsetDissTOM), method="average")
-	png(paste0(module,"_in_", basename(dissTOM_file), "_TOMplot_all.png"), width = 3000, height = 3000)
-	TOMplot(subsetDissTOM, subsetGeneTree, Colors=refDatExpr$dynamicColors, ColorsLeft=ColorsLeft)
-	dev.off()
-}
+# makeTOMplot.R <- function(refDatExpr_file, testDatExpr_file, dissTOM_file, module){
+# 	dissTOM=fread(dissTOM_file, header=T)
+# 	dissTOM=dissTOM[,-1]
+# 	matrix=as.matrix(dissTOM)
+# 	refDatExpr=read.csv(refDatExpr_file, header=T)
+# 	testDatExpr=read.csv(testDatExpr_file, header=T)
+# 	rownames(matrix)=refDatExpr$X
+# 	colnames(matrix)=refDatExpr$X
+# 	genesOfInterest=testDatExpr$X[testDatExpr$dynamicLabels==module]
+# 	genesOfInterest=genesOfInterest[genesOfInterest %in% refDatExpr$X]
+# 	ColorsLeft=rep("grey",nrow(refDatExpr))
+# 	ColorsLeft[refDatExpr$X %in% genesOfInterest]="black"
+# 	#subsetDissTOM=matrix[genesOfInterest, genesOfInterest]
+# 	subsetDissTOM=matrix
+# 	dim(subsetDissTOM)
+# 	gc()
+# 	subsetGeneTree=flashClust(as.dist(subsetDissTOM), method="average")
+# 	png(paste0(module,"_in_", basename(dissTOM_file), "_TOMplot_all.png"), width = 3000, height = 3000)
+# 	TOMplot(subsetDissTOM, subsetGeneTree, Colors=refDatExpr$dynamicColors, ColorsLeft=ColorsLeft)
+# 	dev.off()
+# }
 
 coexpressionLineGraph <- function(datExpr, nDiseaseSamples, nWTSamples, splitBy=1, fontSize=2.15, colors=NULL){
 

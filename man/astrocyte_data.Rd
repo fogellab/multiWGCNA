@@ -6,25 +6,12 @@
 \title{Astrocyte dataset}
 \format{
 An expression data frame with 20352 rows (genes) and 37 columns (gene names + 36 samples)
-
-A data frame with 36 rows (samples) and 3 columns (metadata)
 }
 \usage{
-data(astrocyte_data)
-
 data(astrocyte_data)
 }
 \description{
 The astrocyte dataset from Itoh et al. PNAS. 2018, extracted from the supplementary materials.  
 See astrocyte_metadata for metadata.
-
-The metadata for the autism dataset (Voineagu et al. 2011). See ?datExpr for expression data.
-}
-\details{
-#' \itemize{
-  \item Sample the sample name corresponding to columns of datExpr
-  \item Status experimental autoimmune encephalitis (EAE) or wildtype (WT)
-  \item Tissue cerebellum (Cbl), cortex (Ctx), hippocampus (Hippo), or spinal cord (Sc)
-}
 }
 \keyword{datasets}

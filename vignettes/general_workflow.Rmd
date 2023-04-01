@@ -98,8 +98,9 @@ results$diffModExp = runDME(myNetworks[["combined"]],
                             testCondition="Status") 
                             # plot=TRUE, 
                             # out="ANOVA_DME.pdf")
-
+2
 # to run PERMANNOVA
+# library(vegan)
 # results$diffModExp = runDME(myNetworks[["combined"]], p.adjust="fdr", refCondition="Tissue", 
 #                          testCondition="Status", plot=TRUE, test="PERMANOVA", out="PERMANOVA_DME.pdf")
 
@@ -134,7 +135,7 @@ results$preservation=iterate(myNetworks[conditions1], # change to conditions2 to
                              nPermutations=20)
 ```
 
-Step 6: Summarize interesting results from the analyses, namely non-preserved trait-associated modules and differentially expressed modules. 
+Step 6: Summarize interesting results from the analyses, namely differentially preserved trait-associated modules and differentially expressed modules. 
 
 ```{r}
 # Print a summary of the results

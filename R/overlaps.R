@@ -4,14 +4,11 @@
 #'
 #' @param dataset1 an object of class WGCNA to compare with dataset2
 #' @param dataset2 an object of class WGCNA to compare with dataset1
-#' @param convertSymbols1 convert symbols for first WGCNA
-#' @param convertSymbols2 convert symbols for second WGCNA
 #' @author Dario Tommasini
 #'
-#' @importFrom biomaRt select
 #' @import stringr
 #' @export
-computeOverlapsFromWGCNA <- function(dataset1, dataset2, convertSymbols1=F, convertSymbols2=F) {
+computeOverlapsFromWGCNA <- function(dataset1, dataset2) {
 	datExpr1= dataset1@datExpr
 	datExpr2= dataset2@datExpr
 	treatDat <- datExpr1
@@ -26,29 +23,29 @@ computeOverlapsFromWGCNA <- function(dataset1, dataset2, convertSymbols1=F, conv
 	pval=list()
 	element=1
 
-	if(convertSymbols1 | convertSymbols2){
-		human <- useMart("ensembl", dataset = "hsapiens_gene_ensembl", host = "https://dec2021.archive.ensembl.org/")
-		mouse <- useMart("ensembl", dataset = "mmusculus_gene_ensembl", host = "https://dec2021.archive.ensembl.org/")
-	}
+	# if(convertSymbols1 | convertSymbols2){
+	# 	human <- useMart("ensembl", dataset = "hsapiens_gene_ensembl", host = "https://dec2021.archive.ensembl.org/")
+	# 	mouse <- useMart("ensembl", dataset = "mmusculus_gene_ensembl", host = "https://dec2021.archive.ensembl.org/")
+	# }
 
 	for(treatment in sort(unique(treatDat$dynamicLabels))){
 	        for(control in sort(unique(controlDat$dynamicLabels))){
 	                mod1[[element]]=treatment
 	                mod2[[element]]=control
-	                if(convertSymbols1){
+	                # if(convertSymbols1){
+	                # 	mod1Genes=toupper(treatDat$X[treatDat$dynamicLabels==treatment])
+	                # 	mod1Genes=toupper(unique(getLDS(attributes = c("hgnc_symbol"), filters = "hgnc_symbol", values = mod1Genes,
+	                # 		mart = human, attributesL = c("mgi_symbol"), martL = mouse, uniqueRows=T)$MGI.symbol))
+	                # } else {
 	                	mod1Genes=toupper(treatDat$X[treatDat$dynamicLabels==treatment])
-	                	mod1Genes=toupper(unique(getLDS(attributes = c("hgnc_symbol"), filters = "hgnc_symbol", values = mod1Genes,
-	                		mart = human, attributesL = c("mgi_symbol"), martL = mouse, uniqueRows=T)$MGI.symbol))
-	                } else {
-	                	mod1Genes=toupper(treatDat$X[treatDat$dynamicLabels==treatment])
-	                }
-	                if(convertSymbols2){
-	                		mod2Genes=toupper(controlDat$X[controlDat$dynamicLabels==control])
-	                		mod2Genes=toupper(unique(getLDS(attributes = c("hgnc_symbol"), filters = "hgnc_symbol", values = mod2Genes,
-	                			mart = human, attributesL = c("mgi_symbol"), martL = mouse, uniqueRows=T)$MGI.symbol))
-	                } else {
+	                # }
+	                # if(convertSymbols2){
+	                # 		mod2Genes=toupper(controlDat$X[controlDat$dynamicLabels==control])
+	                # 		mod2Genes=toupper(unique(getLDS(attributes = c("hgnc_symbol"), filters = "hgnc_symbol", values = mod2Genes,
+	                # 			mart = human, attributesL = c("mgi_symbol"), martL = mouse, uniqueRows=T)$MGI.symbol))
+	                # } else {
 	                	mod2Genes=toupper(controlDat$X[controlDat$dynamicLabels==control])
-	                }
+	                # }
 	                mod1_size[[element]]=length(mod1Genes)
 			mod2_size[[element]]=length(mod2Genes)
 			genes[[element]]=length(intersect(mod1Genes, mod2Genes))
@@ -61,9 +58,13 @@ computeOverlapsFromWGCNA <- function(dataset1, dataset2, convertSymbols1=F, conv
 	                element=element+1
 	        }
 	}
-	data.frame(mod1=unlist(mod1), mod2=unlist(mod2), mod1.size=unlist(mod1_size),
-		   	mod2.size=unlist(mod2_size), overlap=unlist(genes),
-			p.value=unlist(pval), p.adj=unlist(p.adjust(pval, method='fdr')))
+	data.frame(mod1=unlist(mod1), 
+	           mod2=unlist(mod2),
+	           mod1.size=unlist(mod1_size),
+		   	     mod2.size=unlist(mod2_size), 
+		   	     overlap=unlist(genes),
+			       p.value=unlist(pval), 
+			       p.adj=unlist(p.adjust(pval, method='fdr')))
 }
 
 #' Plots an expression profile for a module
@@ -79,8 +80,7 @@ computeOverlapsFromWGCNA <- function(dataset1, dataset2, convertSymbols1=F, conv
 #' @import ggplot2
 #' @import ggalluvial
 #' @import stringr
-#' @import ggrepel
-#' @import cowplot
+#' @importFrom cowplot plot_grid
 #' @export
 moduleComparisonPlot <- function(overlapDf, dataset1, dataset2) {
 	data=overlapDf
@@ -116,7 +116,6 @@ moduleComparisonPlot <- function(overlapDf, dataset1, dataset2) {
 	# print(ggarrange(flowPlot, heatmap, nrow=1, ncol=2, widths=c(1,2.5)))
 	print(plot_grid(flowPlot, heatmap, labels = "AUTO", rel_widths = c(1, 2.5)))
 }
-
 
 #for study of module member allocation over a continuous trait ie time
 continuousFlowPlot <- function(WGCNAlist){
@@ -270,9 +269,7 @@ moduleToModuleHeatmap <- function(comparisonDf, dataset1=NULL, dataset2=NULL, tr
 					axis.ticks=element_blank(), legend.key.size=unit(4, "mm")) +
 				#geom_fit_text(reflow = TRUE)+
 				coord_fixed()
-
 }
-
 
 #' Best matching modules
 #'

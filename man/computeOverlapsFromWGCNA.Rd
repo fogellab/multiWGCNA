@@ -4,21 +4,12 @@
 \alias{computeOverlapsFromWGCNA}
 \title{computeOverlapsFromWGCNA}
 \usage{
-computeOverlapsFromWGCNA(
-  dataset1,
-  dataset2,
-  convertSymbols1 = F,
-  convertSymbols2 = F
-)
+computeOverlapsFromWGCNA(dataset1, dataset2)
 }
 \arguments{
 \item{dataset1}{an object of class WGCNA to compare with dataset2}
 
 \item{dataset2}{an object of class WGCNA to compare with dataset1}
-
-\item{convertSymbols1}{convert symbols for first WGCNA}
-
-\item{convertSymbols2}{convert symbols for second WGCNA}
 }
 \description{
 Computes overlap between the modules of two objects of class WGCNA

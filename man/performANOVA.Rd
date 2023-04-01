@@ -21,7 +21,7 @@ performANOVA(
 
 \item{design}{the sampleTable}
 
-\item{alphalevel}{the significance level}
+\item{alphaLevel}{the significance level}
 }
 \description{
 Test association between module expression to traits using ANOVA

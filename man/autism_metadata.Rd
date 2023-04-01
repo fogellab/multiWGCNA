@@ -11,7 +11,7 @@ A data frame with 58 rows (samples) and 3 columns (metadata)
 data(autism_metadata)
 }
 \description{
-The metadata for the autism dataset (Voineagu et al. 2011). See ?datExpr for expression data.
+The metadata for the autism dataset (Voineagu et al. 2011). See ?autism_data for expression data.
 }
 \details{
 #' \itemize{

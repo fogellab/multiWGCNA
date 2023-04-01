@@ -159,8 +159,14 @@ removeOutlierModules <- function(WGCNAobject, outlierModules=NULL){
 	WGCNAobject
 }
 
-
-#' generate a trait table from a design table
+#' Generate a trait table from a sample table
+#' 
+#' Generates a WGCNA-compatible trait table from a sampleTable dataframe
+#' 
+#' @param inputTable the sampleTable dataframe
+#' @param column the column from the sampleTable to use as traits
+#' @param detectNumbers whether to consider traits with numbers as numerical rather than categorical variables
+#' 
 #' @export
 makeTraitTable <- function(inputTable, column, detectNumbers=get("detectNumbers", envir = parent.frame())) {
 	traits=unique(inputTable[,column])
@@ -292,4 +298,9 @@ iterate <- function(WGCNAlist, FUN, ...){
 	comparisonList
 }
 
-
+#' @importFrom graphics legend
+#' @importFrom methods new
+#' @importFrom stats IQR anova dist ks.test lm na.omit p.adjust phyper prcomp quantile runif sd t.test var
+#' @importFrom grDevices dev.off pdf rgb
+#' @importFrom utils head read.csv write.csv write.table
+NULL

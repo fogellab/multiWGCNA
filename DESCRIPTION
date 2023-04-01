@@ -4,14 +4,15 @@ Title: multiWGCNA
 Version: 1.0.0
 Author: Dario Tommasini
 Maintainer: Dario Tommasini <dtommasini@berkeley.edu>
-Description: an R package for deeping mining gene co-expression networks in multi-trait expression data
+Description: An R package for deeping mining gene co-expression networks in multi-trait expression data.
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
 Suggests: 
     knitr,
     markdown,
-    rmarkdown
+    rmarkdown,
+    vegan
 VignetteBuilder: knitr
 RoxygenNote: 7.1.2
 biocViews:
@@ -19,7 +20,6 @@ Imports:
     stringr,
     readr,
     WGCNA,
-    ggrepel,
     dplyr,
     reshape2,
     data.table,
@@ -28,15 +28,11 @@ Imports:
     scales,
     igraph,
     flashClust,
-    filesstrings,
     ggplot2,
-    biomaRt,
     dcanr,
-    goseq,
-    limma,
-    vegan,
-    GO.db,
-    cowplot
+    cowplot,
+    ggrepel,
+    methods
 Depends: 
-    R (>= 2.10),
+    R (>= 3.5.0),
     ggalluvial

@@ -1,5 +1,7 @@
 # multiWGCNA: an R package for deep mining gene co-expression networks in multi-trait expression data
 
+The multiWGCNA R package can be applied to expression data with two dimensions, which is especially useful for the study of disease-associated modules across time or space. The multiWGCNA paper is available at https://doi.org/10.1186/s12859-023-05233-z. 
+
 # Installation 
 The multiWGCNA R package can be installed from GitHub like this: 
 ```

@@ -276,7 +276,6 @@ moduleToModuleHeatmap <- function(comparisonDf, dataset1=NULL, dataset2=NULL, tr
 #' Find all the modules from dataset1 that have a best match to a module in dataset2
 #' if that module in dataset2 is also a best match to the module in dataset1
 #'
-#'
 #' @param overlapDf a data.frame resulting from a call to computeOverlapsFromWGCNA
 #' @param plot generate a heatmap of best matching modules?
 #'

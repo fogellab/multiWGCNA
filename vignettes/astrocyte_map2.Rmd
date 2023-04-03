@@ -66,6 +66,7 @@ This step takes a while, so we also provide the WGCNA object list (myNetworks) i
 ```{r}
 # Load data
 data(astrocyte_networks)
+myNetworks = astrocyte_networks1
 
 # Check one of the WGCNA objects
 myNetworks[["combined"]]

@@ -51,10 +51,24 @@ For a tutorial using the astrocyte Ribotag data discussed in the manuscript (Tom
 
 # Quickstart
 
+Load multiWGCNA package
+```
+library(multiWGCNA)
+```
+
 Load astrocyte Ribotag data
 ```
 # Load data
+data(astrocyte_data)
+data(astrocyte_metadata)
+
+datExpr = astrocyte_data
+sampleTable = astrocyte_metadata
+
+# To save time, load pre-computed networks 
 data(astrocyte_networks)
+
+myNetworks = astrocyte_networks
 ```
 Next, we compare modules (by hypergeometric overlap) across conditions. We’ll save the results in a list.
 

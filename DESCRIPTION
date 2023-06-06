@@ -14,7 +14,7 @@ Suggests:
     rmarkdown,
     vegan
 VignetteBuilder: knitr
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.3
 biocViews:
 Imports: 
     stringr,
@@ -32,7 +32,8 @@ Imports:
     dcanr,
     cowplot,
     ggrepel,
-    methods
+    methods,
+    SummarizedExperiment
 Depends: 
     R (>= 3.5.0),
     ggalluvial

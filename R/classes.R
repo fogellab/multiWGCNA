@@ -1,4 +1,8 @@
-setClass("WGCNA", slots=list(datExpr="data.frame", conditions="data.frame", trait="data.frame", moduleEigengenes="data.frame", outlierModules="vector"))
+setClass("WGCNA", slots=list(datExpr="data.frame", 
+                             conditions="data.frame", 
+                             trait="data.frame", 
+                             moduleEigengenes="data.frame", 
+                             outlierModules="vector"))
 
 setMethod("show", "WGCNA", function(object) {
 		cat("##### datExpr #####\n")
@@ -21,5 +25,4 @@ setMethod("show", "WGCNA", function(object) {
 		}
 	}
 )
-
 

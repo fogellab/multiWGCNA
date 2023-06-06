@@ -1,6 +1,9 @@
 performWGCNA <- function(datExpr, traitData, identifier, alphaLevel=0.05, write=FALSE, plot=FALSE, ...){
   arguments=list(...)
   
+  # Set network type to WGCNA's default unsigned if not defined in constructNetworks function
+  if(is.null(arguments$networkType)) arguments$networkType = "unsigned"
+  
   datExpr = t(cleanDatExpr(datExpr, checkGenesSamples = T))
   my_net = blockwiseModules(t(datExpr), ...)
   degrees1=intramodularConnectivity.fromExpr(t(datExpr), my_net$colors,
@@ -128,9 +131,15 @@ plotModules <- function(WGCNAobject, mode="PC1"){
 #' @import readr
 #' @import WGCNA
 #' @import flashClust
+#' @import SummarizedExperiment
 #' @export
 constructNetworks <- function(datExpr, sampleTable, conditions1, conditions2, write=FALSE, alphaLevel=0.05, plot=FALSE, ...){
 
+  # Put data in expected format
+  datExpr = data.frame(X = rownames(assays(datExpr)[[1]]), assays(datExpr)[[1]])
+  # colnames(datExpr)[[1]] = "X"
+  # datExpr = as.data.frame(datExpr)
+  
 	conditions1TraitTable=makeTraitTable(sampleTable, 3) #subset by conditions1, resolve conditions2
 	conditions2TraitTable=makeTraitTable(sampleTable, 2) #subset by conditions2, resolve conditions1
 	combinedTraitTable=cbind(conditions1TraitTable, conditions2TraitTable[,-1])
@@ -143,7 +152,7 @@ constructNetworks <- function(datExpr, sampleTable, conditions1, conditions2, wr
 	myNetworks = append(myNetworks, performWGCNA(datExpr, combinedTraitTable, "combined", alphaLevel = alphaLevel, plot = plot, ...))
 	if(write) setwd("..")
 	
-	#first dimension
+	# first dimension
 	for(trait in unique(conditions1)){
 	  if(write) {
 	    dir.create(trait)
@@ -153,7 +162,7 @@ constructNetworks <- function(datExpr, sampleTable, conditions1, conditions2, wr
 		if(write) setwd("..")
 	}
 
-	#second dimension
+	# second dimension
 	for(trait in unique(conditions2)){
 	  if(write) {
 	    dir.create(trait)

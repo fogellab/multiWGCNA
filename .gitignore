@@ -1,9 +1,11 @@
-.Rproj.user
-.Rhistory
-.RData
-.Ruserdata
-inst/doc
-.Rproj
 /doc/
 /Meta/
+*.o
+*.so
+*.rda
+*.RData
 .DS_Store
+.Rproj.user
+.Rbuildignore
+.Rhistory
+multiWGCNA.Rproj

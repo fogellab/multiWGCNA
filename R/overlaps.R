@@ -253,7 +253,7 @@ moduleToModuleHeatmap <- function(comparisonDf, dataset1=NULL, dataset2=NULL, tr
 	comparisonDf$mod2=gsub("_"," ", gsub("^0+", "", str_split_fixed(comparisonDf$mod2,"_",2)[,2]))
 
 	ggplot(comparisonDf, aes(x = factor(mod1, levels=(unique(mod1))),
- 				y = factor(mod2, levels=rev(unique(mod2))),
+	                         y = factor(mod2, levels=rev(unique(mod2))),
  				fill = (-log10(p.adj)), label = overlap)) +
 				geom_tile(color = "black") +
 				scale_fill_gradient(name="-log10(FDR)", low = "white",
@@ -263,8 +263,9 @@ moduleToModuleHeatmap <- function(comparisonDf, dataset1=NULL, dataset2=NULL, tr
 				geom_text(aes(label = overlap), color = "black", size=2) +
 				labs(x=columns, y=rows) +
 				theme_classic()+
-				theme(axis.text.x = element_text(angle = 90, hjust=1, vjust=(0.5)),
-					axis.text.y = element_text(hjust=1),
+	      ggtitle("All matches") +
+				theme(axis.text.x = element_text(angle = 0, hjust=(0.5)), #angle = 90, hjust=1, vjust=(0.5)),
+					axis.text.y = element_text(hjust=1), plot.title = element_text(hjust = 0.5),
 					panel.background=element_blank(), axis.line=element_blank(),
 					axis.ticks=element_blank(), legend.key.size=unit(4, "mm")) +
 				#geom_fit_text(reflow = TRUE)+
@@ -282,6 +283,7 @@ moduleToModuleHeatmap <- function(comparisonDf, dataset1=NULL, dataset2=NULL, tr
 #' @author Dario Tommasini
 #'
 #' @import ggplot2
+#' @import stringr
 #' @import dplyr
 #' @export
 bidirectionalBestMatches <- function(overlapDf, plot=TRUE){
@@ -314,18 +316,26 @@ bidirectionalBestMatches <- function(overlapDf, plot=TRUE){
 	subset_padj_matrix=padj_matrix[bestMatchesSorted$mod2,bestMatchesSorted$mod1]
 	subsetComparisonDf=comparison$overlap[comparison$overlap$mod1 %in% bestMatches$mod1 &
 											comparison$overlap$mod2 %in% bestMatches$mod2,]
+	# subsetComparisonDf$mod1=gsub("^0+", "", subsetComparisonDf$mod1,"_",2)
+	# subsetComparisonDf$mod2=gsub("^0+", "", subsetComparisonDf$mod2,"_",2)
 	if(plot) {
-		print(ggplot(subsetComparisonDf, aes(x = factor(mod1, levels=colnames(subset_padj_matrix)),
- 				y = factor(mod2, levels=rev(rownames(subset_padj_matrix))),
+		print(ggplot(subsetComparisonDf, 
+		             aes(x = factor(mod1, levels=bestMatchesSorted$mod1),
+		                y = factor(mod2, levels=rev(bestMatchesSorted$mod2)),
  				fill = (-log10(p.adj)))) +
 				geom_tile(color = "black") +
+			  scale_x_discrete(labels = function(x) gsub("^0+", "", x))+
+				scale_y_discrete(labels = function(x) gsub("^0+", "", x))+
 				scale_fill_gradient(name="-log10(FDR)", low = "white",
 				                      high = "red", na.value="red", #limits=c(0, 50),
 				                      guide = guide_colorbar(frame.colour = "black", frame.linewidth = 0.5,
 				                                             ticks.linewidth = 0.5, ticks.colour = "black")) +
 				geom_text(aes(label = overlap), color = "black") +
 				labs(x=name1, y=name2) +
-				theme(axis.text.x = element_text(angle = 90, vjust=(0.5)), panel.background=element_blank())+
+			  ggtitle("Best matches") +
+				theme(axis.text.x = element_text(angle = 0, hjust=(0.5)), 
+				      panel.background=element_blank(),
+				      plot.title = element_text(hjust = 0.5))+
 				coord_fixed())
 	}
 	colnames(bestMatchesSorted)=c(name1, name2, "p.adj")

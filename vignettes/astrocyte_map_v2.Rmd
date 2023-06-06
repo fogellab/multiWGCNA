@@ -23,15 +23,19 @@ library(multiWGCNA)
 In this vignette, we will be showing how users can draw a multiWGCNA network (Figure 2C from Tommasini and Fogel. BMC Bioinformatics. 2023.), which highlights the presence or absence of a biological network in the different conditions of their experiment. We will be using the astrocyte Ribotag data from Itoh et al. PNAS. 2018 (https://doi.org/10.1073/pnas.1716032115). This data comes with the multiWGCNA package and can be accessed as shown below. 
 
 ```{r}
-# Load expression matrix and metadata
-data(astrocyte_data)
-data(astrocyte_metadata)
+# Download data from the ExperimentHub
+library(ExperimentHub)
+eh = ExperimentHub()
 
-datExpr = astrocyte_data
-sampleTable = astrocyte_metadata
+# Note: this requires the SummarizedExperiment package to be installed
+eh_query = query(eh, c("multiWGCNAdata"))
+astrocyte_se = eh_query[["EH8223"]]
+
+# Collect the metadata in the sampleTable
+sampleTable = colData(astrocyte_se)
 
 # Check the data
-datExpr[1:5,1:5]
+assays(astrocyte_se)[[1]][1:5, 1:5]
 sampleTable
 
 # Set the alpha level for statistical analyses and the soft power for network construction
@@ -43,7 +47,7 @@ softPower = 12
 detectNumbers = FALSE
 ```
 
-We now perform network construction, module eigengene calculation, module-trait correlation. Let's use power = 12 since we used this in our manuscript (Tommasini and Fogel. BMC Bioinformatics. 2023.) for all the networks. 
+We now perform network construction, module eigengene calculation, module-trait correlation. Let's use power = 12 since we used this in our paper (Tommasini and Fogel. BMC Bioinformatics. 2023.) for all the networks. 
 
 ```{r, eval = FALSE}
 # Define our conditions for trait 1 (disease) and 2 (brain region)

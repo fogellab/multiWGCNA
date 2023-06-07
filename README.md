@@ -84,7 +84,6 @@ diffModuleExpression(myNetworks[["combined"]],
                      moduleName = "combined_013",
                      plot = TRUE)
 ```
-![My Image](images/combined_013.png)
 
 ```
 drawMultiWGCNAnetwork(myNetworks, 
@@ -101,7 +100,6 @@ drawMultiWGCNAnetwork(myNetworks,
                       width = 0.5)
 ```
 
-![My Image](images/drawmultiWGCNA.png)
 
 # Citation
 

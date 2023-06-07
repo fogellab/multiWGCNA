@@ -58,16 +58,15 @@ library(multiWGCNA)
 
 Load astrocyte Ribotag data
 ```
-# Load data
-data(astrocyte_data)
-data(astrocyte_metadata)
+# Loading data from the ExperimentHub
+library(ExperimentHub)
+eh = ExperimentHub()
+eh_query = query(eh, c("multiWGCNAdata"))
+astrocyte_se = eh_query[["EH8223"]]
+sampleTable = colData(astrocyte_se)
 
-datExpr = astrocyte_data
-sampleTable = astrocyte_metadata
-
-# To save time, load pre-computed networks 
-data(astrocyte_networks)
-
+# Load pre-computed networks 
+astrocyte_networks = eh_query[["EH8222"]]
 myNetworks = astrocyte_networks
 ```
 Next, we compare modules (by hypergeometric overlap) across conditions. We’ll save the results in a list.
@@ -84,6 +83,8 @@ diffModuleExpression(myNetworks[["combined"]],
                      moduleName = "combined_013",
                      plot = TRUE)
 ```
+
+We can visualize the networks corresponding to cM13 by calling this function:
 
 ```
 drawMultiWGCNAnetwork(myNetworks, 

@@ -4,10 +4,19 @@
 #'
 #' @param dataset1 an object of class WGCNA to compare with dataset2
 #' @param dataset2 an object of class WGCNA to compare with dataset1
+#' 
 #' @author Dario Tommasini
 #'
 #' @import stringr
 #' @export
+#' 
+#' @examples
+#' library(ExperimentHub)
+#' eh = ExperimentHub()
+#' eh_query = query(eh, c("multiWGCNAdata"))
+#' astrocyte_networks = eh_query[["EH8222"]]
+#' computeOverlapsFromWGCNA(astrocyte_networks$EAE, astrocyte_networks$WT)
+#' 
 computeOverlapsFromWGCNA <- function(dataset1, dataset2) {
 	datExpr1= dataset1@datExpr
 	datExpr2= dataset2@datExpr
@@ -67,7 +76,7 @@ computeOverlapsFromWGCNA <- function(dataset1, dataset2) {
 			       p.adj=unlist(p.adjust(pval, method='fdr')))
 }
 
-#' Plots an expression profile for a module
+#' Module comparison plot
 #'
 #' A plotting function that returns a heatmap and barplot for a module
 #'
@@ -82,6 +91,15 @@ computeOverlapsFromWGCNA <- function(dataset1, dataset2) {
 #' @import stringr
 #' @importFrom cowplot plot_grid
 #' @export
+#' 
+#' @examples
+#' library(ExperimentHub)
+#' eh = ExperimentHub()
+#' eh_query = query(eh, c("multiWGCNAdata"))
+#' astrocyte_networks = eh_query[["EH8222"]]
+#' overlapDf = computeOverlapsFromWGCNA(astrocyte_networks$EAE, astrocyte_networks$WT)
+#' moduleComparisonPlot(overlapDf, astrocyte_networks$EAE, astrocyte_networks$WT)
+#' 
 moduleComparisonPlot <- function(overlapDf, dataset1, dataset2) {
 	data=overlapDf
 	name1=str_split_fixed(data$mod1,"_",2)[,1][[1]]
@@ -114,7 +132,9 @@ moduleComparisonPlot <- function(overlapDf, dataset1, dataset2) {
  		scale_x_discrete(expand=c(0,0), limits = c("Mod1", "Mod2"), labels=c(name1,name2))
   
 	# print(ggarrange(flowPlot, heatmap, nrow=1, ncol=2, widths=c(1,2.5)))
-	print(plot_grid(flowPlot, heatmap, labels = "AUTO", rel_widths = c(1, 2.5)))
+	plot = plot_grid(flowPlot, heatmap, labels = "AUTO", rel_widths = c(1, 2.5))
+	
+	return(plot)
 }
 
 #for study of module member allocation over a continuous trait ie time

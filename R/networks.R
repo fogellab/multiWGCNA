@@ -118,16 +118,6 @@ drawMultiWGCNAnetwork <- function(WGCNAlist, comparisonList, moduleOfInterest, d
   return(plot)
 }
 
-estimateTOM <- function(datExpr, geneList, softPower=12){
-	filteredDatExpr=datExpr[datExpr$X %in% geneList,]
-	cleanDatExpr=cleanDatExpr(filteredDatExpr)
-	adjacency = adjacency(cleanDatExpr, power=softPower, type="signed");
-	TOM = TOMsimilarity(adjacency);
-	dimnames(TOM)=dimnames(adjacency)
-	TOM[TOM==1]=0
-	TOM
-}
-
 #draw a basic network
 drawNetwork <- function(matrix, threshold=0, nodeList=NULL, edgeList=NULL, layout=layout_with_fr, removeFreeNodes=TRUE){
 	graph=graph_from_adjacency_matrix(matrix, mode="undirected", weighted=TRUE)

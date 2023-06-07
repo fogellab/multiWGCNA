@@ -104,7 +104,6 @@ expressionHeatmap <- function(datExpr, geneList, lower=-2, upper=2, design=NULL,
 #'
 #' A wrapper to run diffModuleExpression on all the modules in a network
 #'
-#'
 #' @param WGCNAobject object of class WGCNA with the modules to run DME on
 #' @param alphaLevel level of significance
 #' @param design the sampleTable

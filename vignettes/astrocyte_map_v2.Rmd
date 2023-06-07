@@ -68,9 +68,8 @@ myNetworks = constructNetworks(datExpr, sampleTable, conditions1, conditions2,
 This step takes a while, so we also provide the WGCNA object list (myNetworks) in a loadable format. These were generated from the function above. 
 
 ```{r}
-# Load data
-data(astrocyte_networks)
-myNetworks = astrocyte_networks
+# Load pre-computed astrocyte networks
+myNetworks = eh_query[["EH8222"]] 
 
 # Check one of the WGCNA objects
 myNetworks[["combined"]]
@@ -101,7 +100,7 @@ results$diffModExp = runDME(myNetworks[["combined"]],
 # Check results sorted by disease association FDR
 results$diffModExp[order(results$diffModExp$Disease),]
 
-# You can check the expression of module M13 from Tommasini and Fogel. BMC Bioinformatics. 2023 like this. Note that the values reported in the bottom panel title are p-values and not FDR-adjusted like in results$diffModExp
+# You can check the expression of module M13 from Tommasini and Fogel. BMC Bioinformatics. 2023 like this. Note that the values reported in the bottom panel title are p-values and not adjusted for multiple comparisons like in results$diffModExp
 diffModuleExpression(myNetworks[["combined"]], 
                      geneList = topNGenes(myNetworks[[1]], "combined_013"), 
                      test = "ANOVA",
@@ -133,3 +132,6 @@ We see that M13 is really only present in the EAE network, but not any of the ot
 
 Typically, you would want to follow this up with a preservation analysis between EAE and WT (described in general_workflow.Rmd). Then, one can perform a permutation procedure that estimates the probability of observing a disease/wildtype module with this preservation score in the wildtype/disease setting (diseasePreservationPtest). Please see Tommasini and Fogel. BMC Bioinformatics. 2023. for more details. 
 
+```{r}
+sessionInfo()
+```

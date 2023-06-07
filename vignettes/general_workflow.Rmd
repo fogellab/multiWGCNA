@@ -108,7 +108,7 @@ results$diffModExp = runDME(myNetworks[["combined"]],
 # results$diffModExp = runDME(myNetworks[["combined"]], p.adjust="fdr", refCondition="Tissue", 
 #                          testCondition="Status", plot=TRUE, test="PERMANOVA", out="PERMANOVA_DME.pdf")
 
-# Check FDR-adjusted associations to the two sample traits
+# Check adjusted p-values for the two sample traits
 results$diffModExp
 
 # You can check the expression of a specific module like this. Note that the values reported in the bottom panel title are p-values and not FDR-adjusted like in results$diffModExp
@@ -145,3 +145,8 @@ Step 6: Summarize interesting results from the analyses, namely differentially p
 # Print a summary of the results
 summarizeResults(myNetworks, results)
 ```
+
+```{r}
+sessionInfo()
+```
+

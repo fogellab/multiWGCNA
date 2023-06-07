@@ -2,7 +2,7 @@
 % Please edit documentation in R/overlaps.R
 \name{moduleComparisonPlot}
 \alias{moduleComparisonPlot}
-\title{Plots an expression profile for a module}
+\title{Module comparison plot}
 \usage{
 moduleComparisonPlot(overlapDf, dataset1, dataset2)
 }
@@ -15,6 +15,15 @@ moduleComparisonPlot(overlapDf, dataset1, dataset2)
 }
 \description{
 A plotting function that returns a heatmap and barplot for a module
+}
+\examples{
+library(ExperimentHub)
+eh = ExperimentHub()
+eh_query = query(eh, c("multiWGCNAdata"))
+astrocyte_networks = eh_query[["EH8222"]]
+overlapDf = computeOverlapsFromWGCNA(astrocyte_networks$EAE, astrocyte_networks$WT)
+moduleComparisonPlot(overlapDf, astrocyte_networks$EAE, astrocyte_networks$WT)
+
 }
 \author{
 Dario Tommasini

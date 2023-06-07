@@ -14,6 +14,14 @@ computeOverlapsFromWGCNA(dataset1, dataset2)
 \description{
 Computes overlap between the modules of two objects of class WGCNA
 }
+\examples{
+library(ExperimentHub)
+eh = ExperimentHub()
+eh_query = query(eh, c("multiWGCNAdata"))
+astrocyte_networks = eh_query[["EH8222"]]
+computeOverlapsFromWGCNA(astrocyte_networks$EAE, astrocyte_networks$WT)
+
+}
 \author{
 Dario Tommasini
 }

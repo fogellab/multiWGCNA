@@ -87,68 +87,6 @@ addWGCNA <- function(FUN){
 	dimensionTwoWGCNAs= lapply(dimensionTwoWGCNAs, FUN)
 }
 
-loadMultiWGCNA <- function(expressionFile, traitFile, softPower, alphaLevel){
-	sourceFiles()
-	loadDependencies()
-	datExpr <<- read.csv(expressionFile, header=T)
-	sampleTable <<- read.csv(traitFile, header=T)
-	alphaLevel <<- alphaLevel
-	firstDimension <<- unique(sampleTable[,2])
-	secondDimension <<- unique(sampleTable[,3])
-	mixedWGCNA=new("WGCNA",
-				datExpr=read.csv("Mixed/ModuleSummary/Mixed_datExpr2_ksummary_dynamiccolors_dynamiclabels.csv"),
-				trait=read.csv("Mixed/Traits/Mixed_heatmap_modulelabelsTraitCor.csv"))
-
-	dimensionOneWGCNAs=list()
-	for(element in 1:length(firstDimension)){
-		dimensionOneWGCNAs[[element]]=new("WGCNA",
-			datExpr=read.csv(paste0(firstDimension[[element]],
-				"/ModuleSummary/",
-				firstDimension[[element]],
-				"_datExpr2_ksummary_dynamiccolors_dynamiclabels.csv"),
-				header=T),
-			trait=read.csv(paste0(firstDimension[[element]],
-				"/Traits/",
-				firstDimension[[element]],
-				"_heatmap_modulelabelsTraitCor.csv"),
-				header=T))
-	}
-	names(dimensionOneWGCNAs)=firstDimension
-
-	dimensionTwoWGCNAs=list()
-	for(element in 1:length(secondDimension)){
-		dimensionTwoWGCNAs[[element]]=new("WGCNA",
-			datExpr=read.csv(paste0(secondDimension[[element]],
-				"/ModuleSummary/",
-				secondDimension[[element]],
-				"_datExpr2_ksummary_dynamiccolors_dynamiclabels.csv"),
-				header=T),
-			trait=read.csv(paste0(secondDimension[[element]],
-				"/Traits/",
-				secondDimension[[element]],
-				"_heatmap_modulelabelsTraitCor.csv"),
-				header=T))
-	}
-	names(dimensionTwoWGCNAs)=secondDimension
-
-	mixedWGCNA <- prepareWGCNA(mixedWGCNA)
-	dimensionOneWGCNAs <- lapply(dimensionOneWGCNAs, prepareWGCNA)
-	dimensionTwoWGCNAs <- lapply(dimensionTwoWGCNAs, prepareWGCNA)
-
-	mixedWGCNA <<- mixedWGCNA
-	dimensionOneWGCNAs <<- dimensionOneWGCNAs
-	dimensionTwoWGCNAs <<- dimensionTwoWGCNAs
-
-	allWGCNAlist <<- c(mix=mixedWGCNA, dimensionOneWGCNAs, dimensionTwoWGCNAs)
-
-	firstDimensionComparisons=list()
-	firstDimensionComparisons <<- iterate(firstDimensionComparisons, dimensionOneWGCNAs, overlapComparisons, plot=F)
-	secondDimensionComparisons=list()
-	secondDimensionComparisons <<- iterate(secondDimensionComparisons, dimensionTwoWGCNAs, overlapComparisons, plot=F)
-	allOverlapComparisons=list()
-	allOverlapComparisons <<- iterate(allOverlapComparisons, allWGCNAlist, overlapComparisons, plot=F)
-}
-
 removeOutlierModules <- function(WGCNAobject, outlierModules=NULL){
 	if(missing(outlierModules)){
 		outlierModules=outlierModules(WGCNAobject)

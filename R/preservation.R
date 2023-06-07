@@ -1,32 +1,3 @@
-preservationScatterplot <- function(WGCNAobject, preservationTable){
-
-	ordered=WGCNAobject@datExpr[order(WGCNAobject@datExpr$dynamicLabels),]
-	colors=unique(ordered$dynamicColors)
-	outlierModules=str_split_fixed(WGCNAobject@outlierModules, "_", 2)[,2]
-	preservationTable= preservationTable[preservationTable$X != "gold",]
-	presModules=str_split_fixed(preservationTable$X, "_", 3)[,3]
-	print(outlierModules)
-	print(presModules)
-	input=data.frame(preservationTable[,c("X", "ref.A.inColumnsAlsoPresentIn.B.moduleSize",
-		"ref.A.inColumnsAlsoPresentIn.B.Zsummary.pres")], colors)
-	colnames(input)=c("Module", "moduleSize", "Zsummary", "dynamicColors")
-	filt=input[! presModules %in% outlierModules,]
-
-	colors=filt$dynamicColors
-	names(colors)=filt$dynamicColors
-	ggplot(filt, aes(moduleSize, Zsummary, fill=Module)) +
-                geom_point(shape=21, size=2)+
-                scale_fill_manual(values=filt$dynamicColors)+
-                theme_classic()+
-                theme(legend.position='none')+
-                labs(y = "Z-summary", x= "Module size")+
-                scale_x_continuous(trans='log10')+
-                geom_text_repel(color="black", aes(label=paste0("M", gsub("^0+","",
-                		substr(Module, nchar(Module[[1]])-1,nchar(Module[[1]]))))))+
-                geom_hline(yintercept=(2), linetype="dashed", color = "red", size=1)+
-                geom_hline(yintercept=(10), linetype="dashed", color = "black", size=1)
-}
-
 #' getPreservation
 #'
 #' Performs a network preservation analysis
@@ -145,67 +116,6 @@ preservationComparisonPlot <- function(comparison, dataset1, dataset2, alphaLeve
 	print(dataset1Plot | dataset2Plot)
 }
 
-#plots perservation Z-scores in a bargraph
-plotDiffPreservation <- function(Z_table,output_name) {
-	data2=melt(Z_table,value.name="Zsummary")
-	pdf(paste0(output_name,".pdf"),height=4,width=12)
-	data2=data2[data2$Module !="gold",]
-	print(ggplot(data2,aes(x = Module,y = Zsummary),group=interaction(variable)) +
-		geom_bar(aes(fill = variable),stat = "identity",position = "dodge") +
-		theme(axis.text.x = element_text(angle = 30, vjust = 1, hjust=1)) + #scale_fill_manual("legend", values = c("purple","red","blue")) +
-		theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),panel.background = element_blank(),
-		axis.line = element_line(colour = "black")))
-	dev.off()
-}
-
-#iterates preservation through a given dimension
-testTraitsForPreservation <- function(column){
-	subset_Z_tables=list()
-	element=1
-	for(trait in unique(traitTable[,column])) {
-		print(paste0("### Working on trait: ",trait," ###"))
-		traitDat=referenceExpr[match(traitTable$Sample[traitTable[,column]==trait],rownames(referenceExpr)),]
-		print(traitDat[1:3,1:3])
-		print(paste0("Dimensions: ",dim(traitDat)[[1]]," by ",dim(traitDat)[[2]]))
-		gsg=goodSamplesGenes(traitDat)
-		if(!gsg$allOK) {
-			traitDat=traitDat[gsg$goodSamples, gsg$goodGenes]
-		}
-		goodSamplesGenes(traitDat)$allOK
-		print(paste0("Dimensions: ",dim(traitDat)[[1]]," by ",dim(traitDat)[[2]]))
-		write.csv(t(traitDat), paste0(trait,'_expr_data.csv'))
-		subset_Z_tables[[element]]=getPreservation(referenceExpr,traitDat)
-		element=element+1
-	}
-	subset_Z_tables
-}
-
-#draw basic network
-drawNetwork <- function(reference_set, module_number, test_set) {
-	test_name=gsub(".csv","",test_set)
-	datExpr=t(read.csv(test_set,row.names=1))
-	genes=reference_set$X[endsWith(reference_set$dynamicLabels,paste0("_",module_number))]
-	head(datExpr)
-	print(dim(datExpr))
-	head(datExpr[,colnames(datExpr) %in% genes])
-	print(dim(datExpr[,colnames(datExpr) %in% genes]))
-	adjacency = adjacency(datExpr[,colnames(datExpr) %in% genes], power=12, type="signed");
-	TOM = TOMsimilarity(adjacency);
-	dimnames(TOM) = list(rownames(adjacency),colnames(adjacency))
-	TOM[1:3,1:3]
-	dim(TOM)
-	pdf(paste0(reference_name,"_",module_number,"_in_",test_name,".pdf"),width=5,height=5)
-	gene_mod=reference[reference$X %in% genes,] %>% arrange(-kWithin)
-	dim(gene_mod)
-	top=gene_mod$X[1:50]
-	top=top[top %in% colnames(datExpr)]
-	head(top)
-	length(top)
-	pdf(paste0(reference_name,"_",module_number,"_in_",test_name,".pdf"),width=5,height=5)
-	print(qgraph(TOM[top,top],labels=top,vsize=c(2,4),minimum=0.2,cut=0,borders=F,color=c("black"),edge.color="grey45"))#,layout="spring")#,groups=groups)
-	dev.off()
-}
-
 #' Preservation comparisons
 #'
 #' A high level function that performs a perservation comparison between two
@@ -243,68 +153,6 @@ preservationComparisons <- function(comparisonList, WGCNAlist, first, second, el
 	}
 	comparisonList
 }
-
-differentialPreservationPlot <- function(design=sampleTable, refColumn=3, testColumn=2){
-
-	#visually determine if network is preserved across conditions in TOM heatmaps
-	#makeTOMplot.R("../sod1/ModuleSummary/sod1_datExpr2_ksummary_dynamiccolors_dynamiclabels.csv", "ModuleSummary/Mixed_datExpr2_ksummary_dynamiccolors_dynamiclabels.csv", "../sod1/sod1_dissTOM.csv", "Mixed_01") #disease
-	#makeTOMplot.R("../WT/WT_dissTOM.csv", "../WT/ModuleSummary/WT_datExpr2_ksummary_dynamiccolors_dynamiclabels.csv", "ModuleSummary/Mixed_datExpr2_ksummary_dynamiccolors_dynamiclabels.csv", "Mixed_01") #healthy
-
-	#calculate preservation statistics for mixed modules in mixed, disease, and healthy datasets
-	diseaseDatExpr=referenceDatExpr[, !colnames(referenceDatExpr) %in% design$Sample[design[, testColumn]=="WT"] ]
-	healthyDatExpr=referenceDatExpr[, !colnames(referenceDatExpr) %in% design$Sample[design[, testColumn]!="WT"] ]
-	mixedPres <- getPreservation(referenceDatExpr, referenceDatExpr)
-	diseasePres <- getPreservation(referenceDatExpr, diseaseDatExpr)
-	healthyPres <- getPreservation(referenceDatExpr, healthyDatExpr)
-	zSummaryTable=as.data.frame(cbind(row.names(mixedPres), diseasePres, healthyPres))
-	colnames(zSummaryTable)=c("Module","All", disease, healthy)
-
-
-	#graph Z-summary preservation scores in a bargraph (checkered bar indicates mixture, remove outlier modules)
-	pdf("differentialPreservationAnalysis.pdf")
-	meltedZtable=melt(zSummaryTable,value.name="Zsummary")
-	#pdf(paste0(output_name,".pdf"),height=4,width=12)
-	meltedZtable=meltedZtable[meltedZtable$Module !="gold",]
-	meltedZtable=meltedZtable[-outlierModules(referenceWGCNA),]
-	ggplot(meltedZtable, aes(x = Module,y = Zsummary), group=interaction(variable)) +
-		geom_bar(aes(fill = variable), stat = "identity", position = "dodge") +
-		theme(axis.text.x = element_text(angle = 30, vjust = 1, hjust=1)) +
-		scale_fill_manual("legend", values = c("purple","red","blue")) +
-		theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-			panel.background = element_blank(), axis.line = element_line(colour = "black"))
-
-	#generate null-distribution of Z-summary preservation differentials
-	preservationData=preservationPermutationTest(dataset1, nPermutations=50)
-
-	#graph Z-summary drops on a histogram of null-distribution preservation drops (include p-values)
-	diseaseHealthyDrop <- diseasePres["Mixed_01", "Zsummary.pres"] - healthyPres["Mixed_01", "Zsummary.pres"]
-
-
-	dev.off()
-
-}
-
-# makeTOMplot.R <- function(refDatExpr_file, testDatExpr_file, dissTOM_file, module){
-# 	dissTOM=fread(dissTOM_file, header=T)
-# 	dissTOM=dissTOM[,-1]
-# 	matrix=as.matrix(dissTOM)
-# 	refDatExpr=read.csv(refDatExpr_file, header=T)
-# 	testDatExpr=read.csv(testDatExpr_file, header=T)
-# 	rownames(matrix)=refDatExpr$X
-# 	colnames(matrix)=refDatExpr$X
-# 	genesOfInterest=testDatExpr$X[testDatExpr$dynamicLabels==module]
-# 	genesOfInterest=genesOfInterest[genesOfInterest %in% refDatExpr$X]
-# 	ColorsLeft=rep("grey",nrow(refDatExpr))
-# 	ColorsLeft[refDatExpr$X %in% genesOfInterest]="black"
-# 	#subsetDissTOM=matrix[genesOfInterest, genesOfInterest]
-# 	subsetDissTOM=matrix
-# 	dim(subsetDissTOM)
-# 	gc()
-# 	subsetGeneTree=flashClust(as.dist(subsetDissTOM), method="average")
-# 	png(paste0(module,"_in_", basename(dissTOM_file), "_TOMplot_all.png"), width = 3000, height = 3000)
-# 	TOMplot(subsetDissTOM, subsetGeneTree, Colors=refDatExpr$dynamicColors, ColorsLeft=ColorsLeft)
-# 	dev.off()
-# }
 
 coexpressionLineGraph <- function(datExpr, nDiseaseSamples, nWTSamples, splitBy=1, fontSize=2.15, colors=NULL){
 
@@ -544,5 +392,3 @@ diffCoexpression <- function(datExpr, conditions, geneList=NULL, plot=F, method=
 		list(z_scores, raw_p, adj_p, summaryDf %>% arrange(p.adj))
 	}
 }
-
-

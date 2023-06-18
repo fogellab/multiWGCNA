@@ -4,22 +4,16 @@
 \alias{performANOVA}
 \title{Perform ANOVA}
 \usage{
-performANOVA(
-  datExpr,
-  testCondition,
-  refCondition,
-  design = get("design", envir = parent.frame()),
-  alphaLevel = get("alphaLevel", envir = parent.frame())
-)
+performANOVA(datExpr, design, testCondition, refCondition, alphaLevel = 0.05)
 }
 \arguments{
 \item{datExpr}{expression data.frame}
 
+\item{design}{the sampleTable}
+
 \item{testCondition}{test column in sampleTable}
 
 \item{refCondition}{reference column in sampleTable}
-
-\item{design}{the sampleTable}
 
 \item{alphaLevel}{the significance level}
 }

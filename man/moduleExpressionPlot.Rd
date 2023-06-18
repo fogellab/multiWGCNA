@@ -29,6 +29,15 @@ moduleExpressionPlot(
 \description{
 A plotting function that returns a heatmap and barplot for a module
 }
+\examples{
+library(ExperimentHub)
+eh = ExperimentHub()
+eh_query = query(eh, c("multiWGCNAdata"))
+astrocyte_networks = eh_query[["EH8222"]]
+moduleExpressionPlot(astrocyte_networks[["combined"]], 
+  geneList = topNGenes(astrocyte_networks$combined, "combined_013"))
+
+}
 \author{
 Dario Tommasini
 }

@@ -6,11 +6,12 @@ Authors@R: c(
     person("Dario", "Tommasini", email="dtommasini0@gmail.com", role = c("aut","cre")), 
     person("Brent", "Fogel", role = c("aut","ctb")))
 Description: An R package for deeping mining gene co-expression networks in 
-    multi-trait expression data.
+    multi-trait expression data. 
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
 Suggests: 
+    doParallel,
     ExperimentHub,
     knitr,
     markdown,
@@ -28,7 +29,6 @@ Imports:
     reshape2,
     data.table,
     patchwork,
-    doParallel,
     scales,
     igraph,
     flashClust,

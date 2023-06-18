@@ -17,11 +17,11 @@ overlapComparisons(
 \arguments{
 \item{comparisonList}{a list passed by the iterate function}
 
-\item{WGCNAlist}{list of objects of type WGCNAobject}
+\item{WGCNAlist}{list of objects of class WGCNA}
 
-\item{first}{index of first WGCNAobject}
+\item{first}{index of first WGCNA object}
 
-\item{second}{index of second WGCNAobject}
+\item{second}{index of second WGCNA object}
 
 \item{element}{element position in the comparison list (passed by iterate function)}
 
@@ -29,9 +29,24 @@ overlapComparisons(
 
 \item{write}{write results to file?}
 }
+\value{
+A list, in which the first element is a data.frame showing the 
+overlap results and the second element is a data.frame showing the best 
+matching modules between the two WGCNA objects.
+}
 \description{
 Compares modules between two objects of type WGCNAobjects
-within a WGCNAobject list given the indices
+within a WGCNAobject list given the indices. Recommended to be used in 
+conjunction with the iterate function.
+}
+\examples{
+library(ExperimentHub)
+eh = ExperimentHub()
+eh_query = query(eh, c("multiWGCNAdata"))
+astrocyte_networks = eh_query[["EH8222"]]
+results = list()
+results$overlaps = iterate(astrocyte_networks, overlapComparisons, plot=FALSE)
+
 }
 \author{
 Dario Tommasini

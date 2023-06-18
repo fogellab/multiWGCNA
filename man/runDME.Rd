@@ -6,8 +6,8 @@
 \usage{
 runDME(
   WGCNAobject,
-  alphaLevel = get("alphaLevel", envir = parent.frame()),
-  design = sampleTable,
+  design,
+  alphaLevel = 0.05,
   testCondition = NULL,
   refCondition = NULL,
   p.adjust = "fdr",
@@ -20,9 +20,9 @@ runDME(
 \arguments{
 \item{WGCNAobject}{object of class WGCNA with the modules to run DME on}
 
-\item{alphaLevel}{level of significance}
-
 \item{design}{the sampleTable}
+
+\item{alphaLevel}{level of significance}
 
 \item{testCondition}{the column of the sampleTable to be resolved}
 
@@ -40,6 +40,20 @@ runDME(
 }
 \description{
 A wrapper to run diffModuleExpression on all the modules in a network
+}
+\examples{
+library(ExperimentHub)
+eh = ExperimentHub()
+eh_query = query(eh, c("multiWGCNAdata"))
+astrocyte_se = eh_query[["EH8223"]]
+sampleTable = colData(astrocyte_se)
+astrocyte_networks = eh_query[["EH8222"]]
+runDME(astrocyte_networks[["combined"]], 
+  design = sampleTable,
+  p.adjust = "fdr", 
+  refCondition = "Region", 
+  testCondition = "Disease") 
+
 }
 \author{
 Dario Tommasini

@@ -18,15 +18,25 @@ printModules <- function(WGCNAobject){
 #'
 #' Returns the name of a WGCNAobject.
 #'
-#' @param WGCNAobject an object of type WGCNAobject
+#' @param WGCNAobject an object of class WGCNA
+#' 
+#' @return Returns the name of the WGCNA object, ie "EAE" for 
+#' astrocyte_networks$EAE. 
 #'
 #' @import stringr
 #' @export
+#' 
+#' @examples 
+#' library(ExperimentHub)
+#' eh = ExperimentHub()
+#' eh_query = query(eh, c("multiWGCNAdata"))
+#' astrocyte_networks = eh_query[["EH8222"]]
+#' name(astrocyte_networks$EAE)
 name <- function(WGCNAobject){
 	return(str_split_fixed(WGCNAobject@datExpr$dynamicLabels[[1]], "_", 2)[[1]])
 }
 
-getLevel <- function(level, design=sampleTable){
+getLevel <- function(level, design){
 	if(level==1){
 		return("combined")
 	}
@@ -57,14 +67,22 @@ colors <- function(nColors, random=F){
 #'
 #' @import dplyr
 #' @export
+#' 
+#' @examples 
+#' library(ExperimentHub)
+#' eh = ExperimentHub()
+#' eh_query = query(eh, c("multiWGCNAdata"))
+#' astrocyte_networks = eh_query[["EH8222"]]
+#' topNGenes(astrocyte_networks$EAE, "EAE_015", nGenes = 10)
+#' 
 topNGenes <- function(WGCNAobject, module, nGenes=NULL){
 	datExpr = WGCNAobject@datExpr
 	subsetDatExpr = datExpr[datExpr$dynamicLabels==module,]
 	orderedDatExpr = subsetDatExpr %>% arrange(-kWithin)
-	if(missing(nGenes)){
+	if(is.null(nGenes)){
 		orderedDatExpr$X
 	} else{
-		head(orderedDatExpr$X, geneList)
+		head(orderedDatExpr$X, nGenes)
 	}
 }
 
@@ -106,7 +124,14 @@ removeOutlierModules <- function(WGCNAobject, outlierModules=NULL){
 #' @param detectNumbers whether to consider traits with numbers as numerical rather than categorical variables
 #' 
 #' @export
-makeTraitTable <- function(inputTable, column, detectNumbers=get("detectNumbers", envir = parent.frame())) {
+#' 
+#' @examples 
+#' sampleTable = data.frame(Sample = c(paste0("EAE", 1:3)), 
+#'                                     Disease = rep("EAE", 3), 
+#'                                     Region = rep("Cbl", 3))
+#' makeTraitTable(sampleTable, 2)
+#' 
+makeTraitTable <- function(inputTable, column, detectNumbers=FALSE) {
 	traits=unique(inputTable[,column])
 	traitTable=list()
 	traitTable[[1]]=inputTable[,1]
@@ -143,9 +168,20 @@ makeTraitTable <- function(inputTable, column, detectNumbers=get("detectNumbers"
 #' @param datExpr a data.frame were columns are samples and rows are samples and the gene symbols are in the first row
 #' @param checkGenesSamples call the WGCNA function checkGenesSamples?
 #'
+#' @return Returns a datExpr with rows as samples and columns as genes
+#' 
 #' @author Dario Tommasini
 #'
 #' @export
+#' 
+#' @examples
+#' library(ExperimentHub)
+#' eh = ExperimentHub()
+#' eh_query = query(eh, c("multiWGCNAdata"))
+#' astrocyte_se = eh_query[["EH8223"]]
+#' datExpr = data.frame(X = rownames(assays(astrocyte_se)[[1]]), assays(astrocyte_se)[[1]])
+#' cleanDatExpr(datExpr)
+#' 
 cleanDatExpr <- function(datExpr, checkGenesSamples=F) {
 	cleanDatExpr <- t(datExpr[ ,!colnames(datExpr) %in% c("X","kTotal","kWithin","kOut","kDiff","dynamicColors","dynamicLabels")])
 	colnames(cleanDatExpr) = datExpr$X
@@ -155,7 +191,7 @@ cleanDatExpr <- function(datExpr, checkGenesSamples=F) {
 			cleanDatExpr = cleanDatExpr[gsg$goodSamples, gsg$goodGenes]
 		}
 	}
-	cleanDatExpr
+	return(cleanDatExpr)
 }
 
 keyModules <- function(WGCNAobject){
@@ -174,9 +210,9 @@ keyModules <- function(WGCNAobject){
 #' @param alphaLevel alpha level of significance
 #' @param write write to file?
 #' @param outputFile name of output file, defaults to results.txt
-#'
+#' 
 #' @export
-summarizeResults <- function(myNetworks, results, alphaLevel=get("alphaLevel", envir = parent.frame()), write=FALSE, outputFile="results.txt") {
+summarizeResults <- function(myNetworks, results, alphaLevel=0.05, write=FALSE, outputFile="results.txt") {
 	if(write) sink(outputFile)
 	#name1=str_split_fixed(rownames(comparison$mod1Preservation[rownames(comparison$mod1Preservation) != "gold",]),"_",2)[,1][[1]]
 	#name2=str_split_fixed(rownames(comparison$mod2Preservation[rownames(comparison$mod2Preservation) != "gold",]),"_",2)[,1][[1]]
@@ -214,10 +250,20 @@ summarizeResults <- function(myNetworks, results, alphaLevel=get("alphaLevel", e
 #' @param FUN function to iterate, either overlapComparisons or preservationComparisons
 #' @param ... argmuents to be passed on to overlapComparisons or preservationComparisons
 #' 
+#' @return a list
 #'
 #' @author Dario Tommasini
 #'
 #' @export
+#' 
+#' @examples
+#' library(ExperimentHub)
+#' eh = ExperimentHub()
+#' eh_query = query(eh, c("multiWGCNAdata"))
+#' astrocyte_networks = eh_query[["EH8222"]]
+#' results = list()
+#' iterate(astrocyte_networks, overlapComparisons, plot=FALSE)
+#' 
 iterate <- function(WGCNAlist, FUN, ...){
 	comparisonList=list()
 	FUN <- match.fun(FUN)
@@ -233,7 +279,7 @@ iterate <- function(WGCNAlist, FUN, ...){
 			element=element+1
 		}
 	}
-	comparisonList
+	return(comparisonList)
 }
 
 #' @importFrom graphics legend

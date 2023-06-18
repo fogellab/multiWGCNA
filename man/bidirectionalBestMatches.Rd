@@ -4,16 +4,29 @@
 \alias{bidirectionalBestMatches}
 \title{Best matching modules}
 \usage{
-bidirectionalBestMatches(overlapDf, plot = TRUE)
+bidirectionalBestMatches(comparisonDf, plot = TRUE)
 }
 \arguments{
-\item{overlapDf}{a data.frame resulting from a call to computeOverlapsFromWGCNA}
+\item{comparisonDf}{a list with an elemnt "overlap", which is a data.frame resulting from a call to computeOverlapsFromWGCNA}
 
-\item{plot}{generate a heatmap of best matching modules?}
+\item{plot}{whether to generate a heatmap; default is TRUE}
+}
+\value{
+A ggplot object
 }
 \description{
 Find all the modules from dataset1 that have a best match to a module in dataset2
 if that module in dataset2 is also a best match to the module in dataset1
+}
+\examples{
+library(ExperimentHub)
+eh = ExperimentHub()
+eh_query = query(eh, c("multiWGCNAdata"))
+astrocyte_networks = eh_query[["EH8222"]]
+comparisonDf = list()
+comparisonDf$overlaps = computeOverlapsFromWGCNA(astrocyte_networks$EAE, astrocyte_networks$WT)
+bidirectionalBestMatches(comparisonDf)
+
 }
 \author{
 Dario Tommasini

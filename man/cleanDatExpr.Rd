@@ -11,10 +11,22 @@ cleanDatExpr(datExpr, checkGenesSamples = F)
 
 \item{checkGenesSamples}{call the WGCNA function checkGenesSamples?}
 }
+\value{
+Returns a datExpr with rows as samples and columns as genes
+}
 \description{
 A function that converts a data.frame where row 1 is gene symbols to a 
 numeric matrix where columns are genes and rows are samples for compatibility 
 with most WGCNA functions.
+}
+\examples{
+library(ExperimentHub)
+eh = ExperimentHub()
+eh_query = query(eh, c("multiWGCNAdata"))
+astrocyte_se = eh_query[["EH8223"]]
+datExpr = data.frame(X = rownames(assays(astrocyte_se)[[1]]), assays(astrocyte_se)[[1]])
+cleanDatExpr(datExpr)
+
 }
 \author{
 Dario Tommasini

@@ -15,6 +15,9 @@ getPreservation(reference, test, nPermutations = 100, write = FALSE)
 
 \item{write}{write to file?}
 }
+\value{
+a data.frame summarizing results of preservation analysis
+}
 \description{
 Performs a network preservation analysis
 }

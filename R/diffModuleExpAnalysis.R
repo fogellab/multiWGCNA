@@ -16,6 +16,15 @@
 #' @import WGCNA
 #' @import dplyr
 #' @export
+#' 
+#' @examples
+#' library(ExperimentHub)
+#' eh = ExperimentHub()
+#' eh_query = query(eh, c("multiWGCNAdata"))
+#' astrocyte_networks = eh_query[["EH8222"]]
+#' moduleExpressionPlot(astrocyte_networks[["combined"]], 
+#'   geneList = topNGenes(astrocyte_networks$combined, "combined_013"))
+#' 
 moduleExpressionPlot <- function(WGCNAobject, geneList, mode="PC1", legend=FALSE, title=NULL, clusterGenes=F){
 
 	datExpr=WGCNAobject@datExpr
@@ -67,8 +76,19 @@ moduleExpressionPlot <- function(WGCNAobject, geneList, mode="PC1", legend=FALSE
 	}
 }
 
-#heatmap of z-scored expression for a given expression data.frame and list of genes
-expressionHeatmap <- function(datExpr, geneList, lower=-2, upper=2, design=NULL, column.labels=TRUE, row.labels=FALSE, legend=FALSE, axis.titles=TRUE, moduleName=NULL, clusterGenes=F, title=NULL){
+# heatmap of z-scored expression for a given expression data.frame and list of genes
+expressionHeatmap <- function(datExpr, 
+                              geneList, 
+                              lower=-2, 
+                              upper=2, 
+                              design=NULL, 
+                              column.labels=TRUE, 
+                              row.labels=FALSE, 
+                              legend=FALSE, 
+                              axis.titles=TRUE, 
+                              plotTitle=NULL, 
+                              clusterGenes=F, 
+                              title=NULL){
 	datExpr=t(cleanDatExpr(datExpr))
 	subset=datExpr[toupper(rownames(datExpr)) %in% toupper(geneList),]
 	subset=subset[match(toupper(geneList), toupper(rownames(subset))),]
@@ -88,7 +108,7 @@ expressionHeatmap <- function(datExpr, geneList, lower=-2, upper=2, design=NULL,
 	ggplot(collapsedMatrix, aes(x = Sample, y = Gene, fill = Zscore)) +
 				geom_tile() +
 				ylab("Gene") +
-				{if(!is.null(moduleName)) ggtitle(moduleName)}+
+				{if(!is.null(plotTitle)) ggtitle(plotTitle)}+
 				theme_classic()+
 				scale_fill_gradient2(low = "blue", mid="white", high = "red", na.value="white", limits=c(lower, upper)) +
 				{if(!is.null(title)) ggtitle(title)} +
@@ -105,8 +125,8 @@ expressionHeatmap <- function(datExpr, geneList, lower=-2, upper=2, design=NULL,
 #' A wrapper to run diffModuleExpression on all the modules in a network
 #'
 #' @param WGCNAobject object of class WGCNA with the modules to run DME on
-#' @param alphaLevel level of significance
 #' @param design the sampleTable
+#' @param alphaLevel level of significance
 #' @param testCondition the column of the sampleTable to be resolved
 #' @param refCondition the column of the sampleTable to be used as biological variation
 #' @param test statistical test to perform, either "ANOVA" or "PERMANOVA"
@@ -120,7 +140,21 @@ expressionHeatmap <- function(datExpr, geneList, lower=-2, upper=2, design=NULL,
 #' @importFrom data.table fwrite
 #'
 #' @export
-runDME <- function(WGCNAobject, alphaLevel=get("alphaLevel", envir = parent.frame()), design=sampleTable, testCondition=NULL, refCondition=NULL, p.adjust="fdr", plot=FALSE, test="ANOVA", write=FALSE, out=NULL){
+#' 
+#' @examples
+#' library(ExperimentHub)
+#' eh = ExperimentHub()
+#' eh_query = query(eh, c("multiWGCNAdata"))
+#' astrocyte_se = eh_query[["EH8223"]]
+#' sampleTable = colData(astrocyte_se)
+#' astrocyte_networks = eh_query[["EH8222"]]
+#' runDME(astrocyte_networks[["combined"]], 
+#'   design = sampleTable,
+#'   p.adjust = "fdr", 
+#'   refCondition = "Region", 
+#'   testCondition = "Disease") 
+#' 
+runDME <- function(WGCNAobject, design, alphaLevel=0.05, testCondition=NULL, refCondition=NULL, p.adjust="fdr", plot=FALSE, test="ANOVA", write=FALSE, out=NULL){
 	datExpr=WGCNAobject@datExpr
 	if(is.null(refCondition)) refCondition=colnames(design)[[3]]
 	if(is.null(testCondition)) testCondition=colnames(design)[[2]]
@@ -133,7 +167,7 @@ runDME <- function(WGCNAobject, alphaLevel=get("alphaLevel", envir = parent.fram
 	element=1
 	for(module in modules){
 		moduleGenes=datExpr$X[datExpr$dynamicLabels==module]
-		pval.dfs[[element]]=diffModuleExpression(WGCNAobject, moduleGenes, moduleName=module, plot=plot, test=test)
+		pval.dfs[[element]]=diffModuleExpression(WGCNAobject, moduleGenes, design, plotTitle=module, plot=plot, test=test)
 		colnames(pval.dfs[[element]])=c("Factors", module)
 		element=element+1
 	}
@@ -152,13 +186,13 @@ runDME <- function(WGCNAobject, alphaLevel=get("alphaLevel", envir = parent.fram
 
 #' Differential module expression
 #'
-#' Runs (and plots if turned on) the differential module expression analysis
+#' Runs (and plots) the differential module expression analysis
 #'
 #' @param WGCNAobject WGCNA object
 #' @param geneList vector of genes in WGCNAobject
-#' @param moduleName name of the module for the title
-#' @param mode either PC1 or Zscore, default is PC1
 #' @param design the sampleTable
+#' @param plotTitle title for the plot
+#' @param mode either PC1 or Zscore, default is PC1
 #' @param testColumn the column of the sampleTable to be resolved
 #' @param refColumn the column of the sampleTable to be used as biological variation
 #' @param test statistical test to perform, either "ANOVA" or "PERMANOVA"
@@ -169,15 +203,37 @@ runDME <- function(WGCNAobject, alphaLevel=get("alphaLevel", envir = parent.fram
 #' @import WGCNA
 #' @import dplyr
 #' @export
-diffModuleExpression <- function(WGCNAobject, geneList, moduleName=NULL, mode="PC1", design=sampleTable, testColumn=2, refColumn=3, test="ANOVA", plot=TRUE){
-	#test=design[1, testColumn], ref=design[1, refColumn]
+#' 
+#' @examples
+#' library(ExperimentHub)
+#' eh = ExperimentHub()
+#' eh_query = query(eh, c("multiWGCNAdata"))
+#' astrocyte_se = eh_query[["EH8223"]]
+#' sampleTable = colData(astrocyte_se)
+#' astrocyte_networks = eh_query[["EH8222"]]
+#' diffModuleExpression(astrocyte_networks[["combined"]], 
+#'   topNGenes(astrocyte_networks$combined, "combined_013"), 
+#'   sampleTable,
+#'   test = "ANOVA",
+#'   plotTitle = "combined_013",
+#'   plot = TRUE)
+#' 
+diffModuleExpression <- function(WGCNAobject, 
+                                 geneList, 
+                                 design, 
+                                 plotTitle=NULL, 
+                                 mode="PC1", 
+                                 testColumn=2, 
+                                 refColumn=3, 
+                                 test="ANOVA", 
+                                 plot=TRUE){
 
   datExpr=WGCNAobject@datExpr
   
 	refCondition=colnames(design)[[refColumn]]
 	testCondition=colnames(design)[[testColumn]]
-	#ref=refCondition
-	#test=testCondition
+	# ref=refCondition
+	# test=testCondition
 
 	cleanDatExpr=t(cleanDatExpr(datExpr))
 	geneList=geneList[geneList %in% rownames(cleanDatExpr)]
@@ -188,7 +244,8 @@ diffModuleExpression <- function(WGCNAobject, geneList, moduleName=NULL, mode="P
 		zscoreMatrix=(subset-mean)/stdev
 		zscoreMatrix=na.omit(zscoreMatrix)
 		averageExpression=apply(zscoreMatrix, 2, mean)
-		moduleExpression=data.frame(Sample=names(averageExpression), moduleExpression=averageExpression)
+		moduleExpression=data.frame(Sample=names(averageExpression), 
+		                            moduleExpression=averageExpression)
 	}
 
 	if(mode=="PC1"){
@@ -212,10 +269,10 @@ diffModuleExpression <- function(WGCNAobject, geneList, moduleName=NULL, mode="P
 	      			geom_hline(yintercept=0, linetype="solid", color = "black", size=0.5)
 
 	datExpr=datExpr[,c("X", mergedData$Sample)]
-	heatmap <- expressionHeatmap(datExpr, geneList, moduleName=moduleName, column.labels=F, axis.titles=F, legend=TRUE)
+	heatmap <- expressionHeatmap(datExpr, geneList, plotTitle=plotTitle, column.labels=F, axis.titles=F, legend=TRUE)
 
 	if(test=="ANOVA"){
-		pval.df <- performANOVA(moduleExpression, testCondition, refCondition) #category1=test, category2=ref)
+		pval.df <- performANOVA(moduleExpression, design, testCondition, refCondition) #category1=test, category2=ref)
 	}
 	
 	if(test=="PERMANOVA"){
@@ -238,7 +295,7 @@ diffModuleExpression <- function(WGCNAobject, geneList, moduleName=NULL, mode="P
 
 	if(plot){
 		print(heatmap / bargraph / boxplot)
-		cat(paste0("#### plotting ", moduleName, " ####\n"))
+		cat(paste0("#### plotting ", plotTitle, " ####\n"))
 	}
 
 	return(pval.df)
@@ -255,7 +312,7 @@ diffModuleExpression <- function(WGCNAobject, geneList, moduleName=NULL, mode="P
 #' @param alphaLevel the significance level
 #'
 #' @export
-performANOVA <- function(datExpr, testCondition, refCondition, design=get("design", envir = parent.frame()), alphaLevel=get("alphaLevel", envir = parent.frame())){ #category1, category2
+performANOVA <- function(datExpr, design, testCondition, refCondition, alphaLevel=0.05){ #category1, category2
 	mergedData = cbind(datExpr, 
 	                   test=design[match(datExpr$Sample, design$Sample), testCondition],
 	                   ref=design[match(datExpr$Sample, design$Sample), refCondition])

@@ -27,7 +27,7 @@ if(!require(devtools)) install.packages("devtools")
 devtools::install_github("fogellab/multiWGCNA")
 ```
 
-Step 1: Read in microarray data from human post-mortem brains from Voineagu et al. 2011 (https://www.nature.com/articles/nature10110), which has two sample traits: 1) autism versus control, and 2) temporal cortex versus frontal cortex. Since this is purely an example of how to run the entire analysis from start to finish, we are going to limit our analysis to 2000 randomly selected probes (so do not take the results too seriously since we are downsampling so much). Let's also set some useful global variables, like the alpha level of significance and the soft thresholding power for our network.   
+Step 1: Read in microarray data from human post-mortem brains from Voineagu et al. 2011 (https://www.nature.com/articles/nature10110), which has two sample traits: 1) autism versus control, and 2) temporal cortex versus frontal cortex. Since this is purely an example of how to run the entire analysis from start to finish, we are going to limit our analysis to 500 randomly selected probes. Let's also set some useful global variables, like the alpha level of significance and the soft thresholding power for our network.   
 
 ```{r}
 # Download data from the ExperimentHub
@@ -43,19 +43,11 @@ sampleTable = colData(autism_se)
 
 # Randomly sample 2000 genes from the expression matrix
 set.seed(1)
-autism_se = autism_se[sample(rownames(autism_se), 2000),]
+autism_se = autism_se[sample(rownames(autism_se), 1500),]
 
 # Check the data
 assays(autism_se)[[1]][1:5, 1:5]
 sampleTable
-
-# Set the alpha level for statistical analyses and the soft power for network construction
-alphaLevel = 0.05
-softPower = 10
-
-# If your sample traits include numbers that you'd like to be considered numerical 
-# variables rather than categorical variables, set detectNumbers = TRUE
-detectNumbers = FALSE
 ```
 
 Step 2: Perform network construction, module eigengene calculation, module-trait correlation. Also, let's find best trait for each module and identify outlier modules (ie modules driven by a single sample). 
@@ -69,7 +61,7 @@ conditions2 = unique(sampleTable[,3])
 
 # Construct the combined networks and all the sub-networks (autism only, controls only, FC only, and TC only)
 # We use the same parameters from Voineagu et al. Nature. 2011. 
-myNetworks = constructNetworks(autism_se, sampleTable, conditions1, conditions2,
+autism_networks = constructNetworks(autism_se, sampleTable, conditions1, conditions2,
                                   networkType = "unsigned", power = 10,
                                   minModuleSize = 40, maxBlockSize = 25000,
                                   reassignThreshold = 0, minKMEtoStay = 0.7,
@@ -82,7 +74,7 @@ Step 3: Compare modules (by hypergeometric overlap) across conditions. We'll sav
 ```{r, fig.height = 4, fig.width = 7}
 # Save results to a list
 results=list()
-results$overlaps=iterate(myNetworks, overlapComparisons, plot=TRUE)
+results$overlaps=iterate(autism_networks, overlapComparisons, plot=TRUE)
 
 # Check the reciprocal best matches between the autism and control networks
 head(results$overlaps$autism_vs_controls$bestMatches)
@@ -90,60 +82,60 @@ head(results$overlaps$autism_vs_controls$bestMatches)
 
 Step 4: Perform differential module expression analysis. This test for an association between the module eigengene (ME) and the two sample traits or their interaction. Therefore, the model is ME = trait1 + trait2 + trait1*trait2 and tests for a significant association to the traits using factorial ANOVA. These results can be stored in the diffModExp component of the results list. It can also perform PERMANOVA, which uses multivariate distances and can thus be applied to the module expression rather than just the first principal component (module eigengene). 
 
-Module combined_005 seems to be the module most significantly associated with disease status using standard ANOVA (module combined_000 represents genes that were unassigned so disregard this module). Let's use the diffModuleExpression function to visually check this module for an association to autism status. 
+Module combined_004 seems to be the module most significantly associated with disease status using standard ANOVA (module combined_000 represents genes that were unassigned so disregard this module). Let's use the diffModuleExpression function to visually check this module for an association to autism status. 
 
 Note: By setting plot = TRUE, the runDME function generates a PDF file called "combined_DME.pdf" in the current directory with these plots for all the modules. 
 
 ```{r, fig.height = 6, fig.width = 7}
 # Run differential module expression analysis (DME) on combined networks
-results$diffModExp = runDME(myNetworks[["combined"]], 
+results$diffModExp = runDME(autism_networks[["combined"]], 
+                            sampleTable, 
                             p.adjust="fdr", 
                             refCondition="Tissue", 
                             testCondition="Status") 
                             # plot=TRUE, 
-                            # out="ANOVA_DME.pdf")
+                            # out="combined_DME.pdf")
 
 # to run PERMANNOVA
 # library(vegan)
-# results$diffModExp = runDME(myNetworks[["combined"]], p.adjust="fdr", refCondition="Tissue", 
+# results$diffModExp = runDME(autism_networks[["combined"]], p.adjust="fdr", refCondition="Tissue", 
 #                          testCondition="Status", plot=TRUE, test="PERMANOVA", out="PERMANOVA_DME.pdf")
 
 # Check adjusted p-values for the two sample traits
 results$diffModExp
 
 # You can check the expression of a specific module like this. Note that the values reported in the bottom panel title are p-values and not FDR-adjusted like in results$diffModExp
-diffModuleExpression(myNetworks[["combined"]], 
-                     geneList = topNGenes(myNetworks[["combined"]], "combined_005"), 
-                     test = "ANOVA",
+diffModuleExpression(autism_networks[["combined"]], 
+                     geneList = topNGenes(autism_networks[["combined"]], "combined_004"), 
                      design = sampleTable,
-                     moduleName = "combined_005",
+                     test = "ANOVA",
+                     plotTitle = "combined_004",
                      plot = TRUE)
-
 ```
 
-Step 5: Perform the module preservation analysis to determine if any  modules in the autism data are not preserved in the healthy data (or vice versa). This is the slowest step as the calculation of permuted statistics takes a while. Typically, this can be parallelized using the enableWGCNAThreads function, but for this vignette we'll just do 20 permutations so two cores should be fine.   
+Step 5: Perform the module preservation analysis to determine if any  modules in the autism data are not preserved in the healthy data (or vice versa). This is the slowest step as the calculation of permuted statistics takes a while. Typically, this can be parallelized using the enableWGCNAThreads function, but for this vignette we'll just do 10 permutations so one core should suffice.   
 
 ```{r, fig.height = 3, fig.width = 7}
 # To enable multi-threading
 # library(doParallel)
 # library(WGCNA)
-# nCores = 2
+# nCores = 8
 # registerDoParallel(cores = nCores)
 # enableWGCNAThreads(nThreads = nCores)
 
 # Calculate preservation statistics
-results$preservation=iterate(myNetworks[conditions1], # change to conditions2 to perform comparison between FC and TC
+results$preservation=iterate(autism_networks[conditions1], # this does autism vs control; change to "conditions2" to perform comparison between FC and TC
                              preservationComparisons, 
                              write=FALSE, 
                              plot=TRUE, 
-                             nPermutations=20)
+                             nPermutations=10)
 ```
 
 Step 6: Summarize interesting results from the analyses, namely differentially preserved trait-associated modules and differentially expressed modules. 
 
 ```{r}
 # Print a summary of the results
-summarizeResults(myNetworks, results)
+summarizeResults(autism_networks, results)
 ```
 
 ```{r}

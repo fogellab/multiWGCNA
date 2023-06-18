@@ -12,7 +12,7 @@ preservationComparisons(
   element,
   plot = FALSE,
   write = FALSE,
-  alphaLevel = get("alphaLevel", envir = parent.frame()),
+  alphaLevel = 0.05,
   nPermutations = 100
 )
 }
@@ -35,9 +35,25 @@ preservationComparisons(
 
 \item{nPermutations}{number of permutations, defaults to 100}
 }
+\value{
+a list of preservation comparisons results across levels 1, 2, 3
+}
 \description{
 A high level function that performs a perservation comparison between two
 WGCNAobjects in a WGCNAlist, usually supplied by iterate function
+}
+\examples{
+library(ExperimentHub)
+eh = ExperimentHub()
+eh_query = query(eh, c("multiWGCNAdata"))
+astrocyte_networks = eh_query[["EH8222"]]
+results = list()
+iterate(astrocyte_networks[c("EAE", "WT")], 
+  preservationComparisons, 
+  write=FALSE, 
+  plot=FALSE, 
+  nPermutations=2)
+
 }
 \author{
 Dario Tommasini

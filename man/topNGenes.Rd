@@ -18,3 +18,11 @@ Returns the top N number of genes of a module.
 All genes returned if no number is specified.
 Genes are in order of intramodular connectivity.
 }
+\examples{
+library(ExperimentHub)
+eh = ExperimentHub()
+eh_query = query(eh, c("multiWGCNAdata"))
+astrocyte_networks = eh_query[["EH8222"]]
+topNGenes(astrocyte_networks$EAE, "EAE_015", nGenes = 10)
+
+}

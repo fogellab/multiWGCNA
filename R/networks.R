@@ -23,7 +23,22 @@
 #' @import stringr 
 #' @importFrom scales rescale
 #' @export
-drawMultiWGCNAnetwork <- function(WGCNAlist, comparisonList, moduleOfInterest, design = sampleTable, 
+#' 
+#' @examples
+#' library(ExperimentHub)
+#' eh = ExperimentHub()
+#' eh_query = query(eh, c("multiWGCNAdata"))
+#' astrocyte_se = eh_query[["EH8223"]]
+#' sampleTable = colData(astrocyte_se)
+#' astrocyte_networks = eh_query[["EH8222"]]
+#' results = list()
+#' results$overlaps = iterate(astrocyte_networks, overlapComparisons, plot=FALSE)
+#' drawMultiWGCNAnetwork(astrocyte_networks, 
+#'   results$overlaps, 
+#'   "combined_013", 
+#'   sampleTable)
+#'   
+drawMultiWGCNAnetwork <- function(WGCNAlist, comparisonList, moduleOfInterest, design, 
                                   overlapCutoff = 0, padjCutoff = 1, removeOutliers = T, alpha = 1e-50, 
                                   layout = NULL, hjust = 0.4, vjust = 0.3, width = 0.5, colors = NULL){
 
@@ -42,13 +57,13 @@ drawMultiWGCNAnetwork <- function(WGCNAlist, comparisonList, moduleOfInterest, d
 	}
 	
 	admittedModules=unique(c(filteredOverlapList$mod1, filteredOverlapList$mod2))
-	#print(admittedModules)
+	print(admittedModules)
 	
 	#generate the multiWGCNA layout
 	if(is.null(layout)){
 		myCoords=list()
 		for(level in 1:3){
-			WGCNAs=getLevel(level)
+			WGCNAs=getLevel(level, design)
 			from=0-width*length(WGCNAs)/2
 			to=0+width*length(WGCNAs)/2
 			x.coordinates=seq(from, to, length.out=length(WGCNAs))
@@ -115,6 +130,7 @@ drawMultiWGCNAnetwork <- function(WGCNAlist, comparisonList, moduleOfInterest, d
 	            vertex.label.cex=.5, layout=layout) 
 	legend("right", legend = conditions, pch=21, col=palette, pt.bg=palette, 
 	       pt.cex=1, cex=.8, bty="n", ncol=1)
+	
   return(plot)
 }
 
@@ -142,7 +158,7 @@ drawNetwork <- function(matrix, threshold=0, nodeList=NULL, edgeList=NULL, layou
 	
 	plot(graph, layout=layout, vertex.size=4, edge.width=1.5, 
 		vertex.color="white", vertex.label=NA, edge.color=unlist(ecol))
-	list(V(graph)$name, layout.fruchterman.reingold(graph), as_edgelist(graph))
+	list(V(graph)$name, igraph::layout.fruchterman.reingold(graph), igraph::as_edgelist(graph))
 }
 
 

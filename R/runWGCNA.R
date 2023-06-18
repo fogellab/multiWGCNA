@@ -125,6 +125,8 @@ plotModules <- function(WGCNAobject, mode="PC1"){
 #' @param plot plot modules? Default is false
 #' @param ... Arguments to pass to blockwiseModules function 
 #'
+#' @return A list of WGCNA objects, ie level one, two, and three networks. 
+#' 
 #' @author Dario Tommasini
 #'
 #' @import stringr
@@ -133,6 +135,24 @@ plotModules <- function(WGCNAobject, mode="PC1"){
 #' @import flashClust
 #' @import SummarizedExperiment
 #' @export
+#' 
+#' @examples
+#' library(ExperimentHub)
+#' eh = ExperimentHub()
+#' eh_query = query(eh, c("multiWGCNAdata"))
+#' autism_se = eh_query[["EH8219"]]
+#' set.seed(1)
+#' autism_se = autism_se[sample(rownames(autism_se), 500),]
+#' sampleTable = colData(autism_se)
+#' conditions1 = unique(sampleTable[,2])
+#' conditions2 = unique(sampleTable[,3])
+#' constructNetworks(autism_se, sampleTable, conditions1, conditions2, 
+#'   networkType = "signed", TOMType = "unsigned", 
+#'   power = 10, minModuleSize = 100, maxBlockSize = 25000,
+#'   reassignThreshold = 0, minKMEtoStay = 0, mergeCutHeight = 0,
+#'   numericLabels = TRUE, pamRespectsDendro = FALSE, 
+#'   deepSplit = 4, verbose = 3)
+#' 
 constructNetworks <- function(datExpr, sampleTable, conditions1, conditions2, write=FALSE, alphaLevel=0.05, plot=FALSE, ...){
 
   # Put data in expected format

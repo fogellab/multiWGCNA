@@ -7,7 +7,7 @@
 summarizeResults(
   myNetworks,
   results,
-  alphaLevel = get("alphaLevel", envir = parent.frame()),
+  alphaLevel = 0.05,
   write = FALSE,
   outputFile = "results.txt"
 )

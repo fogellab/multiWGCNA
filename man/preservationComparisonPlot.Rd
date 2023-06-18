@@ -2,30 +2,49 @@
 % Please edit documentation in R/preservation.R
 \name{preservationComparisonPlot}
 \alias{preservationComparisonPlot}
-\title{Preservation scatterplot}
+\title{Preservation Comparison Scatterplot}
 \usage{
 preservationComparisonPlot(
-  comparison,
+  preservationDf,
   dataset1,
   dataset2,
-  alphaLevel,
+  alphaLevel = 0.05,
   outliers = FALSE
 )
 }
 \arguments{
-\item{comparison}{a data.frame resulting from a call to computeOverlapsFromWGCNA}
+\item{preservationDf}{a data.frame resulting from a call to preservationComparisons}
 
 \item{dataset1}{an object of class WGCNAobject to compare with dataset2}
 
 \item{dataset2}{an object of class WGCNAobject to compare with dataset1}
 
-\item{alphaLevel}{alpha level of significance}
+\item{alphaLevel}{alpha level of significance, default is 0.05}
 
 \item{outliers}{leave outlier modules? By default these are removed}
 }
+\value{
+a ggplot object
+}
 \description{
 A plotting  function that draws a scatterplot of preservation scores between
-two WGCNAobjects
+two WGCNA objects
+}
+\examples{
+library(ExperimentHub)
+eh = ExperimentHub()
+eh_query = query(eh, c("multiWGCNAdata"))
+astrocyte_networks = eh_query[["EH8222"]]
+results = list()
+results$preservation=iterate(astrocyte_networks[c("EAE", "WT")], 
+  preservationComparisons, 
+  write=FALSE, 
+  plot=FALSE, 
+  nPermutations=2)
+preservationComparisonPlot(results$preservation$EAE_vs_WT, 
+  astrocyte_networks$EAE, 
+  astrocyte_networks$WT)
+  
 }
 \author{
 Dario Tommasini

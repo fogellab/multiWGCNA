@@ -4,11 +4,7 @@
 \alias{makeTraitTable}
 \title{Generate a trait table from a sample table}
 \usage{
-makeTraitTable(
-  inputTable,
-  column,
-  detectNumbers = get("detectNumbers", envir = parent.frame())
-)
+makeTraitTable(inputTable, column, detectNumbers = FALSE)
 }
 \arguments{
 \item{inputTable}{the sampleTable dataframe}
@@ -19,4 +15,11 @@ makeTraitTable(
 }
 \description{
 Generates a WGCNA-compatible trait table from a sampleTable dataframe
+}
+\examples{
+sampleTable = data.frame(Sample = c(paste0("EAE", 1:3)), 
+                                    Disease = rep("EAE", 3), 
+                                    Region = rep("Cbl", 3))
+makeTraitTable(sampleTable, 2)
+
 }

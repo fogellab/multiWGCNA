@@ -35,6 +35,18 @@ moduleToModuleHeatmap(
 
 \item{alphaLevel}{the alpha level of significance for module-trait correlation, defaults to 0.05}
 }
+\value{
+A ggplot object
+}
 \description{
 Returns a heatmap where color corresponds to FDR-adjusted overlap (hypergeometric test) and the label corresponds to the number of overlapping genes
+}
+\examples{
+library(ExperimentHub)
+eh = ExperimentHub()
+eh_query = query(eh, c("multiWGCNAdata"))
+astrocyte_networks = eh_query[["EH8222"]]
+overlapDf = computeOverlapsFromWGCNA(astrocyte_networks$EAE, astrocyte_networks$WT)
+moduleToModuleHeatmap(overlapDf)
+
 }

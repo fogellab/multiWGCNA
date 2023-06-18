@@ -9,9 +9,13 @@ moduleComparisonPlot(overlapDf, dataset1, dataset2)
 \arguments{
 \item{overlapDf}{a data.frame resulting from a call to computeOverlapsFromWGCNA}
 
-\item{dataset1}{an object of class WGCNAobject to compare with dataset2}
+\item{dataset1}{an object of class WGCNA to compare with dataset2}
 
-\item{dataset2}{an object of class WGCNAobject to compare with dataset1}
+\item{dataset2}{an object of class WGCNA to compare with dataset1}
+}
+\value{
+Returns a ggplot object (flowplot and heatmap) showing the module correspondence 
+between two objects of class WGCNA
 }
 \description{
 A plotting function that returns a heatmap and barplot for a module

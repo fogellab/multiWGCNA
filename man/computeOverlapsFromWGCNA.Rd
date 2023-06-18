@@ -11,6 +11,10 @@ computeOverlapsFromWGCNA(dataset1, dataset2)
 
 \item{dataset2}{an object of class WGCNA to compare with dataset1}
 }
+\value{
+Returns a data.frame showing the overlap results for modules from 
+dataset1 with dataset2
+}
 \description{
 Computes overlap between the modules of two objects of class WGCNA
 }

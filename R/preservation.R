@@ -7,6 +7,8 @@
 #' @param nPermutations number of permutations to perform
 #' @param write write to file?
 #' 
+#' @return a data.frame summarizing results of preservation analysis
+#' 
 #' @author Dario Tommasini
 #'
 #' @import WGCNA
@@ -41,38 +43,59 @@ getPreservation <- function(reference, test, nPermutations=100, write=FALSE) {
                         randomSeed = 1,
                         quickCor = 0,
                         verbose = 3,
-              					parallelCalculation=TRUE)
+              					parallelCalculation=TRUE, 
+              					savePermutedStatistics=FALSE)
 		} );
 	ref = 1
 	test = 2
 
 	if(write) write.csv(mp2$preservation$Z[[1]][[2]], paste0(name1, "_in_", name2,".csv"))
 
-	as.data.frame(mp2$preservation$Z[[1]][[2]])
+	return(as.data.frame(mp2$preservation$Z[[1]][[2]]))
 }
 
-#' Preservation scatterplot
+#' Preservation Comparison Scatterplot
 #'
 #' A plotting  function that draws a scatterplot of preservation scores between
-#' two WGCNAobjects
+#' two WGCNA objects
 #'
-#' @param comparison a data.frame resulting from a call to computeOverlapsFromWGCNA
+#' @param preservationDf a data.frame resulting from a call to preservationComparisons
 #' @param dataset1 an object of class WGCNAobject to compare with dataset2
 #' @param dataset2 an object of class WGCNAobject to compare with dataset1
-#' @param alphaLevel alpha level of significance
+#' @param alphaLevel alpha level of significance, default is 0.05
 #' @param outliers leave outlier modules? By default these are removed
+#' 
+#' @return a ggplot object
 #'
 #' @author Dario Tommasini
 #'
 #' @import ggplot2
 #' @import stringr
 #' @import ggrepel
+#' 
 #' @export
-preservationComparisonPlot <- function(comparison, dataset1, dataset2, alphaLevel, outliers=FALSE){
+#'  
+#' @examples
+#' library(ExperimentHub)
+#' eh = ExperimentHub()
+#' eh_query = query(eh, c("multiWGCNAdata"))
+#' astrocyte_networks = eh_query[["EH8222"]]
+#' results = list()
+#' results$preservation=iterate(astrocyte_networks[c("EAE", "WT")], 
+#'   preservationComparisons, 
+#'   write=FALSE, 
+#'   plot=FALSE, 
+#'   nPermutations=2)
+#' preservationComparisonPlot(results$preservation$EAE_vs_WT, 
+#'   astrocyte_networks$EAE, 
+#'   astrocyte_networks$WT)
+#'   
+preservationComparisonPlot <- function(preservationDf, dataset1, dataset2, alphaLevel = 0.05, outliers=FALSE){
+  comparison = preservationDf
 	name1=str_split_fixed(rownames(comparison$mod1Preservation[rownames(comparison$mod1Preservation) != "gold",]),"_",2)[,1][[1]]
 	name2=str_split_fixed(rownames(comparison$mod2Preservation[rownames(comparison$mod2Preservation) != "gold",]),"_",2)[,1][[1]]
 
-	#merge perservation statistic and trait correlation of each module into one df, then make scatterplot
+	# merge perservation statistic and trait correlation of each module into one df, then make scatterplot
 	input1=dataset1@trait
 	input1$Zsum=comparison$mod1Preservation$Zsummary.pres[match(input1$Module, rownames(comparison$mod1Preservation))]
 	if(!outliers) input1=input1[! input1$Module %in% dataset1@outlierModules,]
@@ -113,7 +136,9 @@ preservationComparisonPlot <- function(comparison, dataset1, dataset2, alphaLeve
 			geom_hline(yintercept=(10), linetype="dashed", color = "black", size=1)+
 			geom_vline(xintercept=(-log10(alphaLevel)), linetype="dashed", color = "red", size=1)
 
-	print(dataset1Plot | dataset2Plot)
+	plot = dataset1Plot | dataset2Plot
+	
+	return(plot)
 }
 
 #' Preservation comparisons
@@ -131,10 +156,25 @@ preservationComparisonPlot <- function(comparison, dataset1, dataset2, alphaLeve
 #' @param alphaLevel alpha level of significance for module-trait correlation
 #' @param nPermutations number of permutations, defaults to 100
 #'
+#' @return a list of preservation comparisons results across levels 1, 2, 3
+#' 
 #' @author Dario Tommasini
 #'
 #' @export
-preservationComparisons <- function(comparisonList, WGCNAlist, first, second, element, plot=FALSE, write=FALSE, alphaLevel=get("alphaLevel", envir = parent.frame()), nPermutations=100){
+#' 
+#' @examples
+#' library(ExperimentHub)
+#' eh = ExperimentHub()
+#' eh_query = query(eh, c("multiWGCNAdata"))
+#' astrocyte_networks = eh_query[["EH8222"]]
+#' results = list()
+#' iterate(astrocyte_networks[c("EAE", "WT")], 
+#'   preservationComparisons, 
+#'   write=FALSE, 
+#'   plot=FALSE, 
+#'   nPermutations=2)
+#' 
+preservationComparisons <- function(comparisonList, WGCNAlist, first, second, element, plot=FALSE, write=FALSE, alphaLevel=0.05, nPermutations=100){
 	comparisonList[[element]]=list()
 	comparisonList[[element]]=append(comparisonList[[element]],
 								list(getPreservation(WGCNAlist[[first]],
@@ -146,12 +186,15 @@ preservationComparisons <- function(comparisonList, WGCNAlist, first, second, el
 	names(comparisonList[[element]])[[1]]="mod1Preservation"
 	names(comparisonList[[element]])[[2]]="mod2Preservation"
 	if(plot){
-		preservationComparisonPlot(comparisonList[[element]],
+		print(
+		  preservationComparisonPlot(comparisonList[[element]],
 								WGCNAlist[[first]],
 								WGCNAlist[[second]],
 								alphaLevel)
+		  )
 	}
-	comparisonList
+	
+	return(comparisonList)
 }
 
 coexpressionLineGraph <- function(datExpr, nDiseaseSamples, nWTSamples, splitBy=1, fontSize=2.15, colors=NULL){
@@ -165,7 +208,7 @@ coexpressionLineGraph <- function(datExpr, nDiseaseSamples, nWTSamples, splitBy=
 		}
 	}
 
-	ggplot(reshape2::melt(as.matrix(scaled)), aes(x = Var1, y = value, group= Var2, color=Var2, label=Var2)) +
+	plot = ggplot(reshape2::melt(as.matrix(scaled)), aes(x = Var1, y = value, group= Var2, color=Var2, label=Var2)) +
 				#geom_line(aes(color=factor(rep(c(rep("healthy", nWTSamples), rep("disease", nDiseaseSamples)), nGenes), levels=c("healthy", "disease")))) +
 				geom_line()+
 				#scale_color_hue(name = "Gene", l=70, c=30) +
@@ -182,6 +225,8 @@ coexpressionLineGraph <- function(datExpr, nDiseaseSamples, nWTSamples, splitBy=
 				theme(legend.position="none", axis.text.x=element_text(angle=90, vjust=0.25, hjust=1),
 					axis.text.y=element_blank(), axis.ticks=element_blank(),
 					legend.key.width= unit(0.001, 'mm'), plot.margin = unit(c(1,1,1,1), "cm"))
+	
+	return(plot)
 }
 
 correlationComparisonBoxplot <- function(diseaseDatExpr, healthyDatExpr, geneList, label=F, method="pearson"){
@@ -316,8 +361,10 @@ correlationComparisonHeatmaps <- function(diseaseDatExpr, healthyDatExpr, geneLi
 
 
 	#ggarrange(diseasePlot, healthyPlot, dcPlot, boxPlot, ncol=4, align="hv", widths=c(3, 3, 3, 1), axis = "bt")
-	plot_grid(diseasePlot, healthyPlot, dcPlot, boxPlot, ncol=4, align = "hv",
+	plot = plot_grid(diseasePlot, healthyPlot, dcPlot, boxPlot, ncol=4, align = "hv",
 		axis = "tb", rel_widths = c(2, 2, 2, 1))
+	
+	return(plot)
 }
 
 #' Differential co-expresison analysis 
@@ -344,8 +391,20 @@ correlationComparisonHeatmaps <- function(diseaseDatExpr, healthyDatExpr, geneLi
 #' @author Dario Tommasini
 #'
 #' @import dcanr
+#' @importFrom igraph graph_from_adjacency_matrix simplify delete.vertices degree
 #' @export
-diffCoexpression <- function(datExpr, conditions, geneList=NULL, plot=F, method="pearson", removeFreeNodes=TRUE, labelSize=0.5, labelDist=0,
+#' 
+#' @examples
+#' library(ExperimentHub)
+#' eh = ExperimentHub()
+#' eh_query = query(eh, c("multiWGCNAdata"))
+#' astrocyte_se = eh_query[["EH8223"]]
+#' datExpr = assays(astrocyte_se)[[1]]
+#' diffCoexpression(datExpr, c(rep(1,20), rep(2,16)), 
+#'   geneList = c("Gfap", "Vim", "Aspg", "Serpina3n", "Cp", "Osmr", "Cd44", 
+#'     "Cxcl10", "Hspb1", "Timp1", "S1pr3", "Steap4", "Lcn2"))
+#' 
+diffCoexpression <- function(datExpr, conditions, geneList=NULL, plot=FALSE, method="pearson", removeFreeNodes=TRUE, labelSize=0.5, labelDist=0,
 						shape="circle", degreeForSize=F, label=F, onlyPositive=F, z.threshold=NULL, FDR.threshold=0.05, nodeSize=3){
 
 	if(!is.null(geneList)) datExpr=datExpr[rownames(datExpr) %in% geneList,]
@@ -359,13 +418,13 @@ diffCoexpression <- function(datExpr, conditions, geneList=NULL, plot=F, method=
 	indices <- which(upper.tri(z_scores) == TRUE, arr.ind=T)
 	names1 <- geneList[indices[,1]]
 	names2 <- geneList[indices[,2]]
-	summaryDf=	data.frame(gene1=names1, gene2=names2, cor1= cor1[upper.tri(cor1)], cor2=cor2[upper.tri(cor2)],
+	summaryDf=data.frame(gene1=names1, gene2=names2, cor1= cor1[upper.tri(cor1)], cor2=cor2[upper.tri(cor2)],
 					z.score=z_scores[upper.tri(z_scores)], p.value=raw_p[upper.tri(raw_p)], p.adj=adj_p[upper.tri(adj_p)])
 
 	adj_mat= z_scores
 	adj_mat[diag(adj_mat)]=0
 	if(is.null(z.threshold)) z.threshold=min(abs(na.omit(adj_mat[adj_p<FDR.threshold])))
-	graph=graph_from_adjacency_matrix(adj_mat, mode="undirected", weighted=T)
+	graph=igraph::graph_from_adjacency_matrix(adj_mat, mode="undirected", weighted=T)
 	graph=simplify(graph)
 	graph <- delete.edges(graph, which(abs(E(graph)$weight) < z.threshold))
 	if(onlyPositive) graph <- delete.edges(graph, which(E(graph)$weight < 0))

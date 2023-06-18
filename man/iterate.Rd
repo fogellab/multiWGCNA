@@ -13,9 +13,21 @@ iterate(WGCNAlist, FUN, ...)
 
 \item{...}{argmuents to be passed on to overlapComparisons or preservationComparisons}
 }
+\value{
+a list
+}
 \description{
 A high level function that iterates functions across
 a list of WGCNA objects
+}
+\examples{
+library(ExperimentHub)
+eh = ExperimentHub()
+eh_query = query(eh, c("multiWGCNAdata"))
+astrocyte_networks = eh_query[["EH8222"]]
+results = list()
+iterate(astrocyte_networks, overlapComparisons, plot=FALSE)
+
 }
 \author{
 Dario Tommasini

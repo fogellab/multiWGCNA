@@ -5,6 +5,9 @@
 #' @param dataset1 an object of class WGCNA to compare with dataset2
 #' @param dataset2 an object of class WGCNA to compare with dataset1
 #' 
+#' @return Returns a data.frame showing the overlap results for modules from 
+#' dataset1 with dataset2
+#' 
 #' @author Dario Tommasini
 #'
 #' @import stringr
@@ -18,62 +21,86 @@
 #' computeOverlapsFromWGCNA(astrocyte_networks$EAE, astrocyte_networks$WT)
 #' 
 computeOverlapsFromWGCNA <- function(dataset1, dataset2) {
-	datExpr1= dataset1@datExpr
-	datExpr2= dataset2@datExpr
+	datExpr1 <- dataset1@datExpr
+	datExpr2 <- dataset2@datExpr
 	treatDat <- datExpr1
 	controlDat <- datExpr2
+	
+	# computation of overlaps
+	all.genes = sort(unique(c(treatDat$X, controlDat$X)))
+	sorted.modules <- data.frame(mod1 = treatDat$dynamicLabels[match(all.genes, treatDat$X)],
+	                             mod2 = controlDat$dynamicLabels[match(all.genes, controlDat$X)])
 
-	#computation of overlaps
-	mod1=list()
-	mod2=list()
-	mod1_size=list()
-	mod2_size=list()
-	genes=list()
-	pval=list()
-	element=1
-
-	# if(convertSymbols1 | convertSymbols2){
-	# 	human <- useMart("ensembl", dataset = "hsapiens_gene_ensembl", host = "https://dec2021.archive.ensembl.org/")
-	# 	mouse <- useMart("ensembl", dataset = "mmusculus_gene_ensembl", host = "https://dec2021.archive.ensembl.org/")
-	# }
-
-	for(treatment in sort(unique(treatDat$dynamicLabels))){
-	        for(control in sort(unique(controlDat$dynamicLabels))){
-	                mod1[[element]]=treatment
-	                mod2[[element]]=control
-	                # if(convertSymbols1){
-	                # 	mod1Genes=toupper(treatDat$X[treatDat$dynamicLabels==treatment])
-	                # 	mod1Genes=toupper(unique(getLDS(attributes = c("hgnc_symbol"), filters = "hgnc_symbol", values = mod1Genes,
-	                # 		mart = human, attributesL = c("mgi_symbol"), martL = mouse, uniqueRows=T)$MGI.symbol))
-	                # } else {
-	                	mod1Genes=toupper(treatDat$X[treatDat$dynamicLabels==treatment])
-	                # }
-	                # if(convertSymbols2){
-	                # 		mod2Genes=toupper(controlDat$X[controlDat$dynamicLabels==control])
-	                # 		mod2Genes=toupper(unique(getLDS(attributes = c("hgnc_symbol"), filters = "hgnc_symbol", values = mod2Genes,
-	                # 			mart = human, attributesL = c("mgi_symbol"), martL = mouse, uniqueRows=T)$MGI.symbol))
-	                # } else {
-	                	mod2Genes=toupper(controlDat$X[controlDat$dynamicLabels==control])
-	                # }
-	                mod1_size[[element]]=length(mod1Genes)
-			mod2_size[[element]]=length(mod2Genes)
-			genes[[element]]=length(intersect(mod1Genes, mod2Genes))
-	                pval[[element]]=phyper(genes[[element]]-1,
-	                		mod1_size[[element]],
-	                		23000-mod1_size[[element]],
-	                		mod2_size[[element]],
-	                		lower.tail=FALSE, log.p=FALSE)
-	                if(pval[[element]]==0) pval[[element]]=.Machine$double.xmin
-	                element=element+1
-	        }
+	overlap.count <- table(sorted.modules$mod1, sorted.modules$mod2)
+  
+	pval = overlap.count
+	for(column in seq_along(colnames(overlap.count))){
+	  for(row in seq_along(rownames(overlap.count))){
+	    pval[row,column]=phyper(overlap.count[row,column]-1,
+	                            sum(overlap.count[row,]),
+	                            sum(rowSums(overlap.count))-sum(overlap.count[row,]),
+	                            sum(overlap.count[,column]),
+	                            lower.tail=FALSE,
+	                            log.p=FALSE)
+	    if(pval[row,column]==0) pval[row,column]=.Machine$double.xmin
+	  }
 	}
-	data.frame(mod1=unlist(mod1), 
-	           mod2=unlist(mod2),
-	           mod1.size=unlist(mod1_size),
-		   	     mod2.size=unlist(mod2_size), 
-		   	     overlap=unlist(genes),
-			       p.value=unlist(pval), 
-			       p.adj=unlist(p.adjust(pval, method='fdr')))
+
+	# Adjust for multiple comparisons
+	pval.unlist = unlist(as.list(pval))
+	pval.adj = p.adjust(pval.unlist, method='fdr')
+
+	# Get module sizes
+	mod1.size = table(sorted.modules$mod1)
+	mod2.size = table(sorted.modules$mod2)
+
+	# Summarize results
+	output.df = reshape2::melt(overlap.count) 
+	colnames(output.df) = c("mod1", "mod2", "overlap")
+	output.df$mod1 = as.character(output.df$mod1)
+	output.df$mod2 = as.character(output.df$mod2)
+	output.df$p.value = pval.unlist
+	output.df$p.adj = pval.adj
+	output.df = output.df %>% arrange(mod1, mod2)
+	output.df$mod1.size = mod1.size[match(output.df$mod1, names(mod1.size))]
+	output.df$mod2.size = mod2.size[match(output.df$mod2, names(mod2.size))]
+
+	# Return columns in proper order
+	return(output.df[,c(1:2,6:7,3:5)] %>% arrange(mod1, mod2))
+	
+	# mod1=list()
+	# mod2=list()
+	# mod1_size=list()
+	# mod2_size=list()
+	# genes=list()
+	# pval=list()
+	# element=1
+	# 
+	# for(treatment in sort(unique(treatDat$dynamicLabels))){
+	#         for(control in sort(unique(controlDat$dynamicLabels))){
+	#                 mod1[[element]]=treatment
+	#                 mod2[[element]]=control
+	#                 	mod1Genes=toupper(treatDat$X[treatDat$dynamicLabels==treatment])
+	#                 	mod2Genes=toupper(controlDat$X[controlDat$dynamicLabels==control])
+	#                 mod1_size[[element]]=length(mod1Genes)
+	# 		mod2_size[[element]]=length(mod2Genes)
+	# 		genes[[element]]=length(intersect(mod1Genes, mod2Genes))
+	#                 pval[[element]]=phyper(genes[[element]]-1,
+	#                 		mod1_size[[element]],
+	#                 		23000-mod1_size[[element]],
+	#                 		mod2_size[[element]],
+	#                 		lower.tail=FALSE, log.p=FALSE)
+	#                 if(pval[[element]]==0) pval[[element]]=.Machine$double.xmin
+	#                 element=element+1
+	#         }
+	# }
+	# data.frame(mod1=unlist(mod1),
+	#            mod2=unlist(mod2),
+	#            mod1.size=unlist(mod1_size),
+	# 	   	     mod2.size=unlist(mod2_size),
+	# 	   	     overlap=unlist(genes),
+	# 		       p.value=unlist(pval),
+	# 		       p.adj=unlist(p.adjust(pval, method='fdr')))
 }
 
 #' Module comparison plot
@@ -81,8 +108,11 @@ computeOverlapsFromWGCNA <- function(dataset1, dataset2) {
 #' A plotting function that returns a heatmap and barplot for a module
 #'
 #' @param overlapDf a data.frame resulting from a call to computeOverlapsFromWGCNA
-#' @param dataset1 an object of class WGCNAobject to compare with dataset2
-#' @param dataset2 an object of class WGCNAobject to compare with dataset1
+#' @param dataset1 an object of class WGCNA to compare with dataset2
+#' @param dataset2 an object of class WGCNA to compare with dataset1
+#'
+#' @return Returns a ggplot object (flowplot and heatmap) showing the module correspondence 
+#' between two objects of class WGCNA
 #'
 #' @author Dario Tommasini
 #'
@@ -90,6 +120,7 @@ computeOverlapsFromWGCNA <- function(dataset1, dataset2) {
 #' @import ggalluvial
 #' @import stringr
 #' @importFrom cowplot plot_grid
+#' 
 #' @export
 #' 
 #' @examples
@@ -232,12 +263,23 @@ continuousFlowPlot <- function(WGCNAlist){
 #' @param filterByTrait only plot for modules that correlate with some trait?
 #' @param alphaLevel the alpha level of significance for module-trait correlation, defaults to 0.05
 #'
+#' @return A ggplot object
+#'
 #' @import stringr
 #' @import ggplot2
 #' @export
+#' 
+#' @examples
+#' library(ExperimentHub)
+#' eh = ExperimentHub()
+#' eh_query = query(eh, c("multiWGCNAdata"))
+#' astrocyte_networks = eh_query[["EH8222"]]
+#' overlapDf = computeOverlapsFromWGCNA(astrocyte_networks$EAE, astrocyte_networks$WT)
+#' moduleToModuleHeatmap(overlapDf)
+#' 
 moduleToModuleHeatmap <- function(comparisonDf, dataset1=NULL, dataset2=NULL, trait1=NULL, trait2=NULL, list1=NULL, list2=NULL, filterByTrait=FALSE, alphaLevel=0.05){
 
-	#filter by trait if desired
+	# filter by trait if desired
 	if(!is.null(dataset1)){
 		if(!is.null(list1)){
 			mod1ToKeep=list1
@@ -272,7 +314,7 @@ moduleToModuleHeatmap <- function(comparisonDf, dataset1=NULL, dataset2=NULL, tr
 	comparisonDf$mod1=gsub("_"," ", gsub("^0+", "", str_split_fixed(comparisonDf$mod1,"_",2)[,2]))
 	comparisonDf$mod2=gsub("_"," ", gsub("^0+", "", str_split_fixed(comparisonDf$mod2,"_",2)[,2]))
 
-	ggplot(comparisonDf, aes(x = factor(mod1, levels=(unique(mod1))),
+	plot = ggplot(comparisonDf, aes(x = factor(mod1, levels=(unique(mod1))),
 	                         y = factor(mod2, levels=rev(unique(mod2))),
  				fill = (-log10(p.adj)), label = overlap)) +
 				geom_tile(color = "black") +
@@ -290,6 +332,8 @@ moduleToModuleHeatmap <- function(comparisonDf, dataset1=NULL, dataset2=NULL, tr
 					axis.ticks=element_blank(), legend.key.size=unit(4, "mm")) +
 				#geom_fit_text(reflow = TRUE)+
 				coord_fixed()
+	
+	return(plot)
 }
 
 #' Best matching modules
@@ -297,17 +341,29 @@ moduleToModuleHeatmap <- function(comparisonDf, dataset1=NULL, dataset2=NULL, tr
 #' Find all the modules from dataset1 that have a best match to a module in dataset2
 #' if that module in dataset2 is also a best match to the module in dataset1
 #'
-#' @param overlapDf a data.frame resulting from a call to computeOverlapsFromWGCNA
-#' @param plot generate a heatmap of best matching modules?
+#' @param comparisonDf a list with an elemnt "overlap", which is a data.frame resulting from a call to computeOverlapsFromWGCNA
+#' @param plot whether to generate a heatmap; default is TRUE
 #'
+#' @return A ggplot object
+#' 
 #' @author Dario Tommasini
 #'
 #' @import ggplot2
 #' @import stringr
 #' @import dplyr
 #' @export
-bidirectionalBestMatches <- function(overlapDf, plot=TRUE){
-  comparison=overlapDf
+#' 
+#' @examples
+#' library(ExperimentHub)
+#' eh = ExperimentHub()
+#' eh_query = query(eh, c("multiWGCNAdata"))
+#' astrocyte_networks = eh_query[["EH8222"]]
+#' comparisonDf = list()
+#' comparisonDf$overlaps = computeOverlapsFromWGCNA(astrocyte_networks$EAE, astrocyte_networks$WT)
+#' bidirectionalBestMatches(comparisonDf)
+#' 
+bidirectionalBestMatches <- function(comparisonDf, plot=TRUE){
+  comparison=comparisonDf
 	name1=str_split_fixed(comparison$overlap$mod1,"_",2)[,1][[1]]
 	name2=str_split_fixed(comparison$overlap$mod2,"_",2)[,1][[1]]
 	comparison$overlap$mod1=str_split_fixed(comparison$overlap$mod1,"_",2)[,2]
@@ -338,8 +394,8 @@ bidirectionalBestMatches <- function(overlapDf, plot=TRUE){
 											comparison$overlap$mod2 %in% bestMatches$mod2,]
 	# subsetComparisonDf$mod1=gsub("^0+", "", subsetComparisonDf$mod1,"_",2)
 	# subsetComparisonDf$mod2=gsub("^0+", "", subsetComparisonDf$mod2,"_",2)
-	if(plot) {
-		print(ggplot(subsetComparisonDf, 
+	if(plot){
+		plt = ggplot(subsetComparisonDf, 
 		             aes(x = factor(mod1, levels=bestMatchesSorted$mod1),
 		                y = factor(mod2, levels=rev(bestMatchesSorted$mod2)),
  				fill = (-log10(p.adj)))) +
@@ -356,7 +412,8 @@ bidirectionalBestMatches <- function(overlapDf, plot=TRUE){
 				theme(axis.text.x = element_text(angle = 0, hjust=(0.5)), 
 				      panel.background=element_blank(),
 				      plot.title = element_text(hjust = 0.5))+
-				coord_fixed())
+				coord_fixed()
+		print(plt)
 	}
 	colnames(bestMatchesSorted)=c(name1, name2, "p.adj")
 	return(bestMatchesSorted)
@@ -365,19 +422,33 @@ bidirectionalBestMatches <- function(overlapDf, plot=TRUE){
 #' Overlap comparisons
 #'
 #' Compares modules between two objects of type WGCNAobjects
-#' within a WGCNAobject list given the indices
+#' within a WGCNAobject list given the indices. Recommended to be used in 
+#' conjunction with the iterate function. 
 #'
 #' @param comparisonList a list passed by the iterate function
-#' @param WGCNAlist list of objects of type WGCNAobject
-#' @param first index of first WGCNAobject
-#' @param second index of second WGCNAobject
+#' @param WGCNAlist list of objects of class WGCNA
+#' @param first index of first WGCNA object
+#' @param second index of second WGCNA object
 #' @param element element position in the comparison list (passed by iterate function)
 #' @param plot generate plots?
 #' @param write write results to file?
+#' 
+#' @return A list, in which the first element is a data.frame showing the 
+#' overlap results and the second element is a data.frame showing the best 
+#' matching modules between the two WGCNA objects. 
 #'
 #' @author Dario Tommasini
 #'
 #' @export
+#' 
+#' @examples
+#' library(ExperimentHub)
+#' eh = ExperimentHub()
+#' eh_query = query(eh, c("multiWGCNAdata"))
+#' astrocyte_networks = eh_query[["EH8222"]]
+#' results = list()
+#' results$overlaps = iterate(astrocyte_networks, overlapComparisons, plot=FALSE)
+#' 
 overlapComparisons <- function(comparisonList, WGCNAlist, first, second, element, plot=TRUE, write=FALSE){
 	comparisonList[[element]]=list()
 	comparisonList[[element]]=append(comparisonList[[element]],
@@ -387,13 +458,16 @@ overlapComparisons <- function(comparisonList, WGCNAlist, first, second, element
 	if(write) write.csv(comparisonList[[element]]$overlap, paste0(names(WGCNAlist)[[first]], "_vs_", names(WGCNAlist)[[second]], ".csv"), row.names=F)
 	cat("\n#### comparing ", names(WGCNAlist)[[first]], " and ", names(WGCNAlist)[[second]], "####\n")
 	if(plot){
-		moduleComparisonPlot(comparisonList[[element]]$overlap,
+		print(
+		  moduleComparisonPlot(comparisonList[[element]]$overlap,
 						WGCNAlist[[first]],
 						WGCNAlist[[second]])
+		  )
 	}
 	comparisonList[[element]]=append(comparisonList[[element]],
 								list(bidirectionalBestMatches(comparisonList[[element]],
 									plot=plot)))
 	names(comparisonList[[element]])[[2]]=("bestMatches")
-	comparisonList
+	
+	return(comparisonList)
 }

@@ -7,8 +7,19 @@
 name(WGCNAobject)
 }
 \arguments{
-\item{WGCNAobject}{an object of type WGCNAobject}
+\item{WGCNAobject}{an object of class WGCNA}
+}
+\value{
+Returns the name of the WGCNA object, ie "EAE" for 
+astrocyte_networks$EAE.
 }
 \description{
 Returns the name of a WGCNAobject.
+}
+\examples{
+library(ExperimentHub)
+eh = ExperimentHub()
+eh_query = query(eh, c("multiWGCNAdata"))
+astrocyte_networks = eh_query[["EH8222"]]
+name(astrocyte_networks$EAE)
 }

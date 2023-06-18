@@ -7,9 +7,9 @@
 diffModuleExpression(
   WGCNAobject,
   geneList,
-  moduleName = NULL,
+  design,
+  plotTitle = NULL,
   mode = "PC1",
-  design = sampleTable,
   testColumn = 2,
   refColumn = 3,
   test = "ANOVA",
@@ -21,11 +21,11 @@ diffModuleExpression(
 
 \item{geneList}{vector of genes in WGCNAobject}
 
-\item{moduleName}{name of the module for the title}
+\item{design}{the sampleTable}
+
+\item{plotTitle}{title for the plot}
 
 \item{mode}{either PC1 or Zscore, default is PC1}
-
-\item{design}{the sampleTable}
 
 \item{testColumn}{the column of the sampleTable to be resolved}
 
@@ -36,5 +36,20 @@ diffModuleExpression(
 \item{plot}{generate a plot?}
 }
 \description{
-Runs (and plots if turned on) the differential module expression analysis
+Runs (and plots) the differential module expression analysis
+}
+\examples{
+library(ExperimentHub)
+eh = ExperimentHub()
+eh_query = query(eh, c("multiWGCNAdata"))
+astrocyte_se = eh_query[["EH8223"]]
+sampleTable = colData(astrocyte_se)
+astrocyte_networks = eh_query[["EH8222"]]
+diffModuleExpression(astrocyte_networks[["combined"]], 
+  topNGenes(astrocyte_networks$combined, "combined_013"), 
+  sampleTable,
+  test = "ANOVA",
+  plotTitle = "combined_013",
+  plot = TRUE)
+
 }

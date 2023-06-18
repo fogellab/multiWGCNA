@@ -38,25 +38,17 @@ sampleTable = colData(astrocyte_se)
 assays(astrocyte_se)[[1]][1:5, 1:5]
 sampleTable
 
-# Set the alpha level for statistical analyses and the soft power for network construction
-alphaLevel = 0.05
-softPower = 12
-
-# If your sample traits include numbers that you'd like to be considered numerical 
-# variables rather than categorical variables, set detectNumbers = TRUE
-detectNumbers = FALSE
+# Define our conditions for trait 1 (disease) and 2 (brain region)
+conditions1 = unique(sampleTable[,2])
+conditions2 = unique(sampleTable[,3])
 ```
 
 We now perform network construction, module eigengene calculation, module-trait correlation. Let's use power = 12 since we used this in our paper (Tommasini and Fogel. BMC Bioinformatics. 2023.) for all the networks. 
 
 ```{r, eval = FALSE}
-# Define our conditions for trait 1 (disease) and 2 (brain region)
-conditions1 = unique(sampleTable[,2])
-conditions2 = unique(sampleTable[,3])
-
 # Construct the combined networks and all the sub-networks (autism only, controls only, FC only, and TC only)
 # Same parameters as Tommasini and Fogel. BMC Bioinformatics
-myNetworks = constructNetworks(datExpr, sampleTable, conditions1, conditions2, 
+astrocyte_networks = constructNetworks(datExpr, sampleTable, conditions1, conditions2, 
                                   networkType = "signed", TOMType = "unsigned", 
                                   power = softPower, minModuleSize = 100, maxBlockSize = 25000,
                                   reassignThreshold = 0, minKMEtoStay = 0, mergeCutHeight = 0,
@@ -65,14 +57,14 @@ myNetworks = constructNetworks(datExpr, sampleTable, conditions1, conditions2,
 
 ```
 
-This step takes a while, so we also provide the WGCNA object list (myNetworks) in a loadable format. These were generated from the function above. 
+This step takes a while, so we also provide the WGCNA object list (astrocyte_networks) in a loadable format. These were generated from the function above. 
 
 ```{r}
 # Load pre-computed astrocyte networks
-myNetworks = eh_query[["EH8222"]] 
+astrocyte_networks = eh_query[["EH8222"]] 
 
 # Check one of the WGCNA objects
-myNetworks[["combined"]]
+astrocyte_networks[["combined"]]
 ```
 
 Next, we compare modules (by hypergeometric overlap) across conditions. We'll save the results in a list. 
@@ -80,7 +72,7 @@ Next, we compare modules (by hypergeometric overlap) across conditions. We'll sa
 ```{r, fig.height = 5, fig.width = 8}
 # Save results to a list
 results = list()
-results$overlaps = iterate(myNetworks, overlapComparisons, plot=FALSE)
+results$overlaps = iterate(astrocyte_networks, overlapComparisons, plot=FALSE)
 
 # Check the overlaps, ie between the EAE and wildtype networks
 head(results$overlaps$EAE_vs_WT$overlap)
@@ -90,7 +82,8 @@ Then, we perform differential module expression analysis to detect modules with 
 
 ```{r, fig.height = 6, fig.width = 7}
 # Run differential module expression analysis (DME) on combined networks
-results$diffModExp = runDME(myNetworks[["combined"]], 
+results$diffModExp = runDME(astrocyte_networks[["combined"]], 
+                            sampleTable,
                             p.adjust = "fdr", 
                             refCondition = "Region", 
                             testCondition = "Disease") 
@@ -101,11 +94,11 @@ results$diffModExp = runDME(myNetworks[["combined"]],
 results$diffModExp[order(results$diffModExp$Disease),]
 
 # You can check the expression of module M13 from Tommasini and Fogel. BMC Bioinformatics. 2023 like this. Note that the values reported in the bottom panel title are p-values and not adjusted for multiple comparisons like in results$diffModExp
-diffModuleExpression(myNetworks[["combined"]], 
-                     geneList = topNGenes(myNetworks[[1]], "combined_013"), 
-                     test = "ANOVA",
+diffModuleExpression(astrocyte_networks[["combined"]], 
+                     geneList = topNGenes(astrocyte_networks[[1]], "combined_013"), 
                      design = sampleTable,
-                     moduleName = "combined_013",
+                     test = "ANOVA",
+                     plotTitle = "combined_013",
                      plot = TRUE)
 
 ```
@@ -113,7 +106,7 @@ diffModuleExpression(myNetworks[["combined"]],
 We can now check to see if M13 is present in any of the sub-networks. An easy way to do this is using the network-network correspondences from hypergeometric overlap. These are stored in results$overlaps. We can plot these in a convenient visualization scheme that also organizes the three levels of the multiWGCNA analysis: 1) combined network, 2) EAE and wildtype networks, and 3) the four regional networks. 
 
 ```{r, fig.height = 6, fig.width = 7}
-drawMultiWGCNAnetwork(myNetworks, 
+drawMultiWGCNAnetwork(astrocyte_networks, 
                       results$overlaps, 
                       "combined_013", 
                       design = sampleTable, 
@@ -130,7 +123,25 @@ drawMultiWGCNAnetwork(myNetworks,
 
 We see that M13 is really only present in the EAE network, but not any of the other sub-networks. Most importantly, it cannot be resolved in the wildtype network. This makes M13 a biologically interesting network, both in terms of differential expression and differential co-expression. 
 
-Typically, you would want to follow this up with a preservation analysis between EAE and WT (described in general_workflow.Rmd). Then, one can perform a permutation procedure that estimates the probability of observing a disease/wildtype module with this preservation score in the wildtype/disease setting (diseasePreservationPtest). Please see Tommasini and Fogel. BMC Bioinformatics. 2023. for more details. 
+Typically, you would want to follow this up with a preservation analysis between EAE and WT (described in general_workflow.Rmd). 
+
+```{r, eval = FALSE, fig.height = 3, fig.width = 7}
+# To enable multi-threading
+library(doParallel)
+library(WGCNA)
+nCores = 8
+registerDoParallel(cores = nCores)
+enableWGCNAThreads(nThreads = nCores)
+
+# Calculate preservation statistics
+results$preservation=iterate(astrocyte_networks[conditions1], 
+                             preservationComparisons, 
+                             write=FALSE, 
+                             plot=TRUE, 
+                             nPermutations=100)
+```
+
+Then, one can perform a permutation procedure that estimates the probability of observing a disease/wildtype module with this preservation score in the wildtype/disease setting (diseasePreservationPtest). Please see Tommasini and Fogel. BMC Bioinformatics. 2023. for more details. 
 
 ```{r}
 sessionInfo()

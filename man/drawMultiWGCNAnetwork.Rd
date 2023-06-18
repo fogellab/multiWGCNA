@@ -8,7 +8,7 @@ drawMultiWGCNAnetwork(
   WGCNAlist,
   comparisonList,
   moduleOfInterest,
-  design = sampleTable,
+  design,
   overlapCutoff = 0,
   padjCutoff = 1,
   removeOutliers = T,
@@ -50,6 +50,21 @@ drawMultiWGCNAnetwork(
 \description{
 Draw a network where nodes are modules and edges represent significant gene overlap. 
 Modules are sorted by levels 1, 2, and 3.
+}
+\examples{
+library(ExperimentHub)
+eh = ExperimentHub()
+eh_query = query(eh, c("multiWGCNAdata"))
+astrocyte_se = eh_query[["EH8223"]]
+sampleTable = colData(astrocyte_se)
+astrocyte_networks = eh_query[["EH8222"]]
+results = list()
+results$overlaps = iterate(astrocyte_networks, overlapComparisons, plot=FALSE)
+drawMultiWGCNAnetwork(astrocyte_networks, 
+  results$overlaps, 
+  "combined_013", 
+  sampleTable)
+  
 }
 \author{
 Dario Tommasini

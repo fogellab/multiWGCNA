@@ -32,9 +32,30 @@ constructNetworks(
 
 \item{...}{Arguments to pass to blockwiseModules function}
 }
+\value{
+A list of WGCNA objects, ie level one, two, and three networks.
+}
 \description{
 A high level function that returns all networks
 possible for a given experimental design
+}
+\examples{
+library(ExperimentHub)
+eh = ExperimentHub()
+eh_query = query(eh, c("multiWGCNAdata"))
+autism_se = eh_query[["EH8219"]]
+set.seed(1)
+autism_se = autism_se[sample(rownames(autism_se), 500),]
+sampleTable = colData(autism_se)
+conditions1 = unique(sampleTable[,2])
+conditions2 = unique(sampleTable[,3])
+constructNetworks(autism_se, sampleTable, conditions1, conditions2, 
+  networkType = "signed", TOMType = "unsigned", 
+  power = 10, minModuleSize = 100, maxBlockSize = 25000,
+  reassignThreshold = 0, minKMEtoStay = 0, mergeCutHeight = 0,
+  numericLabels = TRUE, pamRespectsDendro = FALSE, 
+  deepSplit = 4, verbose = 3)
+
 }
 \author{
 Dario Tommasini

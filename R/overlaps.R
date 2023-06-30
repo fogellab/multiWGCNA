@@ -67,40 +67,6 @@ computeOverlapsFromWGCNA <- function(dataset1, dataset2) {
 
 	# Return columns in proper order
 	return(output.df[,c(1:2,6:7,3:5)] %>% arrange(mod1, mod2))
-	
-	# mod1=list()
-	# mod2=list()
-	# mod1_size=list()
-	# mod2_size=list()
-	# genes=list()
-	# pval=list()
-	# element=1
-	# 
-	# for(treatment in sort(unique(treatDat$dynamicLabels))){
-	#         for(control in sort(unique(controlDat$dynamicLabels))){
-	#                 mod1[[element]]=treatment
-	#                 mod2[[element]]=control
-	#                 	mod1Genes=toupper(treatDat$X[treatDat$dynamicLabels==treatment])
-	#                 	mod2Genes=toupper(controlDat$X[controlDat$dynamicLabels==control])
-	#                 mod1_size[[element]]=length(mod1Genes)
-	# 		mod2_size[[element]]=length(mod2Genes)
-	# 		genes[[element]]=length(intersect(mod1Genes, mod2Genes))
-	#                 pval[[element]]=phyper(genes[[element]]-1,
-	#                 		mod1_size[[element]],
-	#                 		23000-mod1_size[[element]],
-	#                 		mod2_size[[element]],
-	#                 		lower.tail=FALSE, log.p=FALSE)
-	#                 if(pval[[element]]==0) pval[[element]]=.Machine$double.xmin
-	#                 element=element+1
-	#         }
-	# }
-	# data.frame(mod1=unlist(mod1),
-	#            mod2=unlist(mod2),
-	#            mod1.size=unlist(mod1_size),
-	# 	   	     mod2.size=unlist(mod2_size),
-	# 	   	     overlap=unlist(genes),
-	# 		       p.value=unlist(pval),
-	# 		       p.adj=unlist(p.adjust(pval, method='fdr')))
 }
 
 #' Module comparison plot
@@ -154,15 +120,12 @@ moduleComparisonPlot <- function(overlapDf, dataset1, dataset2) {
 			axis.title.y=element_text(size=15),
 		panel.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
  		geom_stratum(width = .2, fill = colors) +
- 		#scale_colour_identity('Trait cor', labels = categories, breaks=palette, guide = 'legend')+
 		annotate("text", x=2.2, y=(1:length(categories))*(totalGenes/3)/length(categories),
 			label=categories, vjust=0, hjust=0, color=palette)+
 		geom_text(stat = "stratum", aes(label = gsub("^0+", "", after_stat(stratum))), size = 3, min.y=200) +
 		coord_cartesian(xlim = c(0.9, 2.5), clip = "off") +
-		#ggfittext::geom_fit_text(stat = "stratum", aes(label = after_stat(stratum)), min.size = 1) +
  		scale_x_discrete(expand=c(0,0), limits = c("Mod1", "Mod2"), labels=c(name1,name2))
-  
-	# print(ggarrange(flowPlot, heatmap, nrow=1, ncol=2, widths=c(1,2.5)))
+
 	plot = plot_grid(flowPlot, heatmap, labels = "AUTO", rel_widths = c(1, 2.5))
 	
 	return(plot)
@@ -206,7 +169,6 @@ continuousFlowPlot <- function(WGCNAlist){
 
 	finalData$identifier=apply(finalData, 1, function(x) paste0(x, sep="_"))
 
-
 	ggplot(uniqueSortedData, aes(y = geneOverlap, axis1 = mod1, axis2 = mod2, axis3 = mod3, axis4=mod4)) +
 		geom_flow(aes(fill = geneOverlap), width = .4, curve_type = "linear") + ylab("Genes") +
 		scale_fill_manual(values=c("white","red")) +
@@ -232,7 +194,6 @@ continuousFlowPlot <- function(WGCNAlist){
                         mod2[[element]]=two
                         mod3[[element]]=three
                         mod4[[element]]=four
-                        #genes[[element]]=nrow(df[df[,2]==one & df[,3]==two & df[,4]==three & df[,5]==four,])
                         element=element+1
                 	}
                 }
@@ -246,7 +207,6 @@ continuousFlowPlot <- function(WGCNAlist){
 	} else {
 		error("only WGCNAlist length of four implemented at the moment")
 	}
-	
 }
 
 #' Module to module heatmap
@@ -330,7 +290,6 @@ moduleToModuleHeatmap <- function(comparisonDf, dataset1=NULL, dataset2=NULL, tr
 					axis.text.y = element_text(hjust=1), plot.title = element_text(hjust = 0.5),
 					panel.background=element_blank(), axis.line=element_blank(),
 					axis.ticks=element_blank(), legend.key.size=unit(4, "mm")) +
-				#geom_fit_text(reflow = TRUE)+
 				coord_fixed()
 	
 	return(plot)
@@ -392,8 +351,6 @@ bidirectionalBestMatches <- function(comparisonDf, plot=TRUE){
 	subset_padj_matrix=padj_matrix[bestMatchesSorted$mod2,bestMatchesSorted$mod1]
 	subsetComparisonDf=comparison$overlap[comparison$overlap$mod1 %in% bestMatches$mod1 &
 											comparison$overlap$mod2 %in% bestMatches$mod2,]
-	# subsetComparisonDf$mod1=gsub("^0+", "", subsetComparisonDf$mod1,"_",2)
-	# subsetComparisonDf$mod2=gsub("^0+", "", subsetComparisonDf$mod2,"_",2)
 	if(plot){
 		plt = ggplot(subsetComparisonDf, 
 		             aes(x = factor(mod1, levels=bestMatchesSorted$mod1),
@@ -456,7 +413,7 @@ overlapComparisons <- function(comparisonList, WGCNAlist, first, second, element
 	names(comparisonList[[element]])=append(names(comparisonList[[element]]), c("overlap"))
 	names(comparisonList)[[element]]=paste0(names(WGCNAlist)[[first]], "_vs_", names(WGCNAlist)[[second]])
 	if(write) write.csv(comparisonList[[element]]$overlap, paste0(names(WGCNAlist)[[first]], "_vs_", names(WGCNAlist)[[second]], ".csv"), row.names=F)
-	cat("\n#### comparing ", names(WGCNAlist)[[first]], " and ", names(WGCNAlist)[[second]], "####\n")
+	message("\n#### comparing ", names(WGCNAlist)[[first]], " and ", names(WGCNAlist)[[second]], "####\n")
 	if(plot){
 		print(
 		  moduleComparisonPlot(comparisonList[[element]]$overlap,

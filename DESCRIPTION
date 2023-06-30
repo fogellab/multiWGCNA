@@ -1,9 +1,11 @@
 Package: multiWGCNA
 Type: Package
 Title: multiWGCNA
-Version: 0.99.1
+Version: 0.99.2
 Authors@R: c(
-    person("Dario", "Tommasini", email="dtommasini0@gmail.com", role = c("aut","cre")), 
+    person("Dario", "Tommasini", email="dtommasini0@gmail.com", 
+      role = c("aut","cre"), 
+      comment = c(ORCID = "0000-0002-1214-6547")),
     person("Brent", "Fogel", role = c("aut","ctb")))
 Description: An R package for deeping mining gene co-expression networks in 
     multi-trait expression data. 

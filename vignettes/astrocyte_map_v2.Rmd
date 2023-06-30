@@ -16,6 +16,8 @@ knitr::opts_chunk$set(
 )
 ```
 
+Load multiWGCNA library
+
 ```{r setup}
 library(multiWGCNA)
 ```
@@ -46,9 +48,9 @@ conditions2 = unique(sampleTable[,3])
 We now perform network construction, module eigengene calculation, module-trait correlation. Let's use power = 12 since we used this in our paper (Tommasini and Fogel. BMC Bioinformatics. 2023.) for all the networks. 
 
 ```{r, eval = FALSE}
-# Construct the combined networks and all the sub-networks (autism only, controls only, FC only, and TC only)
+# Construct the combined networks and all the sub-networks (EAE, WT, and each region)
 # Same parameters as Tommasini and Fogel. BMC Bioinformatics
-astrocyte_networks = constructNetworks(datExpr, sampleTable, conditions1, conditions2, 
+astrocyte_networks = constructNetworks(astrocyte_se, sampleTable, conditions1, conditions2, 
                                   networkType = "signed", TOMType = "unsigned", 
                                   power = softPower, minModuleSize = 100, maxBlockSize = 25000,
                                   reassignThreshold = 0, minKMEtoStay = 0, mergeCutHeight = 0,
@@ -57,7 +59,7 @@ astrocyte_networks = constructNetworks(datExpr, sampleTable, conditions1, condit
 
 ```
 
-This step takes a while, so we also provide the WGCNA object list (astrocyte_networks) in a loadable format. These were generated from the function above. 
+This step takes a while since it performs seven network constructions, so we also provide the WGCNA object list (astrocyte_networks) in a loadable format. These were generated from the function above. 
 
 ```{r}
 # Load pre-computed astrocyte networks

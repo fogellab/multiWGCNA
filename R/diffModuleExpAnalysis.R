@@ -38,14 +38,11 @@ moduleExpressionPlot <- function(WGCNAobject, geneList, mode="PC1", legend=FALSE
 		stdev=apply(subset, 1, sd)
 		zscoreMatrix=(subset-mean)/stdev
 		zscoreMatrix=na.omit(zscoreMatrix)
-		#averageExpression=apply(zscoreMatrix, 2, mean)
-		#moduleExpression=data.frame(Sample=names(averageExpression), moduleExpression=averageExpression)
 		moduleExpression=reshape2::melt(zscoreMatrix)
 		colnames(moduleExpression)=c("Gene", "Sample", "Expression")
 		mergedData=cbind(moduleExpression, design[match(moduleExpression$Sample, design$X),-1])
 		boxplot <- ggplot(data=mergedData, aes(x=Sample, y=Expression, color=eval(parse(text=colnames(design)[[2]])))) +
     				geom_boxplot() +
-    				#scale_color_manual(values=c("red", "blue")) +
     				guides(color=guide_legend(title="Condition")) +
     				{if(!legend) theme(legend.position = "none")} +
     				theme(panel.background = element_blank(), axis.line = element_line(colour = "black"),
@@ -62,10 +59,8 @@ moduleExpressionPlot <- function(WGCNAobject, geneList, mode="PC1", legend=FALSE
 		mergedData=cbind(moduleExpression, design[match(moduleExpression$Sample, design$X),-1])
 		bargraph <- ggplot(data=moduleExpression, aes(x=factor(Sample, levels=Sample), y=moduleExpression))+
 					ylab(mode) +
-					#ggtitle(title) +
 					geom_bar(aes(fill= moduleExpression), stat="identity", color="black", position=position_dodge(9)) +
 	       			scale_fill_gradient2(name=mode, low = "blue", mid="white", high = "red", midpoint=0) +
-	       			#scale_x_discrete(labels=tolower(paste0(substr(mergedData[,3],0,3), "_", substr(mergedData[,4],0,3)))) +
 	     		  	theme(axis.ticks.x=element_blank(), axis.text.x=element_text(angle=90, hjust=1),
 	     		  	panel.background = element_blank(), axis.line.y = element_line(colour = "black"),
 	       			plot.title=element_text(hjust=0.5), panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
@@ -105,7 +100,7 @@ expressionHeatmap <- function(datExpr,
 		tree=hclust(dist(zscoreMatrix), method = "average")
 		collapsedMatrix$Gene=factor(collapsedMatrix$Gene, levels=rev(rownames(zscoreMatrix)[tree$order]))
 	}
-	ggplot(collapsedMatrix, aes(x = Sample, y = Gene, fill = Zscore)) +
+	plt = ggplot(collapsedMatrix, aes(x = Sample, y = Gene, fill = Zscore)) +
 				geom_tile() +
 				ylab("Gene") +
 				{if(!is.null(plotTitle)) ggtitle(plotTitle)}+
@@ -117,7 +112,8 @@ expressionHeatmap <- function(datExpr,
 				{if(!row.labels) theme(axis.text.y = element_blank())} +
 				{if(!legend) theme(legend.position = "none")} +
 				theme(axis.ticks=element_blank(), axis.line=element_blank(), plot.title=element_text(hjust=0.5))
-
+	
+	return(plt)
 }
 
 #' Run differential module expression
@@ -232,8 +228,6 @@ diffModuleExpression <- function(WGCNAobject,
   
 	refCondition=colnames(design)[[refColumn]]
 	testCondition=colnames(design)[[testColumn]]
-	# ref=refCondition
-	# test=testCondition
 
 	cleanDatExpr=t(cleanDatExpr(datExpr))
 	geneList=geneList[geneList %in% rownames(cleanDatExpr)]
@@ -251,7 +245,6 @@ diffModuleExpression <- function(WGCNAobject,
 	if(mode=="PC1"){
 		PC1=moduleEigengenes(t(subset), colors = rep("Module", length(geneList)), nPC=1)$eigengenes
 		moduleExpression=data.frame(Sample=rownames(PC1), moduleExpression=PC1)
-		# print(moduleExpression %>% arrange(Sample))
 		colnames(moduleExpression)=c("Sample", "moduleExpression")
 	}
 
@@ -286,7 +279,6 @@ diffModuleExpression <- function(WGCNAobject,
 	boxplot <- ggplot(data=mergedData, aes(x=eval(parse(text=refCondition)), y=moduleExpression, color=eval(parse(text=testCondition)))) +
     				labs(title=paste0("p: ", paste(pval.df$Factors, signif(pval.df$p.value,2), sep = '=', collapse = ', ')),
    					y="Expression", x=refCondition) +
-    				#geom_hline(yintercept=0, linetype="solid", color = "black", size=0.5) +
     				geom_boxplot(width=1/length(unique(mergedData[,refCondition]))) +
     				scale_color_manual(values=c("red", "blue")) +
     				guides(color=guide_legend(title=testCondition)) +
@@ -295,7 +287,7 @@ diffModuleExpression <- function(WGCNAobject,
 
 	if(plot){
 		print(heatmap / bargraph / boxplot)
-		cat(paste0("#### plotting ", plotTitle, " ####\n"))
+		message(paste0("#### plotting ", plotTitle, " ####\n"))
 	}
 
 	return(pval.df)

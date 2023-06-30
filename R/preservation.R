@@ -19,18 +19,16 @@ getPreservation <- function(reference, test, nPermutations=100, write=FALSE) {
 	reference=reference@datExpr
 	test=test@datExpr
 
-	#clean up reference datExpr
+	# clean up reference datExpr
 	name1=str_split_fixed(reference$dynamicLabels, "_", 2)[1,1]
 	name2=str_split_fixed(test$dynamicLabels, "_", 2)[1,1]
 	referenceExpr = cleanDatExpr(reference, checkGenesSamples=T)
 
-	#clean up test datExpr
+	# clean up test datExpr
 	testExpr = cleanDatExpr(test, checkGenesSamples=T)
 
 	referenceModules=reference$dynamicLabels[match(colnames(referenceExpr), reference$X)]
-
-	#testModules=test$dynamicLabels[match(colnames(testExpr), test$X)]
-
+	
 	#calculate perservation Z-scores
 	multiExpr2 = list(A = list(data = referenceExpr), B = list(data = testExpr));
 	modLabels2 = list(A = referenceModules) #, B = testModules)
@@ -120,12 +118,7 @@ preservationComparisonPlot <- function(preservationDf, dataset1, dataset2, alpha
 			geom_vline(xintercept=(-log10(alphaLevel)), linetype="dashed", color = "red", size=1)
 
 	dataset2Plot <-ggplot(input2, aes(log10Pvalue, Zsum, fill=trait)) +
-		geom_point(shape=21, size=2)+
-			# theme(panel.grid.major = element_blank(),
-				# panel.grid.minor = element_blank(),
-				# panel.background = element_blank(),
-				# axis.line = element_line(colour = "black"),
-				# plot.title=element_text(hjust=0.5))+
+		  geom_point(shape=21, size=2)+
 			theme_classic()+
 			scale_fill_manual(values=myColors2)+
 			labs(title=paste0(name2, " in ", name1), y = "Preservation (z-summary)", x="Trait association (-log10 p-value)")+
@@ -209,18 +202,14 @@ coexpressionLineGraph <- function(datExpr, nDiseaseSamples, nWTSamples, splitBy=
 	}
 
 	plot = ggplot(reshape2::melt(as.matrix(scaled)), aes(x = Var1, y = value, group= Var2, color=Var2, label=Var2)) +
-				#geom_line(aes(color=factor(rep(c(rep("healthy", nWTSamples), rep("disease", nDiseaseSamples)), nGenes), levels=c("healthy", "disease")))) +
 				geom_line()+
-				#scale_color_hue(name = "Gene", l=70, c=30) +
 				{if(is.null(colors)) scale_colour_manual(values=colors(nGenes))}+
 				{if(!is.null(colors)) scale_colour_manual(values=colors)}+
 				labs(y="Scaled expression", x="Samples") +
 				theme_classic() +
 				coord_cartesian(clip="off")+
-				#scale_x_discrete(limits=c(0, 40))+
 				annotate("text", x=nWTSamples+nDiseaseSamples+0.5, y=-0.5, hjust=0, vjust=0,
 					label=paste0(rev(colnames(datExpr)), collapse='', sep='\n'), size=fontSize)+
-				#geom_text_repel()+
 				geom_vline(xintercept= nDiseaseSamples+1, linetype='dashed') +
 				theme(legend.position="none", axis.text.x=element_text(angle=90, vjust=0.25, hjust=1),
 					axis.text.y=element_blank(), axis.ticks=element_blank(),
@@ -243,7 +232,6 @@ correlationComparisonBoxplot <- function(diseaseDatExpr, healthyDatExpr, geneLis
 	healthyCorMatrix=cor(healthyMatrix, method=method)
 	healthyCor=healthyCorMatrix[lower.tri(healthyCorMatrix)]
 
-	#boxplot(diseaseCor, healthyCor)
 	indices <- which(lower.tri(diseaseCorMatrix) == TRUE, arr.ind=T)
 	names1 <- geneList[indices[,1]]
 	names2 <- geneList[indices[,2]]
@@ -266,8 +254,6 @@ correlationComparisonBoxplot <- function(diseaseDatExpr, healthyDatExpr, geneLis
 		scale_fill_manual(values=c("magenta", "cyan")) +
 		stat_boxplot(geom = 'errorbar', lwd=1, width = 0.3, coef = 3) +
 		geom_boxplot(notch = TRUE, outlier.shape=NA)
-		#geom_dotplot(binaxis='y', stackdir='center', stackratio=1.5,
-		#			binwidth=0.01, dotsize=1)
 }
 
 correlationComparisonHeatmaps <- function(diseaseDatExpr, healthyDatExpr, geneList, label=F, method="pearson", alphaLevel=0.05, p.adjust=T, z.score.limit=3){
@@ -281,7 +267,6 @@ correlationComparisonHeatmaps <- function(diseaseDatExpr, healthyDatExpr, geneLi
 	healthyCorMatrix=cor(healthyMatrix, method=method)
 	healthyCor=healthyCorMatrix[upper.tri(healthyCorMatrix)]
 
-	#boxplot(diseaseCor, healthyCor)
 	indices <- which(upper.tri(diseaseCorMatrix) == TRUE, arr.ind=T)
 	names1 <- geneList[indices[,1]]
 	names2 <- geneList[indices[,2]]
@@ -359,8 +344,6 @@ correlationComparisonHeatmaps <- function(diseaseDatExpr, healthyDatExpr, geneLi
 					coord_fixed(clip="off")
 	boxPlot <- correlationComparisonBoxplot(diseaseDatExpr, healthyDatExpr, geneList)
 
-
-	#ggarrange(diseasePlot, healthyPlot, dcPlot, boxPlot, ncol=4, align="hv", widths=c(3, 3, 3, 1), axis = "bt")
 	plot = plot_grid(diseasePlot, healthyPlot, dcPlot, boxPlot, ncol=4, align = "hv",
 		axis = "tb", rel_widths = c(2, 2, 2, 1))
 	
@@ -439,13 +422,10 @@ diffCoexpression <- function(datExpr, conditions, geneList=NULL, plot=FALSE, met
 	}
 
 	if(!label) V(graph)$name=NA
-	#ecol=lapply(E(graph)$weight, function(x) rgb(1-x, 1-x, 1-x))
-	#ewidth=rescale(E(graph)$weight, from=c(0,1), to=c(0, 1.5))
 
 	if(plot){
 		plot(graph, layout=layout_with_fr, edge.width=1.5, vertex.shape=shape,
 		vertex.color="white", vertex.label.dist=labelDist, vertex.label.color="black",
-		#vertex.size=(strwidth(V(graph)$name)+strwidth("oo"))*100,
 		vertex.label.cex=labelSize, edge.color=unlist(ecol))
 	} else {
 		list(z_scores, raw_p, adj_p, summaryDf %>% arrange(p.adj))

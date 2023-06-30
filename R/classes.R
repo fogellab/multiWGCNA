@@ -6,7 +6,7 @@ setClass("WGCNA", slots=list(datExpr="data.frame",
 
 setMethod("show", "WGCNA", function(object) {
 		cat("##### datExpr #####\n")
-		print(head(object@datExpr))
+		print(head(object@datExpr[,1:5]))
 		if(length(object@conditions)>0){
 			cat("\n##### conditions #####\n")
 			print(head(object@conditions))

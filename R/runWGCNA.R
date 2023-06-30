@@ -36,7 +36,6 @@ findOutlierModules <- function(WGCNAobject, byName=TRUE, method="Var", varCutoff
                         outlierModules=modules[apply(WGCNAobject@moduleEigengenes, 1, function(MEs){
                                 any(MEs < quantile(MEs)[[2]]-IQRcutoff*IQR(MEs)) | any(MEs > quantile(MEs)[[4]]+IQRcutoff*IQR(MEs))
                         })]
-                        #rownames(WGCNAobject@moduleEigengenes)[outlierModules]
                 } else {
 
                 }
@@ -54,7 +53,6 @@ findOutlierModules <- function(WGCNAobject, byName=TRUE, method="Var", varCutoff
 
 findBestTrait <- function(WGCNAobject, alphaLevel=0.05, p.adjust=FALSE, write=FALSE) {
         traitTable=WGCNAobject@trait
-        #identifier=name(WGCNAobject)
         group=apply(traitTable[,which(startsWith(colnames(traitTable),"p.value"))], 1, which.min)
         traitTable$trait=gsub("p.value.", "", colnames(traitTable)[which(startsWith(colnames(traitTable), "p.value"))])[group]
         bestPvalues=apply(traitTable[,which(startsWith(colnames(traitTable),"p.value"))], 1, function(x) x[[which.min(x)]])
@@ -62,7 +60,6 @@ findBestTrait <- function(WGCNAobject, alphaLevel=0.05, p.adjust=FALSE, write=FA
 	      traitTable$log10Pvalue= -log10(bestPvalues)
         traitTable$trait[traitTable$log10Pvalue<(-log10(as.numeric(alphaLevel)))]="None"
         traitTable$Module=gsub("ME", "", traitTable$Module)
-        #if(write) write.csv(traitTable, paste0(identifier, "_modTraitCor.csv", row.names=F))
         WGCNAobject@trait=traitTable
         return(WGCNAobject)
 }
@@ -80,7 +77,6 @@ traitCor <- function(WGCNAobject, write=FALSE){
         moduleTraitPvalueL = corPvalueStudent(moduleTraitCorL, nSamples);
         colnames(moduleTraitPvalueL) = paste0("p.value.", colnames(moduleTraitCorL));
         traitCor=cbind(Module=gsub("ME", "", rownames(moduleTraitCorL)), moduleTraitCorL, moduleTraitPvalueL)
-        #rownames(traitCor)=rownames(moduleTraitCorL)
         rownames(traitCor)=seq_len(nrow(traitCor))
         if(write) write.csv(traitData, paste0(identifier,"_conditions.csv"), row.names=F)
 	      if(write) write.csv(traitCor, paste0(identifier,"_TraitCor.csv"), row.names=F)
@@ -146,19 +142,18 @@ plotModules <- function(WGCNAobject, mode="PC1"){
 #' sampleTable = colData(autism_se)
 #' conditions1 = unique(sampleTable[,2])
 #' conditions2 = unique(sampleTable[,3])
-#' constructNetworks(autism_se, sampleTable, conditions1, conditions2, 
+#' autism_networks = constructNetworks(autism_se, sampleTable, conditions1, conditions2, 
 #'   networkType = "signed", TOMType = "unsigned", 
 #'   power = 10, minModuleSize = 100, maxBlockSize = 25000,
 #'   reassignThreshold = 0, minKMEtoStay = 0, mergeCutHeight = 0,
 #'   numericLabels = TRUE, pamRespectsDendro = FALSE, 
 #'   deepSplit = 4, verbose = 3)
+#' autism_networks[["combined"]]
 #' 
 constructNetworks <- function(datExpr, sampleTable, conditions1, conditions2, write=FALSE, alphaLevel=0.05, plot=FALSE, ...){
 
   # Put data in expected format
   datExpr = data.frame(X = rownames(assays(datExpr)[[1]]), assays(datExpr)[[1]])
-  # colnames(datExpr)[[1]] = "X"
-  # datExpr = as.data.frame(datExpr)
   
 	conditions1TraitTable=makeTraitTable(sampleTable, 3) #subset by conditions1, resolve conditions2
 	conditions2TraitTable=makeTraitTable(sampleTable, 2) #subset by conditions2, resolve conditions1

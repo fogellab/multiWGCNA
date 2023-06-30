@@ -5,7 +5,7 @@ printModules <- function(WGCNAobject){
 	datExpr=WGCNAobject@datExpr
 	for(module in sort(unique(datExpr$dynamicLabels))){
 		file_name=paste0(dir_name, "/", module, ".txt")
-		cat("### writing ", file_name, " ###\n")
+		message("### writing ", file_name, " ###\n")
 		write.table(datExpr$X[datExpr$dynamicLabels==module], 
 			file_name, 
 			quote=F, 
@@ -93,7 +93,6 @@ subsetDatExpr <- function(WGCNAobject, geneList){
 
 prepareWGCNA <- function(WGCNAobject){
 	newWGCNA= findBestTrait(WGCNAobject)
-	#newWGCNA = findModuleEigengenes(newWGCNA)
 	newWGCNA = findOutlierModules(newWGCNA)
 	newWGCNA
 }
@@ -214,8 +213,6 @@ keyModules <- function(WGCNAobject){
 #' @export
 summarizeResults <- function(myNetworks, results, alphaLevel=0.05, write=FALSE, outputFile="results.txt") {
 	if(write) sink(outputFile)
-	#name1=str_split_fixed(rownames(comparison$mod1Preservation[rownames(comparison$mod1Preservation) != "gold",]),"_",2)[,1][[1]]
-	#name2=str_split_fixed(rownames(comparison$mod2Preservation[rownames(comparison$mod2Preservation) != "gold",]),"_",2)[,1][[1]]
 
 	#identify interesting (trait-associated) modules across levels
 	modulesOfInterest=vector()
@@ -224,7 +221,7 @@ summarizeResults <- function(myNetworks, results, alphaLevel=0.05, write=FALSE, 
 	}
 
 	for(element in results$preservation){
-		cat("\n### Non-preserved modules ###\n")
+		message("\n### Non-preserved modules ###\n")
 		mod1Pres=element[[1]][which(element[[1]]$Zsummary.pres < 10 & rownames(element[[1]]) %in% modulesOfInterest),]
 		if(nrow(mod1Pres>0)) print(mod1Pres)
 		mod2Pres=element[[2]][which(element[[2]]$Zsummary.pres < 10 & rownames(element[[2]]) %in% modulesOfInterest),]
@@ -232,11 +229,7 @@ summarizeResults <- function(myNetworks, results, alphaLevel=0.05, write=FALSE, 
 	}
 
 	diffModExp=results$diffModExp
-	#diffModExp$isInterestingModule = input1$log10Pvalue[match(paste0("ME", diffModExp$mod1), input1$Module)] > -log10(alpha) |
-	#							input2$log10Pvalue[match(paste0("ME", diffModExp$mod2),input2$Module)] > -log10(alpha)
-	cat(paste0("\n### Differentially expressed modules ###\n"))
-	#print(diffModExp[rownames(diffModExp) %in% modulesOfInterest & apply(diffModExp, 1, function(p) any(p<0.05)), ])
-	#print(modulesOfInterest)
+	message("\n### Differentially expressed modules ###\n")
 	print(diffModExp[apply(diffModExp, 1, function(p) any(p<0.05)),])
 	if(write) sink()
 }

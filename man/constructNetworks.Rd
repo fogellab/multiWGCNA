@@ -49,12 +49,13 @@ autism_se = autism_se[sample(rownames(autism_se), 500),]
 sampleTable = colData(autism_se)
 conditions1 = unique(sampleTable[,2])
 conditions2 = unique(sampleTable[,3])
-constructNetworks(autism_se, sampleTable, conditions1, conditions2, 
+autism_networks = constructNetworks(autism_se, sampleTable, conditions1, conditions2, 
   networkType = "signed", TOMType = "unsigned", 
   power = 10, minModuleSize = 100, maxBlockSize = 25000,
   reassignThreshold = 0, minKMEtoStay = 0, mergeCutHeight = 0,
   numericLabels = TRUE, pamRespectsDendro = FALSE, 
   deepSplit = 4, verbose = 3)
+autism_networks[["combined"]]
 
 }
 \author{

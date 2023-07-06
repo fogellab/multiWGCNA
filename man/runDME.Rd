@@ -12,7 +12,7 @@ runDME(
   refCondition = NULL,
   p.adjust = "fdr",
   plot = FALSE,
-  test = "ANOVA",
+  test = c("ANOVA", "PERMANOVA"),
   write = FALSE,
   out = NULL
 )
@@ -37,6 +37,9 @@ runDME(
 \item{write}{write results to a file?}
 
 \item{out}{file name for DME plots, only used if write is TRUE}
+}
+\value{
+a data.frame summarizing the results of the analysis
 }
 \description{
 A wrapper to run diffModuleExpression on all the modules in a network

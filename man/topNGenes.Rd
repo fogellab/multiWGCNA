@@ -7,11 +7,14 @@
 topNGenes(WGCNAobject, module, nGenes = NULL)
 }
 \arguments{
-\item{WGCNAobject}{an object of type WGCNAobject}
+\item{WGCNAobject}{an object of class WGCNA}
 
 \item{module}{the name of the module in WGCNAobject}
 
 \item{nGenes}{an integer from 1 to module size; returns all genes if left NULL}
+}
+\value{
+a character vector of the genes/probes in the module
 }
 \description{
 Returns the top N number of genes of a module.

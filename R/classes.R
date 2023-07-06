@@ -1,3 +1,5 @@
+#' @title Class \code{WGCNA}
+#' @import methods
 setClass("WGCNA", slots=list(datExpr="data.frame", 
                              conditions="data.frame", 
                              trait="data.frame", 

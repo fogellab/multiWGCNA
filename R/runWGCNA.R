@@ -4,13 +4,13 @@ performWGCNA <- function(datExpr, traitData, identifier, alphaLevel=0.05, write=
   # Set network type to WGCNA's default unsigned if not defined in constructNetworks function
   if(is.null(arguments$networkType)) arguments$networkType = "unsigned"
   
-  datExpr = t(cleanDatExpr(datExpr, checkGenesSamples = T))
+  datExpr = t(cleanDatExpr(datExpr, checkGenesSamples = TRUE))
   my_net = blockwiseModules(t(datExpr), ...)
   degrees1=intramodularConnectivity.fromExpr(t(datExpr), my_net$colors,
                                             networkType=arguments$networkType, power=arguments$power)
   dynamicLabels=paste(identifier, "_", str_pad(my_net$colors, 3, pad="0"), sep="")
   summary = cbind(data.frame(X = rownames(datExpr), datExpr), degrees1, dynamicLabels)
-  if(write) write.csv(summary, file=paste0(identifier, "_summary.csv"), row.names=F)
+  if(write) write.csv(summary, file=paste0(identifier, "_summary.csv"), row.names=FALSE)
   myWGCNA <- new("WGCNA", datExpr=summary, conditions=traitData)
 	myWGCNA=findModuleEigengenes(myWGCNA, write=write)
 	myWGCNA=traitCor(myWGCNA, write=write)
@@ -78,8 +78,8 @@ traitCor <- function(WGCNAobject, write=FALSE){
         colnames(moduleTraitPvalueL) = paste0("p.value.", colnames(moduleTraitCorL));
         traitCor=cbind(Module=gsub("ME", "", rownames(moduleTraitCorL)), moduleTraitCorL, moduleTraitPvalueL)
         rownames(traitCor)=seq_len(nrow(traitCor))
-        if(write) write.csv(traitData, paste0(identifier,"_conditions.csv"), row.names=F)
-	      if(write) write.csv(traitCor, paste0(identifier,"_TraitCor.csv"), row.names=F)
+        if(write) write.csv(traitData, paste0(identifier,"_conditions.csv"), row.names=FALSE)
+	      if(write) write.csv(traitCor, paste0(identifier,"_TraitCor.csv"), row.names=FALSE)
         WGCNAobject@trait=as.data.frame(traitCor)
         return(WGCNAobject)
 }
@@ -90,7 +90,7 @@ findModuleEigengenes <- function(WGCNAobject, write=FALSE){
 	moduleEigengenes=moduleEigengenes(cleanDatExpr(datExpr2), colors = datExpr2$dynamicLabels, nPC=1)$eigengenes
         moduleEigengenes=as.data.frame(t(moduleEigengenes))
 	rownames(moduleEigengenes)=gsub("ME", "", rownames(moduleEigengenes))
-	if(write) write.csv(moduleEigengenes, paste0(identifier,"_moduleEigengenes.csv"), row.names=T)
+	if(write) write.csv(moduleEigengenes, paste0(identifier,"_moduleEigengenes.csv"), row.names=TRUE)
 	WGCNAobject@moduleEigengenes=moduleEigengenes
 	return(WGCNAobject)
 }
@@ -112,7 +112,7 @@ plotModules <- function(WGCNAobject, mode="PC1"){
 #' A high level function that returns all networks
 #' possible for a given experimental design
 #'
-#' @param datExpr data.frame where column 1 has samples and row 1 has genes
+#' @param datExpr either a SummarizedExperiment object or data.frame with genes are rows and samples as columns
 #' @param sampleTable data.frame with sample traits
 #' @param conditions1 first design conditions, ie healthy/disease
 #' @param conditions2 second design conditions, ie frontal lobe/temporal lobe
@@ -152,8 +152,15 @@ plotModules <- function(WGCNAobject, mode="PC1"){
 #' 
 constructNetworks <- function(datExpr, sampleTable, conditions1, conditions2, write=FALSE, alphaLevel=0.05, plot=FALSE, ...){
 
-  # Put data in expected format
-  datExpr = data.frame(X = rownames(assays(datExpr)[[1]]), assays(datExpr)[[1]])
+  # Check input data format
+  stopifnot(inherits(datExpr, "SummarizedExperiment") | inherits(datExpr, "SummarizedExperiment"))
+  
+  # Put data in expected format, with genes in first column names "X"
+  if(inherits(datExpr, "SummarizedExperiment")){
+    datExpr = data.frame(X = rownames(assays(datExpr)[[1]]), assays(datExpr)[[1]])
+  } else if(inherits(datExpr, "data.frame")){
+    datExpr = data.frame(X = rownames(datExpr), datExpr)
+  }
   
 	conditions1TraitTable=makeTraitTable(sampleTable, 3) #subset by conditions1, resolve conditions2
 	conditions2TraitTable=makeTraitTable(sampleTable, 2) #subset by conditions2, resolve conditions1

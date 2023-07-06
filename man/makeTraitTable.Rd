@@ -7,11 +7,14 @@
 makeTraitTable(inputTable, column, detectNumbers = FALSE)
 }
 \arguments{
-\item{inputTable}{the sampleTable dataframe}
+\item{inputTable}{the sampleTable data.frame}
 
 \item{column}{the column from the sampleTable to use as traits}
 
 \item{detectNumbers}{whether to consider traits with numbers as numerical rather than categorical variables}
+}
+\value{
+a data.frame with integer values denoting the categorical sample traits
 }
 \description{
 Generates a WGCNA-compatible trait table from a sampleTable dataframe

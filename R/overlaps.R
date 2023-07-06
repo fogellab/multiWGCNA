@@ -21,6 +21,10 @@
 #' computeOverlapsFromWGCNA(astrocyte_networks$EAE, astrocyte_networks$WT)
 #' 
 computeOverlapsFromWGCNA <- function(dataset1, dataset2) {
+  
+  # Check input
+  stopifnot(inherits(dataset1, "WGCNA") & inherits(dataset2, "WGCNA"))
+  
 	datExpr1 <- dataset1@datExpr
 	datExpr2 <- dataset2@datExpr
 	treatDat <- datExpr1
@@ -98,13 +102,17 @@ computeOverlapsFromWGCNA <- function(dataset1, dataset2) {
 #' moduleComparisonPlot(overlapDf, astrocyte_networks$EAE, astrocyte_networks$WT)
 #' 
 moduleComparisonPlot <- function(overlapDf, dataset1, dataset2) {
+  
+  # Check input
+  stopifnot(inherits(dataset1, "WGCNA") & inherits(dataset2, "WGCNA"))
+  
 	data=overlapDf
 	name1=str_split_fixed(data$mod1,"_",2)[,1][[1]]
 	name2=str_split_fixed(data$mod2,"_",2)[,1][[1]]
 	data$mod1=str_split_fixed(data$mod1,"_",2)[,2]
 	data$mod2=paste0(str_split_fixed(data$mod2,"_",2)[,2]," ") #add spaces to avoid ambiguous plot labels
 	categories=unique(c(dataset1@trait$trait, dataset2@trait$trait))
-	palette=colors(length(categories), random=F)
+	palette=colors(length(categories), random=FALSE)
 	colors=palette[match(c(rev(dataset1@trait$trait), rev(dataset2@trait$trait)), categories)]
 	totalGenes=sum(data$overlap)
 
@@ -213,11 +221,11 @@ continuousFlowPlot <- function(WGCNAlist){
 #'
 #' Returns a heatmap where color corresponds to FDR-adjusted overlap (hypergeometric test) and the label corresponds to the number of overlapping genes
 #'
-#' @param comparisonDf the output of computeOverlapFromWGCNA
-#' @param dataset1 WGCNAobject for dataset 1
-#' @param dataset2 WGCNAobject for dataset 2
-#' @param trait1 subset to modules correlated to this trait for dataset 1
-#' @param trait2 subset to modules correlated to this trait for dataset 2
+#' @param comparisonDf the data.frame output of computeOverlapFromWGCNA
+#' @param dataset1 optional; WGCNA object for dataset 1
+#' @param dataset2 optional; WGCNA object for dataset 2
+#' @param trait1 optional; subset to modules correlated to this trait for dataset 1
+#' @param trait2 optional; subset to modules correlated to this trait for dataset 2
 #' @param list1 subset to this list of modules for dataset 1
 #' @param list2 subset to this list of modules for dataset 2
 #' @param filterByTrait only plot for modules that correlate with some trait?
@@ -238,7 +246,10 @@ continuousFlowPlot <- function(WGCNAlist){
 #' moduleToModuleHeatmap(overlapDf)
 #' 
 moduleToModuleHeatmap <- function(comparisonDf, dataset1=NULL, dataset2=NULL, trait1=NULL, trait2=NULL, list1=NULL, list2=NULL, filterByTrait=FALSE, alphaLevel=0.05){
-
+  
+  # Check input
+  stopifnot(inherits(comparisonDf, "data.frame"))
+  
 	# filter by trait if desired
 	if(!is.null(dataset1)){
 		if(!is.null(list1)){
@@ -300,7 +311,7 @@ moduleToModuleHeatmap <- function(comparisonDf, dataset1=NULL, dataset2=NULL, tr
 #' Find all the modules from dataset1 that have a best match to a module in dataset2
 #' if that module in dataset2 is also a best match to the module in dataset1
 #'
-#' @param comparisonDf a list with an elemnt "overlap", which is a data.frame resulting from a call to computeOverlapsFromWGCNA
+#' @param comparisonList a list with an elemnt "overlap", which is a data.frame resulting from a call to computeOverlapsFromWGCNA
 #' @param plot whether to generate a heatmap; default is TRUE
 #'
 #' @return A ggplot object
@@ -317,12 +328,16 @@ moduleToModuleHeatmap <- function(comparisonDf, dataset1=NULL, dataset2=NULL, tr
 #' eh = ExperimentHub()
 #' eh_query = query(eh, c("multiWGCNAdata"))
 #' astrocyte_networks = eh_query[["EH8222"]]
-#' comparisonDf = list()
-#' comparisonDf$overlaps = computeOverlapsFromWGCNA(astrocyte_networks$EAE, astrocyte_networks$WT)
-#' bidirectionalBestMatches(comparisonDf)
+#' comparisonList = list()
+#' comparisonList$overlaps = computeOverlapsFromWGCNA(astrocyte_networks$EAE, astrocyte_networks$WT)
+#' bidirectionalBestMatches(comparisonList)
 #' 
-bidirectionalBestMatches <- function(comparisonDf, plot=TRUE){
-  comparison=comparisonDf
+bidirectionalBestMatches <- function(comparisonList, plot=TRUE){
+  
+  # Check input
+  stopifnot(inherits(comparisonList, "list"))
+  
+  comparison=comparisonList
 	name1=str_split_fixed(comparison$overlap$mod1,"_",2)[,1][[1]]
 	name2=str_split_fixed(comparison$overlap$mod2,"_",2)[,1][[1]]
 	comparison$overlap$mod1=str_split_fixed(comparison$overlap$mod1,"_",2)[,2]
@@ -407,12 +422,17 @@ bidirectionalBestMatches <- function(comparisonDf, plot=TRUE){
 #' results$overlaps = iterate(astrocyte_networks, overlapComparisons, plot=FALSE)
 #' 
 overlapComparisons <- function(comparisonList, WGCNAlist, first, second, element, plot=TRUE, write=FALSE){
+  
+  # Check input
+  stopifnot(inherits(comparisonList, "list"))
+  stopifnot(inherits(WGCNAlist[[1]], "WGCNA"))
+  
 	comparisonList[[element]]=list()
 	comparisonList[[element]]=append(comparisonList[[element]],
 					list(computeOverlapsFromWGCNA(WGCNAlist[[first]], WGCNAlist[[second]])))
 	names(comparisonList[[element]])=append(names(comparisonList[[element]]), c("overlap"))
 	names(comparisonList)[[element]]=paste0(names(WGCNAlist)[[first]], "_vs_", names(WGCNAlist)[[second]])
-	if(write) write.csv(comparisonList[[element]]$overlap, paste0(names(WGCNAlist)[[first]], "_vs_", names(WGCNAlist)[[second]], ".csv"), row.names=F)
+	if(write) write.csv(comparisonList[[element]]$overlap, paste0(names(WGCNAlist)[[first]], "_vs_", names(WGCNAlist)[[second]], ".csv"), row.names=FALSE)
 	message("\n#### comparing ", names(WGCNAlist)[[first]], " and ", names(WGCNAlist)[[second]], "####\n")
 	if(plot){
 		print(

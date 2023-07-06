@@ -4,7 +4,7 @@
 \alias{cleanDatExpr}
 \title{cleanDatExpr}
 \usage{
-cleanDatExpr(datExpr, checkGenesSamples = F)
+cleanDatExpr(datExpr, checkGenesSamples = FALSE)
 }
 \arguments{
 \item{datExpr}{a data.frame were columns are samples and rows are samples and the gene symbols are in the first row}

@@ -16,6 +16,8 @@
 #' @param vjust vertical justification of labels
 #' @param width width of labels
 #' @param colors colors to use for modules, should be the same length as the number of WGCNA objects in the WGCNAlist. Defaults to random colors for each condition. 
+#' 
+#' @return an igraph plot
 #'
 #' @author Dario Tommasini
 #'
@@ -39,7 +41,7 @@
 #'   sampleTable)
 #'   
 drawMultiWGCNAnetwork <- function(WGCNAlist, comparisonList, moduleOfInterest, design, 
-                                  overlapCutoff = 0, padjCutoff = 1, removeOutliers = T, alpha = 1e-50, 
+                                  overlapCutoff = 0, padjCutoff = 1, removeOutliers = TRUE, alpha = 1e-50, 
                                   layout = NULL, hjust = 0.4, vjust = 0.3, width = 0.5, colors = NULL){
 
   # extract the overlaps objects into a list
@@ -82,7 +84,7 @@ drawMultiWGCNAnetwork <- function(WGCNAlist, comparisonList, moduleOfInterest, d
 	conditions=unique(vcol)
 
 	# Colors of modules by condition
-	if(is.null(colors)) palette = colors(length(conditions), random = T)
+	if(is.null(colors)) palette = colors(length(conditions), random = TRUE)
 	if(!is.null(colors)) palette = colors
 
 	for(condition in 1:length(conditions)){

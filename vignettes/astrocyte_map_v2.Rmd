@@ -1,8 +1,10 @@
 ---
-title: "Astrocyte multiWGCNA network"
+title: "multiWGCNA: visualizing condition-specific networks"
 author: "Dario Tommasini"
 date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
+output: 
+  BiocStyle::html_document:
+    toc: true
 vignette: >
   %\VignetteIndexEntry{Astrocyte multiWGCNA network}
   %\VignetteEngine{knitr::rmarkdown}
@@ -16,13 +18,17 @@ knitr::opts_chunk$set(
 )
 ```
 
-Load multiWGCNA library
+# Introduction
+
+In this vignette, we will be showing how users can draw a multiWGCNA network (Figure 2C from Tommasini and Fogel. BMC Bioinformatics. 2023.), which highlights the presence or absence of a biological network in the different conditions of their experiment. We will be using the astrocyte Ribotag data from Itoh et al. PNAS. 2018 (https://doi.org/10.1073/pnas.1716032115). This data comes with the multiWGCNA package and can be accessed as shown below. 
+
+# Load multiWGCNA library
 
 ```{r setup}
 library(multiWGCNA)
 ```
 
-In this vignette, we will be showing how users can draw a multiWGCNA network (Figure 2C from Tommasini and Fogel. BMC Bioinformatics. 2023.), which highlights the presence or absence of a biological network in the different conditions of their experiment. We will be using the astrocyte Ribotag data from Itoh et al. PNAS. 2018 (https://doi.org/10.1073/pnas.1716032115). This data comes with the multiWGCNA package and can be accessed as shown below. 
+# Pre-processing
 
 ```{r}
 # Download data from the ExperimentHub
@@ -45,6 +51,8 @@ conditions1 = unique(sampleTable[,2])
 conditions2 = unique(sampleTable[,3])
 ```
 
+# Network construction
+
 We now perform network construction, module eigengene calculation, module-trait correlation. Let's use power = 12 since we used this in our paper (Tommasini and Fogel. BMC Bioinformatics. 2023.) for all the networks. 
 
 ```{r, eval = FALSE}
@@ -52,7 +60,7 @@ We now perform network construction, module eigengene calculation, module-trait 
 # Same parameters as Tommasini and Fogel. BMC Bioinformatics
 astrocyte_networks = constructNetworks(astrocyte_se, sampleTable, conditions1, conditions2, 
                                   networkType = "signed", TOMType = "unsigned", 
-                                  power = softPower, minModuleSize = 100, maxBlockSize = 25000,
+                                  power = 12, minModuleSize = 100, maxBlockSize = 25000,
                                   reassignThreshold = 0, minKMEtoStay = 0, mergeCutHeight = 0,
                                   numericLabels = TRUE, pamRespectsDendro = FALSE, 
                                   deepSplit = 4, verbose = 3)
@@ -69,6 +77,10 @@ astrocyte_networks = eh_query[["EH8222"]]
 astrocyte_networks[["combined"]]
 ```
 
+# The multiWGCNA network
+
+## Compare modules by overlap 
+
 Next, we compare modules (by hypergeometric overlap) across conditions. We'll save the results in a list. 
 
 ```{r, fig.height = 5, fig.width = 8}
@@ -79,6 +91,8 @@ results$overlaps = iterate(astrocyte_networks, overlapComparisons, plot=FALSE)
 # Check the overlaps, ie between the EAE and wildtype networks
 head(results$overlaps$EAE_vs_WT$overlap)
 ```
+
+## Identify a module of interest
 
 Then, we perform differential module expression analysis to detect modules with disease-associated expression patterns. This incorporates the linear model described in the paper and tests for significance using ANOVA. 
 
@@ -105,6 +119,8 @@ diffModuleExpression(astrocyte_networks[["combined"]],
 
 ```
 
+## Draw the multiWGCNA network
+
 We can now check to see if M13 is present in any of the sub-networks. An easy way to do this is using the network-network correspondences from hypergeometric overlap. These are stored in results$overlaps. We can plot these in a convenient visualization scheme that also organizes the three levels of the multiWGCNA analysis: 1) combined network, 2) EAE and wildtype networks, and 3) the four regional networks. 
 
 ```{r, fig.height = 6, fig.width = 7}
@@ -114,7 +130,7 @@ drawMultiWGCNAnetwork(astrocyte_networks,
                       design = sampleTable, 
                       overlapCutoff = 0, 
                       padjCutoff = 1, 
-                      removeOutliers = T, 
+                      removeOutliers = TRUE, 
                       alpha = 1e-50, 
                       layout = NULL, 
                       hjust = 0.4, 
@@ -124,6 +140,8 @@ drawMultiWGCNAnetwork(astrocyte_networks,
 ```
 
 We see that M13 is really only present in the EAE network, but not any of the other sub-networks. Most importantly, it cannot be resolved in the wildtype network. This makes M13 a biologically interesting network, both in terms of differential expression and differential co-expression. 
+
+## Follow up with a preservation analysis
 
 Typically, you would want to follow this up with a preservation analysis between EAE and WT (described in general_workflow.Rmd). 
 
@@ -142,6 +160,8 @@ results$preservation=iterate(astrocyte_networks[conditions1],
                              plot=TRUE, 
                              nPermutations=100)
 ```
+
+# Conclusion
 
 Then, one can perform a permutation procedure that estimates the probability of observing a disease/wildtype module with this preservation score in the wildtype/disease setting (diseasePreservationPtest). Please see Tommasini and Fogel. BMC Bioinformatics. 2023. for more details. 
 

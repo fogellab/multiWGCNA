@@ -11,7 +11,7 @@ drawMultiWGCNAnetwork(
   design,
   overlapCutoff = 0,
   padjCutoff = 1,
-  removeOutliers = T,
+  removeOutliers = TRUE,
   alpha = 1e-50,
   layout = NULL,
   hjust = 0.4,
@@ -46,6 +46,9 @@ drawMultiWGCNAnetwork(
 \item{width}{width of labels}
 
 \item{colors}{colors to use for modules, should be the same length as the number of WGCNA objects in the WGCNAlist. Defaults to random colors for each condition.}
+}
+\value{
+an igraph plot
 }
 \description{
 Draw a network where nodes are modules and edges represent significant gene overlap. 

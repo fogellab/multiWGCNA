@@ -23,6 +23,9 @@ summarizeResults(
 
 \item{outputFile}{name of output file, defaults to results.txt}
 }
+\value{
+prints a summary of results from the multiWGCNA analysis
+}
 \description{
 Prints (or writes) a summary of the results from a results list object
 }

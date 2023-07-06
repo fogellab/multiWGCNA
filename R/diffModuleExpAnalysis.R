@@ -9,6 +9,8 @@
 #' @param title title of the plot
 #' @param clusterGenes cluster heatmap genes by hierarchical clustering?
 #'
+#' @return a patchworked ggplot object
+#' 
 #' @author Dario Tommasini
 #'
 #' @import ggplot2
@@ -25,11 +27,20 @@
 #' moduleExpressionPlot(astrocyte_networks[["combined"]], 
 #'   geneList = topNGenes(astrocyte_networks$combined, "combined_013"))
 #' 
-moduleExpressionPlot <- function(WGCNAobject, geneList, mode="PC1", legend=FALSE, title=NULL, clusterGenes=F){
+moduleExpressionPlot <- function(WGCNAobject, geneList, mode=c("PC1", "averageZscore"), legend=FALSE, title=NULL, clusterGenes=FALSE){
 
+  # Check that mode is either PC1 or averageZscore
+  mode = match.arg(mode)
+  
 	datExpr=WGCNAobject@datExpr
 	design=WGCNAobject@conditions
-	heatmap <- expressionHeatmap(datExpr, geneList, column.labels=F, axis.titles=F, legend=legend, clusterGenes=clusterGenes, title=title)
+	heatmap <- expressionHeatmap(datExpr, 
+	                             geneList, 
+	                             column.labels=FALSE, 
+	                             axis.titles=FALSE, 
+	                             legend=legend, 
+	                             clusterGenes=clusterGenes, 
+	                             title=title)
 	cleanDatExpr=t(cleanDatExpr(datExpr))
 	subset=cleanDatExpr[toupper(rownames(cleanDatExpr)) %in% toupper(geneList),]
 
@@ -82,7 +93,7 @@ expressionHeatmap <- function(datExpr,
                               legend=FALSE, 
                               axis.titles=TRUE, 
                               plotTitle=NULL, 
-                              clusterGenes=F, 
+                              clusterGenes=FALSE, 
                               title=NULL){
 	datExpr=t(cleanDatExpr(datExpr))
 	subset=datExpr[toupper(rownames(datExpr)) %in% toupper(geneList),]
@@ -131,6 +142,8 @@ expressionHeatmap <- function(datExpr,
 #' @param write write results to a file?
 #' @param out file name for DME plots, only used if write is TRUE
 #'
+#' @return a data.frame summarizing the results of the analysis
+#'
 #' @author Dario Tommasini
 #'
 #' @importFrom data.table fwrite
@@ -150,8 +163,12 @@ expressionHeatmap <- function(datExpr,
 #'   refCondition = "Region", 
 #'   testCondition = "Disease") 
 #' 
-runDME <- function(WGCNAobject, design, alphaLevel=0.05, testCondition=NULL, refCondition=NULL, p.adjust="fdr", plot=FALSE, test="ANOVA", write=FALSE, out=NULL){
-	datExpr=WGCNAobject@datExpr
+runDME <- function(WGCNAobject, design, alphaLevel=0.05, testCondition=NULL, refCondition=NULL, p.adjust="fdr", plot=FALSE, test=c("ANOVA", "PERMANOVA"), write=FALSE, out=NULL){
+	
+  # Check argument
+  test = match.arg(test)
+  
+  datExpr=WGCNAobject@datExpr
 	if(is.null(refCondition)) refCondition=colnames(design)[[3]]
 	if(is.null(testCondition)) testCondition=colnames(design)[[2]]
 	modules=sort(unique(datExpr$dynamicLabels))
@@ -175,7 +192,7 @@ runDME <- function(WGCNAobject, design, alphaLevel=0.05, testCondition=NULL, ref
 	rownames(mergedPadj)=mergedPval$Factors
 	colnames(mergedPadj)=colnames(mergedPval[,-1])
 	results.df=as.data.frame(t(mergedPadj))
-	if(write) data.table::fwrite(results.df, paste0(modulePrefix, "/", modulePrefix, "_diffModExp.txt"), sep="\t", row.names=T)
+	if(write) data.table::fwrite(results.df, paste0(modulePrefix, "/", modulePrefix, "_diffModExp.txt"), sep="\t", row.names=TRUE)
 
 	return(results.df)
 }
@@ -193,6 +210,8 @@ runDME <- function(WGCNAobject, design, alphaLevel=0.05, testCondition=NULL, ref
 #' @param refColumn the column of the sampleTable to be used as biological variation
 #' @param test statistical test to perform, either "ANOVA" or "PERMANOVA"
 #' @param plot generate a plot?
+#' 
+#' @return a data.frame with the resulting p-values
 #'
 #' @import patchwork
 #' @import ggplot2
@@ -218,11 +237,15 @@ diffModuleExpression <- function(WGCNAobject,
                                  geneList, 
                                  design, 
                                  plotTitle=NULL, 
-                                 mode="PC1", 
+                                 mode=c("PC1", "Zscore"), 
                                  testColumn=2, 
                                  refColumn=3, 
-                                 test="ANOVA", 
+                                 test=c("ANOVA", "PERMANOVA"), 
                                  plot=TRUE){
+  
+  # Check arguments
+  mode = match.arg(mode)
+  test = match.arg(test)
 
   datExpr=WGCNAobject@datExpr
   
@@ -262,7 +285,7 @@ diffModuleExpression <- function(WGCNAobject,
 	      			geom_hline(yintercept=0, linetype="solid", color = "black", size=0.5)
 
 	datExpr=datExpr[,c("X", mergedData$Sample)]
-	heatmap <- expressionHeatmap(datExpr, geneList, plotTitle=plotTitle, column.labels=F, axis.titles=F, legend=TRUE)
+	heatmap <- expressionHeatmap(datExpr, geneList, plotTitle=plotTitle, column.labels=FALSE, axis.titles=FALSE, legend=TRUE)
 
 	if(test=="ANOVA"){
 		pval.df <- performANOVA(moduleExpression, design, testCondition, refCondition) #category1=test, category2=ref)
@@ -302,6 +325,8 @@ diffModuleExpression <- function(WGCNAobject,
 #' @param refCondition reference column in sampleTable
 #' @param design the sampleTable
 #' @param alphaLevel the significance level
+#' 
+#' @return a data.frame with p-values for each association
 #'
 #' @export
 performANOVA <- function(datExpr, design, testCondition, refCondition, alphaLevel=0.05){ #category1, category2

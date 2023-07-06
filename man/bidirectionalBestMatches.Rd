@@ -4,10 +4,10 @@
 \alias{bidirectionalBestMatches}
 \title{Best matching modules}
 \usage{
-bidirectionalBestMatches(comparisonDf, plot = TRUE)
+bidirectionalBestMatches(comparisonList, plot = TRUE)
 }
 \arguments{
-\item{comparisonDf}{a list with an elemnt "overlap", which is a data.frame resulting from a call to computeOverlapsFromWGCNA}
+\item{comparisonList}{a list with an elemnt "overlap", which is a data.frame resulting from a call to computeOverlapsFromWGCNA}
 
 \item{plot}{whether to generate a heatmap; default is TRUE}
 }
@@ -23,9 +23,9 @@ library(ExperimentHub)
 eh = ExperimentHub()
 eh_query = query(eh, c("multiWGCNAdata"))
 astrocyte_networks = eh_query[["EH8222"]]
-comparisonDf = list()
-comparisonDf$overlaps = computeOverlapsFromWGCNA(astrocyte_networks$EAE, astrocyte_networks$WT)
-bidirectionalBestMatches(comparisonDf)
+comparisonList = list()
+comparisonList$overlaps = computeOverlapsFromWGCNA(astrocyte_networks$EAE, astrocyte_networks$WT)
+bidirectionalBestMatches(comparisonList)
 
 }
 \author{

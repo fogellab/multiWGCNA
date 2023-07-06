@@ -1,8 +1,10 @@
 ---
-title: "General Workflow"
+title: "multiWGCNA: the full workflow"
 author: "Dario Tommasini"
 date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
+output: 
+  BiocStyle::html_document:
+    toc: true
 vignette: >
   %\VignetteIndexEntry{General Workflow}
   %\VignetteEngine{knitr::rmarkdown}
@@ -16,20 +18,39 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup}
-library(multiWGCNA)
-```
+# Introduction
 
-# Step 0: Install the multiWGCNA R package. 
+The multiWGCNA R package is a WGCNA-based procedure designed for RNA-seq datasets with two biologically meaningful variables. We developed this package because we've found that the experimental design for network analysis can be ambiguous. For example, should I analyze my treatment and wildtype samples separately or together? We find that it is informative to perform all the possible design combinations, and subsequently integrate these results. For more information, please see Tommasini and Fogel. BMC Bioinformatics. 2023.
+
+In this vignette, we will be showing how users can perform a full start-to-finish multiWGCNA analysis. We will be using the regional autism data from Voineagu et al. 2011 (https://www.nature.com/articles/nature10110). This dataset has two sample traits: 1) autism versus control, and 2) temporal cortex versus frontal cortex. 
+
+# Install the multiWGCNA R package
 
 ```{r eval=FALSE}
-if(!require(devtools)) install.packages("devtools")
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("multiWGCNA")
+```
+
+The development version of multiWGCNA can be installed from GitHub like this:
+
+```{r eval=FALSE}
+if (!require("devtools", quietly = TRUE))
+    install.packages("devtools")
+    
 devtools::install_github("fogellab/multiWGCNA")
 ```
 
-# Step 1: Read in microarray data from human post-mortem brains.
+Load multiWGCNA library
 
-Data from Voineagu et al. 2011 (https://www.nature.com/articles/nature10110) has two sample traits: 1) autism versus control, and 2) temporal cortex versus frontal cortex. Since this is purely an example of how to run the entire analysis from start to finish, we are going to limit our analysis to 500 randomly selected probes. Let's also set some useful global variables, like the alpha level of significance and the soft thresholding power for our network.   
+```{r}
+library(multiWGCNA)
+```
+
+# Read in microarray data from human post-mortem brains
+
+Since this is purely an example of how to run the entire analysis from start to finish, we are going to limit our analysis to 1500 randomly selected probes. 
 
 ```{r}
 # Download data from the ExperimentHub
@@ -52,7 +73,7 @@ assays(autism_se)[[1]][1:5, 1:5]
 sampleTable
 ```
 
-# Step 2: Perform network construction, module eigengene calculation, module-trait correlation. 
+# Perform network construction, module eigengene calculation, module-trait correlation 
 
 Also, let's find best trait for each module and identify outlier modules (ie modules driven by a single sample). 
 
@@ -64,7 +85,7 @@ conditions1 = unique(sampleTable[,2])
 conditions2 = unique(sampleTable[,3])
 
 # Construct the combined networks and all the sub-networks (autism only, controls only, FC only, and TC only)
-# We use the same parameters from Voineagu et al. Nature. 2011. 
+# The input data can be either a SummarizedExperiment object or a data.frame with genes as rows and samples as columns
 autism_networks = constructNetworks(autism_se, sampleTable, conditions1, conditions2,
                                   networkType = "unsigned", power = 10,
                                   minModuleSize = 40, maxBlockSize = 25000,
@@ -73,9 +94,9 @@ autism_networks = constructNetworks(autism_se, sampleTable, conditions1, conditi
                                   pamRespectsDendro = FALSE, verbose=3)
 ```
 
-# Step 3: Compare modules (by hypergeometric overlap) across conditions. 
+# Compare modules by overlap across conditions
 
-We'll save the results in a list. Then, let's take a look at the mutual best matches between autism modules and control modules. 
+For calculating significance of overlap, we use the hypergeometric test (also known as the one-sided Fisher exact test). We'll save the results in a list. Then, let's take a look at the mutual best matches between autism modules and control modules. 
 
 ```{r, fig.height = 4, fig.width = 7}
 # Save results to a list
@@ -86,7 +107,7 @@ results$overlaps=iterate(autism_networks, overlapComparisons, plot=TRUE)
 head(results$overlaps$autism_vs_controls$bestMatches)
 ```
 
-# Step 4: Perform differential module expression analysis. 
+# Perform differential module expression analysis 
 
 This test for an association between the module eigengene (ME) and the two sample traits or their interaction. Therefore, the model is ME = trait1 + trait2 + trait1*trait2 and tests for a significant association to the traits using factorial ANOVA. These results can be stored in the diffModExp component of the results list. It can also perform PERMANOVA, which uses multivariate distances and can thus be applied to the module expression rather than just the first principal component (module eigengene). 
 
@@ -121,7 +142,7 @@ diffModuleExpression(autism_networks[["combined"]],
                      plot = TRUE)
 ```
 
-# Step 5: Perform the module preservation analysis. 
+# Perform the module preservation analysis
 
 Determine if any  modules in the autism data are not preserved in the healthy data (or vice versa). This is the slowest step as the calculation of permuted statistics takes a while. Typically, this can be parallelized using the enableWGCNAThreads function, but for this vignette we'll just do 10 permutations so one core should suffice.   
 
@@ -141,7 +162,8 @@ results$preservation=iterate(autism_networks[conditions1], # this does autism vs
                              nPermutations=10)
 ```
 
-# Step 6: Summarize interesting results from the analyses.
+# Summarize interesting results from the analyses
+
 These include differentially preserved trait-associated modules and differentially expressed modules. 
 
 ```{r}

@@ -16,7 +16,7 @@ constructNetworks(
 )
 }
 \arguments{
-\item{datExpr}{data.frame where column 1 has samples and row 1 has genes}
+\item{datExpr}{either a SummarizedExperiment object or data.frame with genes are rows and samples as columns}
 
 \item{sampleTable}{data.frame with sample traits}
 

@@ -5,7 +5,7 @@
 \title{Preservation Comparison Scatterplot}
 \usage{
 preservationComparisonPlot(
-  preservationDf,
+  preservationList,
   dataset1,
   dataset2,
   alphaLevel = 0.05,
@@ -13,7 +13,7 @@ preservationComparisonPlot(
 )
 }
 \arguments{
-\item{preservationDf}{a data.frame resulting from a call to preservationComparisons}
+\item{preservationList}{a list resulting from a call to preservationComparisons}
 
 \item{dataset1}{an object of class WGCNAobject to compare with dataset2}
 

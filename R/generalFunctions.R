@@ -8,9 +8,9 @@ printModules <- function(WGCNAobject){
 		message("### writing ", file_name, " ###\n")
 		write.table(datExpr$X[datExpr$dynamicLabels==module], 
 			file_name, 
-			quote=F, 
-			row.names=F, 
-			col.names=F)
+			quote=FALSE, 
+			row.names=FALSE, 
+			col.names=FALSE)
 	}
 }
 
@@ -43,7 +43,7 @@ getLevel <- function(level, design){
 	return(unique(design[,level]))
 }
 
-colors <- function(nColors, random=F){
+colors <- function(nColors, random=FALSE){
 	colors=c("cyan", "grey", "blue", "brown", "darkgreen", "darkmagenta", "darkolivegreen", "darkorange", "darkred",
 		"darkturquoise", "green", "darkgrey", "greenyellow", "lightgreen", "magenta", "midnightblue", "orange",
 		"paleturquoise", "pink", "purple", "red", "black", "royalblue", "saddlebrown", "salmon", "sienna3", "skyblue",
@@ -61,10 +61,12 @@ colors <- function(nColors, random=F){
 #' All genes returned if no number is specified.
 #' Genes are in order of intramodular connectivity.
 #'
-#' @param WGCNAobject an object of type WGCNAobject
+#' @param WGCNAobject an object of class WGCNA
 #' @param module the name of the module in WGCNAobject
 #' @param nGenes an integer from 1 to module size; returns all genes if left NULL
 #'
+#' @return a character vector of the genes/probes in the module
+#' 
 #' @import dplyr
 #' @export
 #' 
@@ -118,9 +120,11 @@ removeOutlierModules <- function(WGCNAobject, outlierModules=NULL){
 #' 
 #' Generates a WGCNA-compatible trait table from a sampleTable dataframe
 #' 
-#' @param inputTable the sampleTable dataframe
+#' @param inputTable the sampleTable data.frame
 #' @param column the column from the sampleTable to use as traits
 #' @param detectNumbers whether to consider traits with numbers as numerical rather than categorical variables
+#' 
+#' @return a data.frame with integer values denoting the categorical sample traits
 #' 
 #' @export
 #' 
@@ -181,7 +185,7 @@ makeTraitTable <- function(inputTable, column, detectNumbers=FALSE) {
 #' datExpr = data.frame(X = rownames(assays(astrocyte_se)[[1]]), assays(astrocyte_se)[[1]])
 #' cleanDatExpr(datExpr)
 #' 
-cleanDatExpr <- function(datExpr, checkGenesSamples=F) {
+cleanDatExpr <- function(datExpr, checkGenesSamples=FALSE) {
 	cleanDatExpr <- t(datExpr[ ,!colnames(datExpr) %in% c("X","kTotal","kWithin","kOut","kDiff","dynamicColors","dynamicLabels")])
 	colnames(cleanDatExpr) = datExpr$X
 	if(checkGenesSamples){
@@ -210,6 +214,8 @@ keyModules <- function(WGCNAobject){
 #' @param write write to file?
 #' @param outputFile name of output file, defaults to results.txt
 #' 
+#' @return prints a summary of results from the multiWGCNA analysis
+#' 
 #' @export
 summarizeResults <- function(myNetworks, results, alphaLevel=0.05, write=FALSE, outputFile="results.txt") {
 	if(write) sink(outputFile)
@@ -230,7 +236,7 @@ summarizeResults <- function(myNetworks, results, alphaLevel=0.05, write=FALSE, 
 
 	diffModExp=results$diffModExp
 	message("\n### Differentially expressed modules ###\n")
-	print(diffModExp[apply(diffModExp, 1, function(p) any(p<0.05)),])
+	message(paste0(capture.output(diffModExp[apply(diffModExp, 1, function(p) any(p<0.05)),]), collapse = "\n"))
 	if(write) sink()
 }
 
@@ -243,7 +249,7 @@ summarizeResults <- function(myNetworks, results, alphaLevel=0.05, write=FALSE, 
 #' @param FUN function to iterate, either overlapComparisons or preservationComparisons
 #' @param ... argmuents to be passed on to overlapComparisons or preservationComparisons
 #' 
-#' @return a list
+#' @return a comparison list from overlapComparisons or preservationComparisons
 #'
 #' @author Dario Tommasini
 #'
@@ -258,6 +264,10 @@ summarizeResults <- function(myNetworks, results, alphaLevel=0.05, write=FALSE, 
 #' iterate(astrocyte_networks, overlapComparisons, plot=FALSE)
 #' 
 iterate <- function(WGCNAlist, FUN, ...){
+  
+  # Check arguments
+  stopifnot(deparse(substitute(FUN)) %in% c("overlapComparisons", "preservationComparisons"))
+  
 	comparisonList=list()
 	FUN <- match.fun(FUN)
 	element=1
@@ -275,9 +285,3 @@ iterate <- function(WGCNAlist, FUN, ...){
 	return(comparisonList)
 }
 
-#' @importFrom graphics legend
-#' @importFrom methods new
-#' @importFrom stats IQR anova dist ks.test lm na.omit p.adjust phyper prcomp quantile runif sd t.test var
-#' @importFrom grDevices dev.off pdf rgb
-#' @importFrom utils head read.csv write.csv write.table
-NULL

@@ -9,14 +9,14 @@ diffCoexpression(
   conditions,
   geneList = NULL,
   plot = FALSE,
-  method = "pearson",
+  method = c("pearson", "spearman"),
   removeFreeNodes = TRUE,
   labelSize = 0.5,
   labelDist = 0,
   shape = "circle",
-  degreeForSize = F,
-  label = F,
-  onlyPositive = F,
+  degreeForSize = FALSE,
+  label = FALSE,
+  onlyPositive = FALSE,
   z.threshold = NULL,
   FDR.threshold = 0.05,
   nodeSize = 3
@@ -52,6 +52,10 @@ diffCoexpression(
 \item{FDR.threshold}{FDR threshold}
 
 \item{nodeSize}{size of node}
+}
+\value{
+A list including a matrix of z-scores, a matrix of raw p-values, a 
+matrix of adjusted p-values, and a summary data.frame
 }
 \description{
 Performs a differential co-expression ananlysis given an expression data.frame 

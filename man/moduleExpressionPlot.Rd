@@ -7,10 +7,10 @@
 moduleExpressionPlot(
   WGCNAobject,
   geneList,
-  mode = "PC1",
+  mode = c("PC1", "averageZscore"),
   legend = FALSE,
   title = NULL,
-  clusterGenes = F
+  clusterGenes = FALSE
 )
 }
 \arguments{
@@ -25,6 +25,9 @@ moduleExpressionPlot(
 \item{title}{title of the plot}
 
 \item{clusterGenes}{cluster heatmap genes by hierarchical clustering?}
+}
+\value{
+a patchworked ggplot object
 }
 \description{
 A plotting function that returns a heatmap and barplot for a module

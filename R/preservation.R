@@ -22,10 +22,10 @@ getPreservation <- function(reference, test, nPermutations=100, write=FALSE) {
 	# clean up reference datExpr
 	name1=str_split_fixed(reference$dynamicLabels, "_", 2)[1,1]
 	name2=str_split_fixed(test$dynamicLabels, "_", 2)[1,1]
-	referenceExpr = cleanDatExpr(reference, checkGenesSamples=T)
+	referenceExpr = cleanDatExpr(reference, checkGenesSamples=TRUE)
 
 	# clean up test datExpr
-	testExpr = cleanDatExpr(test, checkGenesSamples=T)
+	testExpr = cleanDatExpr(test, checkGenesSamples=TRUE)
 
 	referenceModules=reference$dynamicLabels[match(colnames(referenceExpr), reference$X)]
 	
@@ -57,7 +57,7 @@ getPreservation <- function(reference, test, nPermutations=100, write=FALSE) {
 #' A plotting  function that draws a scatterplot of preservation scores between
 #' two WGCNA objects
 #'
-#' @param preservationDf a data.frame resulting from a call to preservationComparisons
+#' @param preservationList a list resulting from a call to preservationComparisons
 #' @param dataset1 an object of class WGCNAobject to compare with dataset2
 #' @param dataset2 an object of class WGCNAobject to compare with dataset1
 #' @param alphaLevel alpha level of significance, default is 0.05
@@ -88,8 +88,13 @@ getPreservation <- function(reference, test, nPermutations=100, write=FALSE) {
 #'   astrocyte_networks$EAE, 
 #'   astrocyte_networks$WT)
 #'   
-preservationComparisonPlot <- function(preservationDf, dataset1, dataset2, alphaLevel = 0.05, outliers=FALSE){
-  comparison = preservationDf
+preservationComparisonPlot <- function(preservationList, dataset1, dataset2, alphaLevel = 0.05, outliers=FALSE){
+  
+  # Check input
+  stopifnot(inherits(preservationList, "list"))
+  stopifnot(inherits(dataset1, "WGCNA") & inherits(dataset2, "WGCNA"))
+  
+  comparison = preservationList
 	name1=str_split_fixed(rownames(comparison$mod1Preservation[rownames(comparison$mod1Preservation) != "gold",]),"_",2)[,1][[1]]
 	name2=str_split_fixed(rownames(comparison$mod2Preservation[rownames(comparison$mod2Preservation) != "gold",]),"_",2)[,1][[1]]
 
@@ -168,7 +173,12 @@ preservationComparisonPlot <- function(preservationDf, dataset1, dataset2, alpha
 #'   nPermutations=2)
 #' 
 preservationComparisons <- function(comparisonList, WGCNAlist, first, second, element, plot=FALSE, write=FALSE, alphaLevel=0.05, nPermutations=100){
-	comparisonList[[element]]=list()
+	
+  # Check input
+  stopifnot(inherits(comparisonList, "list"))
+  stopifnot(inherits(WGCNAlist[[1]], "WGCNA"))
+  
+  comparisonList[[element]]=list()
 	comparisonList[[element]]=append(comparisonList[[element]],
 								list(getPreservation(WGCNAlist[[first]],
 									WGCNAlist[[second]], write=write, nPermutations=nPermutations)))
@@ -218,7 +228,7 @@ coexpressionLineGraph <- function(datExpr, nDiseaseSamples, nWTSamples, splitBy=
 	return(plot)
 }
 
-correlationComparisonBoxplot <- function(diseaseDatExpr, healthyDatExpr, geneList, label=F, method="pearson"){
+correlationComparisonBoxplot <- function(diseaseDatExpr, healthyDatExpr, geneList, label=FALSE, method="pearson"){
 	name1=str_split_fixed(colnames(diseaseDatExpr)[[2]], "_", 2)[,1]
 	name2=str_split_fixed(colnames(healthyDatExpr)[[2]], "_", 2)[,1]
 
@@ -232,7 +242,7 @@ correlationComparisonBoxplot <- function(diseaseDatExpr, healthyDatExpr, geneLis
 	healthyCorMatrix=cor(healthyMatrix, method=method)
 	healthyCor=healthyCorMatrix[lower.tri(healthyCorMatrix)]
 
-	indices <- which(lower.tri(diseaseCorMatrix) == TRUE, arr.ind=T)
+	indices <- which(lower.tri(diseaseCorMatrix) == TRUE, arr.ind=TRUE)
 	names1 <- geneList[indices[,1]]
 	names2 <- geneList[indices[,2]]
 	pair=paste0(names1,"/", names2)
@@ -256,7 +266,7 @@ correlationComparisonBoxplot <- function(diseaseDatExpr, healthyDatExpr, geneLis
 		geom_boxplot(notch = TRUE, outlier.shape=NA)
 }
 
-correlationComparisonHeatmaps <- function(diseaseDatExpr, healthyDatExpr, geneList, label=F, method="pearson", alphaLevel=0.05, p.adjust=T, z.score.limit=3){
+correlationComparisonHeatmaps <- function(diseaseDatExpr, healthyDatExpr, geneList, label=FALSE, method="pearson", alphaLevel=0.05, p.adjust=TRUE, z.score.limit=3){
 	geneList=geneList[geneList %in% diseaseDatExpr$X & geneList %in% healthyDatExpr$X ]
 	diseaseMatrix= cleanDatExpr(diseaseDatExpr[match(geneList, diseaseDatExpr$X),])
 	healthyMatrix= cleanDatExpr(healthyDatExpr[match(geneList, healthyDatExpr$X),])
@@ -267,7 +277,7 @@ correlationComparisonHeatmaps <- function(diseaseDatExpr, healthyDatExpr, geneLi
 	healthyCorMatrix=cor(healthyMatrix, method=method)
 	healthyCor=healthyCorMatrix[upper.tri(healthyCorMatrix)]
 
-	indices <- which(upper.tri(diseaseCorMatrix) == TRUE, arr.ind=T)
+	indices <- which(upper.tri(diseaseCorMatrix) == TRUE, arr.ind=TRUE)
 	names1 <- geneList[indices[,1]]
 	names2 <- geneList[indices[,2]]
 	pair=paste0(names1,"/", names2)
@@ -278,7 +288,7 @@ correlationComparisonHeatmaps <- function(diseaseDatExpr, healthyDatExpr, geneLi
 	melted$Correlation=as.numeric(melted$Correlation)
 
 	dc=diffCoexpression(cbind(t(diseaseMatrix), t(healthyMatrix)),
-		c(rep(1, nrow(diseaseMatrix)),rep(2, nrow(healthyMatrix))), plot=F, FDR.threshold=alphaLevel)
+		c(rep(1, nrow(diseaseMatrix)),rep(2, nrow(healthyMatrix))), plot=FALSE, FDR.threshold=alphaLevel)
 	z_scores=dc[[1]]
 	z_scores[z_scores > z.score.limit]=z.score.limit
 	z_scores[z_scores < -z.score.limit]=-z.score.limit
@@ -286,7 +296,7 @@ correlationComparisonHeatmaps <- function(diseaseDatExpr, healthyDatExpr, geneLi
 	z.table$p.value=as.list(dc[[2]])
 	z.table$p.adj=as.list(dc[[3]])
 	z.table$signif=FALSE
-	if(p.adjust==T) {
+	if(p.adjust==TRUE) {
 		z.table$signif[z.table$p.adj<alphaLevel]=TRUE
 	} else {
 		z.table$signif[z.table$p.value<alphaLevel]=TRUE
@@ -370,6 +380,9 @@ correlationComparisonHeatmaps <- function(diseaseDatExpr, healthyDatExpr, geneLi
 #' @param z.threshold z-score threshold
 #' @param FDR.threshold FDR threshold
 #' @param nodeSize size of node
+#'
+#' @return A list including a matrix of z-scores, a matrix of raw p-values, a 
+#' matrix of adjusted p-values, and a summary data.frame 
 #' 
 #' @author Dario Tommasini
 #'
@@ -387,9 +400,15 @@ correlationComparisonHeatmaps <- function(diseaseDatExpr, healthyDatExpr, geneLi
 #'   geneList = c("Gfap", "Vim", "Aspg", "Serpina3n", "Cp", "Osmr", "Cd44", 
 #'     "Cxcl10", "Hspb1", "Timp1", "S1pr3", "Steap4", "Lcn2"))
 #' 
-diffCoexpression <- function(datExpr, conditions, geneList=NULL, plot=FALSE, method="pearson", removeFreeNodes=TRUE, labelSize=0.5, labelDist=0,
-						shape="circle", degreeForSize=F, label=F, onlyPositive=F, z.threshold=NULL, FDR.threshold=0.05, nodeSize=3){
+diffCoexpression <- function(datExpr, conditions, geneList=NULL, plot=FALSE, 
+                             method=c("pearson", "spearman"), removeFreeNodes=TRUE, 
+                             labelSize=0.5, labelDist=0, shape="circle", degreeForSize=FALSE,
+                             label=FALSE, onlyPositive=FALSE, z.threshold=NULL, FDR.threshold=0.05, nodeSize=3){
 
+  # Check input
+  stopifnot(inherits(datExpr, "data.frame"))
+  method = match.arg(method)
+  
 	if(!is.null(geneList)) datExpr=datExpr[rownames(datExpr) %in% geneList,]
 	cor1= cor(t(datExpr[, conditions==1]), method=method)
 	cor2= cor(t(datExpr[, conditions==2]), method=method)
@@ -398,7 +417,7 @@ diffCoexpression <- function(datExpr, conditions, geneList=NULL, plot=FALSE, met
 	adj_p <- dcAdjust(raw_p, f = p.adjust, method = 'fdr')
 
 	geneList=rownames(datExpr)
-	indices <- which(upper.tri(z_scores) == TRUE, arr.ind=T)
+	indices <- which(upper.tri(z_scores) == TRUE, arr.ind=TRUE)
 	names1 <- geneList[indices[,1]]
 	names2 <- geneList[indices[,2]]
 	summaryDf=data.frame(gene1=names1, gene2=names2, cor1= cor1[upper.tri(cor1)], cor2=cor2[upper.tri(cor2)],
@@ -407,7 +426,7 @@ diffCoexpression <- function(datExpr, conditions, geneList=NULL, plot=FALSE, met
 	adj_mat= z_scores
 	adj_mat[diag(adj_mat)]=0
 	if(is.null(z.threshold)) z.threshold=min(abs(na.omit(adj_mat[adj_p<FDR.threshold])))
-	graph=igraph::graph_from_adjacency_matrix(adj_mat, mode="undirected", weighted=T)
+	graph=igraph::graph_from_adjacency_matrix(adj_mat, mode="undirected", weighted=TRUE)
 	graph=simplify(graph)
 	graph <- delete.edges(graph, which(abs(E(graph)$weight) < z.threshold))
 	if(onlyPositive) graph <- delete.edges(graph, which(E(graph)$weight < 0))
@@ -427,7 +446,7 @@ diffCoexpression <- function(datExpr, conditions, geneList=NULL, plot=FALSE, met
 		plot(graph, layout=layout_with_fr, edge.width=1.5, vertex.shape=shape,
 		vertex.color="white", vertex.label.dist=labelDist, vertex.label.color="black",
 		vertex.label.cex=labelSize, edge.color=unlist(ecol))
-	} else {
-		list(z_scores, raw_p, adj_p, summaryDf %>% arrange(p.adj))
-	}
+	} 
+	
+	return(list(z_scores, raw_p, adj_p, summaryDf %>% arrange(p.adj)))
 }

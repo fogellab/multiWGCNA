@@ -14,7 +14,7 @@ iterate(WGCNAlist, FUN, ...)
 \item{...}{argmuents to be passed on to overlapComparisons or preservationComparisons}
 }
 \value{
-a list
+a comparison list from overlapComparisons or preservationComparisons
 }
 \description{
 A high level function that iterates functions across

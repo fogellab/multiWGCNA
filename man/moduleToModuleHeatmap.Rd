@@ -17,15 +17,15 @@ moduleToModuleHeatmap(
 )
 }
 \arguments{
-\item{comparisonDf}{the output of computeOverlapFromWGCNA}
+\item{comparisonDf}{the data.frame output of computeOverlapFromWGCNA}
 
-\item{dataset1}{WGCNAobject for dataset 1}
+\item{dataset1}{optional; WGCNA object for dataset 1}
 
-\item{dataset2}{WGCNAobject for dataset 2}
+\item{dataset2}{optional; WGCNA object for dataset 2}
 
-\item{trait1}{subset to modules correlated to this trait for dataset 1}
+\item{trait1}{optional; subset to modules correlated to this trait for dataset 1}
 
-\item{trait2}{subset to modules correlated to this trait for dataset 2}
+\item{trait2}{optional; subset to modules correlated to this trait for dataset 2}
 
 \item{list1}{subset to this list of modules for dataset 1}
 

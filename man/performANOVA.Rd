@@ -17,6 +17,9 @@ performANOVA(datExpr, design, testCondition, refCondition, alphaLevel = 0.05)
 
 \item{alphaLevel}{the significance level}
 }
+\value{
+a data.frame with p-values for each association
+}
 \description{
 Test association between module expression to traits using ANOVA
 }

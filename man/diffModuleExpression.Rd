@@ -9,10 +9,10 @@ diffModuleExpression(
   geneList,
   design,
   plotTitle = NULL,
-  mode = "PC1",
+  mode = c("PC1", "Zscore"),
   testColumn = 2,
   refColumn = 3,
-  test = "ANOVA",
+  test = c("ANOVA", "PERMANOVA"),
   plot = TRUE
 )
 }
@@ -34,6 +34,9 @@ diffModuleExpression(
 \item{test}{statistical test to perform, either "ANOVA" or "PERMANOVA"}
 
 \item{plot}{generate a plot?}
+}
+\value{
+a data.frame with the resulting p-values
 }
 \description{
 Runs (and plots) the differential module expression analysis

@@ -310,7 +310,7 @@ diffModuleExpression <- function(WGCNAobject,
 
 	if(plot){
 		print(heatmap / bargraph / boxplot)
-		message(paste0("#### plotting ", plotTitle, " ####\n"))
+		message("#### plotting ", plotTitle, " ####")
 	}
 
 	return(pval.df)

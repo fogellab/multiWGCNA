@@ -252,9 +252,9 @@ correlationComparisonBoxplot <- function(diseaseDatExpr, healthyDatExpr, geneLis
 	colnames(melted)=c("Pair", "Correlation", "Status")
 	melted$Correlation=as.numeric(melted$Correlation)
 
-	print(t.test(diseaseCor))
-	print(t.test(healthyCor))
-	print(t.test(diseaseCor, healthyCor))
+	message(paste0(capture.output(t.test(diseaseCor)), collapse = "\n"))
+	message(paste0(capture.output(t.test(healthyCor)), collapse = "\n"))
+	message(paste0(capture.output(t.test(diseaseCor, healthyCor)), collapse = "\n"))
 
 	ggplot(melted, aes(x=Status, y=Correlation, fill=Status)) +
 		{if(label) geom_text_repel()} +

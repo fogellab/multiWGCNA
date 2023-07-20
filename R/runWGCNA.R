@@ -142,7 +142,7 @@ plotModules <- function(WGCNAobject, mode="PC1"){
 #' sampleTable = colData(autism_se)
 #' conditions1 = unique(sampleTable[,2])
 #' conditions2 = unique(sampleTable[,3])
-#' autism_networks = constructNetworks(autism_se, sampleTable, conditions1, conditions2, 
+#' autism_networks = constructNetworks(autism_se, sampleTable, conditions1[[1]], conditions2[[1]], 
 #'   networkType = "signed", TOMType = "unsigned", 
 #'   power = 10, minModuleSize = 100, maxBlockSize = 25000,
 #'   reassignThreshold = 0, minKMEtoStay = 0, mergeCutHeight = 0,
@@ -153,7 +153,7 @@ plotModules <- function(WGCNAobject, mode="PC1"){
 constructNetworks <- function(datExpr, sampleTable, conditions1, conditions2, write=FALSE, alphaLevel=0.05, plot=FALSE, ...){
 
   # Check input data format
-  stopifnot(inherits(datExpr, "SummarizedExperiment") | inherits(datExpr, "SummarizedExperiment"))
+  stopifnot(inherits(datExpr, "SummarizedExperiment") | inherits(datExpr, "data.frame"))
   
   # Put data in expected format, with genes in first column names "X"
   if(inherits(datExpr, "SummarizedExperiment")){

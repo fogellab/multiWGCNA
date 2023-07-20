@@ -227,15 +227,15 @@ summarizeResults <- function(myNetworks, results, alphaLevel=0.05, write=FALSE, 
 	}
 
 	for(element in results$preservation){
-		message("\n### Non-preserved modules ###\n")
+		message("### Non-preserved modules ###")
 		mod1Pres=element[[1]][which(element[[1]]$Zsummary.pres < 10 & rownames(element[[1]]) %in% modulesOfInterest),]
-		if(nrow(mod1Pres>0)) print(mod1Pres)
+		if(nrow(mod1Pres>0))	message(paste0(capture.output(mod1Pres), collapse = "\n"))
 		mod2Pres=element[[2]][which(element[[2]]$Zsummary.pres < 10 & rownames(element[[2]]) %in% modulesOfInterest),]
-		if(nrow(mod2Pres>0)) print(mod2Pres)
+		if(nrow(mod2Pres>0)) message(paste0(capture.output(mod2Pres), collapse = "\n"))
 	}
 
 	diffModExp=results$diffModExp
-	message("\n### Differentially expressed modules ###\n")
+	message("### Differentially expressed modules ###")
 	message(paste0(capture.output(diffModExp[apply(diffModExp, 1, function(p) any(p<0.05)),]), collapse = "\n"))
 	if(write) sink()
 }
@@ -285,3 +285,8 @@ iterate <- function(WGCNAlist, FUN, ...){
 	return(comparisonList)
 }
 
+#' @importFrom grDevices dev.off pdf rgb
+#' @importFrom stats IQR anova dist lm na.omit p.adjust phyper quantile runif sd t.test var
+#' @importFrom utils capture.output head write.csv write.table
+#' @importFrom graphics legend
+NULL

@@ -20,9 +20,9 @@ a data.frame with integer values denoting the categorical sample traits
 Generates a WGCNA-compatible trait table from a sampleTable dataframe
 }
 \examples{
-sampleTable = data.frame(Sample = c(paste0("EAE", 1:3)), 
-                                    Disease = rep("EAE", 3), 
-                                    Region = rep("Cbl", 3))
+sampleTable = data.frame(Sample = c(paste0("EAE", 1:10), paste0("WT", 1:10)), 
+                         Disease = c(rep("EAE", 10), rep("WT", 10)), 
+                         Region = c(rep(c("Cbl", "Sc"), 5))) 
 makeTraitTable(sampleTable, 2)
 
 }

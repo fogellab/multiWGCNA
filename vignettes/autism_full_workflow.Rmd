@@ -48,9 +48,15 @@ Load multiWGCNA library
 library(multiWGCNA)
 ```
 
-# Read in microarray data from human post-mortem brains
+# Load microarray data from human post-mortem brains
 
 Since this is purely an example of how to run the entire analysis from start to finish, we are going to limit our analysis to 1500 randomly selected probes. 
+
+Input data: 
+
+* The expression data can be either a SummarizedExperiment object or a data.frame with genes as rows and samples as columns
+* The sampleTable should be a data.frame with the first column named "Sample". The second and third column names can be arbitrary, i.e. "disease" or "Genotype"
+
 
 ```{r}
 # Download data from the ExperimentHub
@@ -71,6 +77,10 @@ autism_se = autism_se[sample(rownames(autism_se), 1500),]
 # Check the data
 assays(autism_se)[[1]][1:5, 1:5]
 sampleTable
+
+# Define our conditions for trait 1 (disease) and 2 (brain region)
+conditions1 = unique(sampleTable[,2])
+conditions2 = unique(sampleTable[,3])
 ```
 
 # Perform network construction, module eigengene calculation, module-trait correlation 
@@ -80,12 +90,7 @@ Also, let's find best trait for each module and identify outlier modules (ie mod
 Let's use power = 10 since Voineagu et al. 2011 used that for all their networks. They also constructed "unsigned" networks and a mergeCutHeight of 0.10 so that modules with similar expression are merged. This step may take a while. 
 
 ```{r}
-# Define our conditions for trait 1 (disease) and 2 (brain region)
-conditions1 = unique(sampleTable[,2])
-conditions2 = unique(sampleTable[,3])
-
 # Construct the combined networks and all the sub-networks (autism only, controls only, FC only, and TC only)
-# The input data can be either a SummarizedExperiment object or a data.frame with genes as rows and samples as columns
 autism_networks = constructNetworks(autism_se, sampleTable, conditions1, conditions2,
                                   networkType = "unsigned", power = 10,
                                   minModuleSize = 40, maxBlockSize = 25000,

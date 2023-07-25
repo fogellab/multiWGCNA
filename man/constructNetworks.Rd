@@ -18,7 +18,7 @@ constructNetworks(
 \arguments{
 \item{datExpr}{either a SummarizedExperiment object or data.frame with genes are rows and samples as columns}
 
-\item{sampleTable}{data.frame with sample traits}
+\item{sampleTable}{data.frame with sample names in first column and sample traits in the second and third column. First column should be called "Sample"}
 
 \item{conditions1}{first design conditions, ie healthy/disease}
 
@@ -49,7 +49,7 @@ autism_se = autism_se[sample(rownames(autism_se), 500),]
 sampleTable = colData(autism_se)
 conditions1 = unique(sampleTable[,2])
 conditions2 = unique(sampleTable[,3])
-autism_networks = constructNetworks(autism_se, sampleTable, conditions1, conditions2, 
+autism_networks = constructNetworks(autism_se, sampleTable, conditions1[[1]], conditions2[[1]], 
   networkType = "signed", TOMType = "unsigned", 
   power = 10, minModuleSize = 100, maxBlockSize = 25000,
   reassignThreshold = 0, minKMEtoStay = 0, mergeCutHeight = 0,

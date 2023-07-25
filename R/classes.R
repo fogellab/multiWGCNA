@@ -42,3 +42,31 @@ setMethod("show", "WGCNA", function(object) {
 	}
 )
 
+#' Get expression data
+#'
+#' Returns the expression data frame a WGCNA object as a data.frame
+#'
+#' @param object An object of class WGCNA
+#' @param genes a list of genes to subset to; default is NULL
+#'
+#' @return a data.frame
+#' 
+#' @author Dario Tommasini
+#'
+#' @export
+#' 
+#' @examples
+#' library(ExperimentHub)
+#' eh = ExperimentHub()
+#' eh_query = query(eh, c("multiWGCNAdata"))
+#' astrocyte_networks = eh_query[["EH8222"]]
+#' datExpr = GetDatExpr(astrocyte_networks[[1]], 
+#'   genes = topNGenes(astrocyte_networks$EAE, "EAE_015", 20))
+#' coexpressionLineGraph(datExpr)	+ 
+#'   geom_vline(xintercept = 20.5, linetype='dashed')
+#' 
+GetDatExpr = function(object, genes = NULL){
+  datExpr = t(cleanDatExpr(object@datExpr))
+  if(!is.null(genes)) datExpr = datExpr[match(genes, rownames(datExpr)),]
+  return(datExpr)
+}

@@ -113,7 +113,7 @@ plotModules <- function(WGCNAobject, mode="PC1"){
 #' possible for a given experimental design
 #'
 #' @param datExpr either a SummarizedExperiment object or data.frame with genes are rows and samples as columns
-#' @param sampleTable data.frame with sample traits
+#' @param sampleTable data.frame with sample names in first column and sample traits in the second and third column. First column should be called "Sample"
 #' @param conditions1 first design conditions, ie healthy/disease
 #' @param conditions2 second design conditions, ie frontal lobe/temporal lobe
 #' @param write write results out to files? 

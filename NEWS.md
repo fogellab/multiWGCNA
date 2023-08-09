@@ -1,3 +1,7 @@
+# multiWGCNA 0.99.4
+
+* Added BiocStyle to suggests
+
 # multiWGCNA 0.99.3
 
 * Added suggested importFroms in R check 

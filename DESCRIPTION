@@ -1,7 +1,7 @@
 Package: multiWGCNA
 Type: Package
 Title: multiWGCNA
-Version: 0.99.3
+Version: 0.99.4
 Authors@R: c(
     person("Dario", "Tommasini", email="dtommasini0@gmail.com", 
       role = c("aut","cre"), 
@@ -17,6 +17,7 @@ License: GPL-3
 Encoding: UTF-8
 LazyData: true
 Suggests: 
+    BiocStyle,
     doParallel,
     ExperimentHub,
     knitr,

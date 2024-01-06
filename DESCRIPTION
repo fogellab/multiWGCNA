@@ -47,6 +47,6 @@ Imports:
     methods,
     SummarizedExperiment
 Depends: 
-    R (>= 4.3.0),
+    R (>= 4.0.0),
     ggalluvial
 Config/testthat/edition: 3

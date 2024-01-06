@@ -149,7 +149,7 @@ diffModuleExpression(autism_networks[["combined"]],
 
 # Perform the module preservation analysis
 
-Determine if any  modules in the autism data are not preserved in the healthy data (or vice versa). This is the slowest step as the calculation of permuted statistics takes a while. Typically, this can be parallelized using the enableWGCNAThreads function, but for this vignette we'll just do 10 permutations so one core should suffice.   
+Determine if any modules in the autism data are not preserved in the healthy data (or vice versa). This is the slowest step as the calculation of permuted statistics takes a while. Typically, this can be parallelized using the enableWGCNAThreads function, but for this vignette we'll just do 10 permutations so one core should suffice.   
 
 ```{r, fig.height = 3, fig.width = 7}
 # To enable multi-threading

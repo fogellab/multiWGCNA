@@ -4,7 +4,7 @@
 #'
 #' @param reference reference network of class WGCNA
 #' @param test test network of class WGCNA
-#' @param nPermutations number of permutations to perform
+#' @param nPermutations number of permutations to perform; at least 50 permutations
 #' @param write write to file?
 #' 
 #' @return a data.frame summarizing results of preservation analysis
@@ -15,21 +15,28 @@
 #' @import stringr
 #' @export
 getPreservation <- function(reference, test, nPermutations=100, write=FALSE) {
+	
+  # Check if objects are in required format
+  stopifnot(inherits(test, "WGCNA") | inherits(test, "data.frame"))
+  stopifnot(inherits(reference, "WGCNA"))
+  
+  if(inherits(test, "WGCNA")){
+    test=test@datExpr
+    # name2=str_split_fixed(test$dynamicLabels, "_", 2)[1,1]
+  }
 
+  # reference must be a WGCNA object
 	reference=reference@datExpr
-	test=test@datExpr
-
-	# clean up reference datExpr
 	name1=str_split_fixed(reference$dynamicLabels, "_", 2)[1,1]
-	name2=str_split_fixed(test$dynamicLabels, "_", 2)[1,1]
+	
+	# process reference
 	referenceExpr = cleanDatExpr(reference, checkGenesSamples=TRUE)
-
-	# clean up test datExpr
-	testExpr = cleanDatExpr(test, checkGenesSamples=TRUE)
-
 	referenceModules=reference$dynamicLabels[match(colnames(referenceExpr), reference$X)]
 	
-	#calculate perservation Z-scores
+	# clean up test datExpr
+	testExpr = cleanDatExpr(test, checkGenesSamples=TRUE)
+	
+	# calculate perservation Z-scores
 	multiExpr2 = list(A = list(data = referenceExpr), B = list(data = testExpr));
 	modLabels2 = list(A = referenceModules) #, B = testModules)
 	system.time( {
@@ -474,4 +481,115 @@ diffCoexpression <- function(datExpr, conditions, geneList=NULL, plot=FALSE,
 	} 
 	
 	return(list(z_scores, raw_p, adj_p, summaryDf %>% arrange(p.adj)))
+}
+
+
+#' PreservationPermutationTest
+#'
+#' Performs a permutation test to determine if a null distribution of expected
+#' preservation scores for modules in this dataset if the labels were 
+#' randomly assigned.
+#'
+#' @param datExpr a data.frame containing expression values
+#' @param conditions a vector containing conditions for the samples
+#' @param geneList vector of genes, will use all genes if NULL (default)
+#' @param plot plot a network?
+#'
+#' @return A list including a matrix of z-scores, a matrix of raw p-values, a 
+#' matrix of adjusted p-values, and a summary data.frame 
+#' 
+#' @author Dario Tommasini
+#'
+#' @import WGCNA
+#' @export
+#' 
+#' @examples
+#' library(ExperimentHub)
+#' eh = ExperimentHub()
+#' eh_query = query(eh, c("multiWGCNAdata"))
+#' astrocyte_se = eh_query[["EH8223"]]
+#' datExpr = assays(astrocyte_se)[[1]]
+#' 
+PreservationPermutationTest = function(referenceDatExpr, design, nPermutations = 100, refColumn = 3, 
+                                       testColumn = 2, nCores = 20, nPresPermutations = 50, 
+                                       ...){
+  
+	doParallel::registerDoParallel(cores=nCores)
+	WGCNA::enableWGCNAThreads(nThreads=nCores)
+	
+	datExpr=referenceDatExpr[,match(design$Sample, colnames(referenceDatExpr))]
+	
+	# for saving resulting objects
+	wtDatExpr=list()
+	dsDatExpr=list()
+	WGCNAobjects=list()
+	preservationData=list()
+	filteredPreservationData=list()
+
+	for(permutation in 1:nPermutations){
+	  
+	  # assign phenotype labels randomly
+	  WT.indices=list()
+	  conditions=unique(design[, refColumn])
+	  for(condition in conditions){
+	    conditionalDesign=design[design[, refColumn]==condition,]
+	    nSamples=nrow(conditionalDesign)
+	    nWT=nrow(conditionalDesign[conditionalDesign[, testColumn]=="WT",])
+	    sampleIndices=which(design[, refColumn]==condition)
+	    WT.indices=append(WT.indices, sampleIndices[sample(1:nSamples, nWT, replace=F)])
+	  }
+	  WT.indices=unlist(WT.indices)
+	  randomHealthy=datExpr[, WT.indices]	
+	  randomHealthy=data.frame(X=referenceDatExpr$X, randomHealthy)
+	  randomDisease=datExpr[, !(1:ncol(datExpr) %in% WT.indices)]
+	  randomDisease=data.frame(X=referenceDatExpr$X, randomDisease)
+	  
+	  # perform WGCNA on subset of dataset
+	  dir.create("WGCNAs")
+	  setwd("WGCNAs")
+	  # wtDatExpr[[permutation]] <- blockwiseModules(t(randomHealthy), ...) #runWGCNA_minimal(randomHealthy, paste0("WtP", permutation), softPowerCalculation=F)
+	  mynet = blockwiseModules(t(randomDisease), ...) #runWGCNA_minimal(randomDisease, paste0("DsP", permutation), softPowerCalculation=F)
+	  degrees1=intramodularConnectivity.fromExpr(t(datExpr), my_net$colors,
+	                                             networkType=arguments$networkType, power=arguments$power)
+	  dynamicLabels=paste(identifier, "_", str_pad(my_net$colors, 3, pad="0"), sep="")
+	  summary = cbind(data.frame(X = rownames(datExpr), datExpr), degrees1, dynamicLabels)
+	  dsDatExpr[[permutation]] <- new("WGCNA", datExpr=summary, conditions=traitData)
+	  dsDatExpr[[permutation]] = findModuleEigengenes(myWGCNA, write=write)
+	  dsDatExpr[[permutation]] = findOutlierModules(myWGCNA)
+	  setwd("..")
+	  
+	  # compute preservation scores in held-out samples
+	  dir.create("preservation")
+	  setwd("preservation")
+	  preservationData[[permutation]]=list()
+	  # preservationData[[permutation]][[1]] <- getPreservation(wtDatExpr[[permutation]], dsDatExpr[[permutation]], write=T)
+	  preservationData[[permutation]][[1]] <- getPreservation(dsDatExpr[[permutation]], wtDatExpr[[permutation]], nPermutations = nPresPermutations, write=T)
+	  setwd("..")
+	  # WGCNAobjects[[permutation]]=findOutlierModules(findModuleEigengenes(dsDatExpr[[permutation]]))
+	  filteredPreservationData[[permutation]]=preservationData[[permutation]][[2]][!rownames(preservationData[[permutation]][[2]]) %in% WGCNAobjects[[permutation]]@outlierModules,]
+	  dir.create("filteredPreservation")
+	  write.csv(filteredPreservationData[[permutation]], paste0("filteredPreservation/filt", permutation, ".csv"), row.names=F)
+	}
+	
+	return(filteredPreservationData)
+}
+
+CalculateProbability = function(myPerm, moduleOfInterestSize){
+  
+	z.summary.dist=list()
+	module.size=list()
+	for(permutation in 1:nPermutations){
+	  myPerm=filteredPreservationData[[permutation]]
+	  z.summary.dist[[permutation]]=myPerm$Zsummary[which.min(abs(myPerm$moduleSize-297))]
+	  module.size[[permutation]]=myPerm$moduleSize[which.min(abs(myPerm$moduleSize-297))]
+	}
+	summary=cbind(z.summary.dist, module.size)
+	write.csv(summary, "round6_summary.csv", row.names=F)
+	
+	# Permutation p-value
+	z.summary.dist=unlist(z.summary.dist)
+	below=length(z.summary.dist[z.summary.dist<9.16261490617938])
+	probability= below/nPermutations
+	
+	return(probability)
 }

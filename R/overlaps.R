@@ -433,7 +433,7 @@ overlapComparisons <- function(comparisonList, WGCNAlist, first, second, element
 	names(comparisonList[[element]])=append(names(comparisonList[[element]]), c("overlap"))
 	names(comparisonList)[[element]]=paste0(names(WGCNAlist)[[first]], "_vs_", names(WGCNAlist)[[second]])
 	if(write) write.csv(comparisonList[[element]]$overlap, paste0(names(WGCNAlist)[[first]], "_vs_", names(WGCNAlist)[[second]], ".csv"), row.names=FALSE)
-	message("\n#### comparing ", names(WGCNAlist)[[first]], " and ", names(WGCNAlist)[[second]], "####\n")
+	message("\n#### comparing ", names(WGCNAlist)[[first]], " and ", names(WGCNAlist)[[second]], " ####\n")
 	if(plot){
 		print(
 		  moduleComparisonPlot(comparisonList[[element]]$overlap,

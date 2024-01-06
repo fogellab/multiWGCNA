@@ -1,7 +1,7 @@
 performWGCNA <- function(datExpr, traitData, identifier, alphaLevel=0.05, write=FALSE, plot=FALSE, ...){
   arguments=list(...)
   
-  # Set network type to WGCNA's default unsigned if not defined in constructNetworks function
+  # Set network type to WGCNA's default unsigned networkType if not defined in constructNetworks function
   if(is.null(arguments$networkType)) arguments$networkType = "unsigned"
   
   datExpr = t(cleanDatExpr(datExpr, checkGenesSamples = TRUE))

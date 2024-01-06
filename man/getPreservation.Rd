@@ -11,7 +11,7 @@ getPreservation(reference, test, nPermutations = 100, write = FALSE)
 
 \item{test}{test network of class WGCNA}
 
-\item{nPermutations}{number of permutations to perform}
+\item{nPermutations}{number of permutations to perform; at least 50 permutations}
 
 \item{write}{write to file?}
 }

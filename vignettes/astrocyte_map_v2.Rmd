@@ -170,21 +170,44 @@ Typically, you would want to follow this up with a preservation analysis between
 # To enable multi-threading
 library(doParallel)
 library(WGCNA)
-nCores = 8
+nCores = 2
 registerDoParallel(cores = nCores)
 enableWGCNAThreads(nThreads = nCores)
 
 # Calculate preservation statistics
-results$preservation=iterate(astrocyte_networks[conditions1], 
+results$preservation=iterate(astrocyte_networks[c("EAE", "WT")], 
                              preservationComparisons, 
                              write=FALSE, 
                              plot=TRUE, 
-                             nPermutations=100)
+                             nPermutations=10)
 ```
+
+# Determining if preservation value is significant
+
+Then, one can perform a permutation procedure that estimates the probability of observing a disease/wildtype module with this preservation score in the wildtype/disease setting (PreservationPermutationTest). Please see Tommasini and Fogel. BMC Bioinformatics. 2023. for more details. 
+
+```{r}
+results$permutation.test = PreservationPermutationTest(astrocyte_networks$combined@datExpr, 
+                                                       sampleTable, 
+                                                       nPermutations = 100, 
+                                                       refColumn = 3, 
+                                                       testColumn = 2, 
+                                                       nCores = 20, 
+                                                       nPresPermutations = 50, 
+                                                       
+                                                       # WGCNA parameters
+                                                       networkType = "signed", TOMType = "unsigned", 
+                                                       power = 12, minModuleSize = 100, maxBlockSize = 25000,
+                                                       reassignThreshold = 0, minKMEtoStay = 0, mergeCutHeight = 0,
+                                                       numericLabels = TRUE, pamRespectsDendro = FALSE, 
+                                                       deepSplit = 4, verbose = 3
+                                                       )
+```
+
 
 # Conclusion
 
-Then, one can perform a permutation procedure that estimates the probability of observing a disease/wildtype module with this preservation score in the wildtype/disease setting (diseasePreservationPtest). Please see Tommasini and Fogel. BMC Bioinformatics. 2023. for more details. 
+It appears that module c13/d15 is unique to the EAE condition. This analysis provides a great deal of evidence suggesting this is a transcriptional network that is gained in this disease status and is not present in healthy astrocytes. 
 
 ```{r}
 sessionInfo()

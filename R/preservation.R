@@ -22,7 +22,6 @@ getPreservation <- function(reference, test, nPermutations=100, write=FALSE) {
   
   if(inherits(test, "WGCNA")){
     test=test@datExpr
-    # name2=str_split_fixed(test$dynamicLabels, "_", 2)[1,1]
   }
 
   # reference must be a WGCNA object
@@ -44,8 +43,8 @@ getPreservation <- function(reference, test, nPermutations=100, write=FALSE) {
 		                        modLabels2,
                   					referenceNetworks = 1,
                             nPermutations = nPermutations,
-                            #maxGoldModuleSize = left as default
-                            #maxModuleSize = left as default,
+                            # maxGoldModuleSize = left as default
+                            # maxModuleSize = left as default,
                             randomSeed = 1,
                             quickCor = 0,
                             verbose = 3,
@@ -511,6 +510,8 @@ diffCoexpression <- function(datExpr, conditions, geneList=NULL, plot=FALSE,
 #' eh = ExperimentHub()
 #' eh_query = query(eh, c("multiWGCNAdata"))
 #' astrocyte_networks = eh_query[["EH8222"]] 
+#' astrocyte_se = eh_query[["EH8223"]] 
+#' sampleTable = colData(astrocyte_se)
 #' results = list()
 #' results$permutation.test = PreservationPermutationTest(astrocyte_networks$combined@datExpr[sample(17000,3000),], 
 #'                                                        sampleTable, 
@@ -543,10 +544,10 @@ PreservationPermutationTest = function(referenceDatExpr,
   # Determine which conditions to study and which to control for
   if(any(grepl(testPreservationIn, design[,2]))){
     refColumn = 3
-    testColum = 2
+    testColumn = 2
   } else if(any(grepl(testPreservationIn, design[,3]))){
     refColumn = 2
-    testColum = 3
+    testColumn = 3
   } else {
     stop("testPreservationIn not found in design! Please check spelling and case and try again. ")
   }
@@ -585,11 +586,7 @@ PreservationPermutationTest = function(referenceDatExpr,
     message(paste0(capture.output(as.data.frame(design[WT.indices,])), collapse = "\n"))
     
     # perform WGCNA on subset of dataset
-    my_net = blockwiseModules(t(randomDisease), networkType = "signed", TOMType = "unsigned", 
-                              power = 12, minModuleSize = 100, maxBlockSize = 25000,
-                              reassignThreshold = 0, minKMEtoStay = 0, mergeCutHeight = 0,
-                              numericLabels = TRUE, pamRespectsDendro = FALSE, 
-                              deepSplit = 4, verbose = 3) 
+    my_net = blockwiseModules(t(randomDisease), ...) 
     dynamicLabels=paste("rand", "_", str_pad(my_net$colors, 3, pad="0"), sep="")
     summary = cbind(data.frame(X = rownames(randomDisease), randomDisease), dynamicLabels)
     WGCNAobjects[[permutation]] = findOutlierModules(findModuleEigengenes(new("WGCNA", datExpr=summary)))

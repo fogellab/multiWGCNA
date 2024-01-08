@@ -598,6 +598,7 @@ PreservationPermutationTest = function(referenceDatExpr,
     preservationData[[permutation]] <- getPreservation(WGCNAobjects[[permutation]], randomHealthy, nPermutations = nPresPermutations, write=F)
     preservationData[[permutation]]$is.outlier.module = FALSE
     preservationData[[permutation]]$is.outlier.module[rownames(preservationData[[permutation]]) %in% WGCNAobjects[[permutation]]@outlierModules] = TRUE
+    saveRDS(preservationData, "preservationData.rds")
   }
   
   return(preservationData)

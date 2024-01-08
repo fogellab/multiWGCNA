@@ -85,10 +85,10 @@ traitCor <- function(WGCNAobject, write=FALSE){
 }
 
 findModuleEigengenes <- function(WGCNAobject, write=FALSE){
-        datExpr2=WGCNAobject@datExpr
-        identifier=name(WGCNAobject)
+  datExpr2=WGCNAobject@datExpr
+  identifier=name(WGCNAobject)
 	moduleEigengenes=moduleEigengenes(cleanDatExpr(datExpr2), colors = datExpr2$dynamicLabels, nPC=1)$eigengenes
-        moduleEigengenes=as.data.frame(t(moduleEigengenes))
+  moduleEigengenes=as.data.frame(t(moduleEigengenes))
 	rownames(moduleEigengenes)=gsub("ME", "", rownames(moduleEigengenes))
 	if(write) write.csv(moduleEigengenes, paste0(identifier,"_moduleEigengenes.csv"), row.names=TRUE)
 	WGCNAobject@moduleEigengenes=moduleEigengenes

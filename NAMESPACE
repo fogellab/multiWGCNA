@@ -2,6 +2,7 @@
 
 export(GetDatExpr)
 export(PreservationPermutationTest)
+export(PreservationScoreDistribution)
 export(bidirectionalBestMatches)
 export(cleanDatExpr)
 export(coexpressionLineGraph)

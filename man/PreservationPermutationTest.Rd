@@ -7,39 +7,56 @@
 PreservationPermutationTest(
   referenceDatExpr,
   design,
+  constructNetworksIn,
+  testPreservationIn,
   nPermutations = 100,
-  refColumn = 3,
-  testColumn = 2,
-  nCores = 20,
-  nPresPermutations = 50,
+  nPresPermutations = 100,
   ...
 )
 }
 \arguments{
-\item{datExpr}{a data.frame containing expression values}
+\item{referenceDatExpr}{the combined datExpr}
 
-\item{conditions}{a vector containing conditions for the samples}
+\item{design}{the sampleTable}
 
-\item{geneList}{vector of genes, will use all genes if NULL (default)}
+\item{constructNetworksIn}{the condition to use for network construction, e.g. for the astrocyte data, this is "EAE"}
 
-\item{plot}{plot a network?}
+\item{testPreservationIn}{the condition to use for testing preservation, e.g. for the astrocyte data, this was "WT"}
+
+\item{nPermutations}{the number of permutations to perform for permutation test}
+
+\item{nPresPermutations}{the number of permutations to perform in modulePreservation function}
+
+\item{...}{arguments to pass to blockwiseModules function for network construction (should be the same as used for constructing the original network)}
 }
 \value{
-A list including a matrix of z-scores, a matrix of raw p-values, a 
-matrix of adjusted p-values, and a summary data.frame
+A list of data.frames with preservation results for each permutation
 }
 \description{
 Performs a permutation test to determine if a null distribution of expected
 preservation scores for modules in this dataset if the labels were 
-randomly assigned.
+randomly assigned. Please look at the astrocyte vignette for more info.
 }
 \examples{
+\dontrun{
 library(ExperimentHub)
 eh = ExperimentHub()
 eh_query = query(eh, c("multiWGCNAdata"))
-astrocyte_se = eh_query[["EH8223"]]
-datExpr = assays(astrocyte_se)[[1]]
-
+astrocyte_networks = eh_query[["EH8222"]] 
+results = list()
+results$permutation.test = PreservationPermutationTest(astrocyte_networks$combined@datExpr[sample(17000,3000),], 
+                                                       sampleTable, 
+                                                       constructNetworksIn = "EAE", # Construct networks using EAE samples
+                                                       testPreservationIn = "WT", # Test preservation of disease samples in WT samples
+                                                       nPermutations = 10, # Number of permutations for permutation test
+                                                       nPresPermutations = 10, # Number of permutations for modulePreservation function
+                                                       networkType = "signed", TOMType = "unsigned", 
+                                                       power = 12, minModuleSize = 100, maxBlockSize = 25000,
+                                                       reassignThreshold = 0, minKMEtoStay = 0, mergeCutHeight = 0,
+                                                       numericLabels = TRUE, pamRespectsDendro = FALSE, 
+                                                       deepSplit = 4, verbose = 3
+                                                       )
+}
 }
 \author{
 Dario Tommasini

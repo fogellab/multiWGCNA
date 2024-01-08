@@ -168,34 +168,37 @@ Typically, you would want to follow this up with a preservation analysis between
 
 ```{r, eval = FALSE, fig.height = 3, fig.width = 7}
 # To enable multi-threading
-library(doParallel)
-library(WGCNA)
-nCores = 2
-registerDoParallel(cores = nCores)
-enableWGCNAThreads(nThreads = nCores)
+# library(doParallel)
+# library(WGCNA)
+# nCores = 2
+# registerDoParallel(cores = nCores)
+# enableWGCNAThreads(nThreads = nCores)
+
+registerDoSEQ()
+disableWGCNAThreads()
 
 # Calculate preservation statistics
 results$preservation=iterate(astrocyte_networks[c("EAE", "WT")], 
                              preservationComparisons, 
                              write=FALSE, 
                              plot=TRUE, 
-                             nPermutations=10)
+                             nPermutations=6)
 ```
 
 # Determining if preservation value is significant
 
-Then, one can perform a permutation procedure that estimates the probability of observing a disease/wildtype module with this preservation score in the wildtype/disease setting (PreservationPermutationTest). Please see Tommasini and Fogel. BMC Bioinformatics. 2023. for more details. 
+Then, one can perform a permutation procedure that estimates the probability of observing a disease (or wildtype) module with this preservation score in the wildtype (or disease) setting (PreservationPermutationTest). The test is designed to control for the other condition in the sampleTable. In this case, it will equally distribute the samples belonging to each anatomical region when testing preservation of this disease module in the wildtype samples. This is the slowest step! We recommend to let this run on a computing cluster overnight. 
 
-```{r}
-results$permutation.test = PreservationPermutationTest(astrocyte_networks$combined@datExpr, 
+```{r, eval = FALSE}
+options(paged.print = FALSE)
+results$permutation.test = PreservationPermutationTest(astrocyte_networks$combined@datExpr[sample(17000,3000),], 
                                                        sampleTable, 
-                                                       nPermutations = 100, 
-                                                       refColumn = 3, 
-                                                       testColumn = 2, 
-                                                       nCores = 20, 
-                                                       nPresPermutations = 50, 
+                                                       constructNetworksIn = "EAE", # Construct networks using EAE samples
+                                                       testPreservationIn = "WT", # Test preservation of disease samples in WT samples
+                                                       nPermutations = 10, # Number of permutations for permutation test
+                                                       nPresPermutations = 10, # Number of permutations for modulePreservation function
                                                        
-                                                       # WGCNA parameters
+                                                       # WGCNA parameters for re-sampled networks (should be the same as used for network construction)
                                                        networkType = "signed", TOMType = "unsigned", 
                                                        power = 12, minModuleSize = 100, maxBlockSize = 25000,
                                                        reassignThreshold = 0, minKMEtoStay = 0, mergeCutHeight = 0,
@@ -204,10 +207,41 @@ results$permutation.test = PreservationPermutationTest(astrocyte_networks$combin
                                                        )
 ```
 
+Since module preservation scores are dependent on the module size (larger modules have larger preservation scores), we generate the null distribution of preservation scores based on similarly sized modules from each permutation. 
+
+```{r, eval = FALSE}
+# Extract the preservation score distribution
+results$scores.summary = PreservationScoreDistribution(results$permutation.test, 
+                                                       moduleOfInterestSize = 300 # The size of the module of interest (dM15)
+                                                       )
+
+# Observed preservation score of dM15
+observed.score = 9.16261490617938
+
+# How many times did we observe a score lower than or equal to this observed score?
+z.summary.dist = results$scores.summary$z.summary
+below=length(z.summary.dist[z.summary.dist <= observed.score])
+probability= below/nPermutations
+message("Probability of observing a score of ", round(observed.score, 2), " is ", probability)
+```
+
+You can plot the observed score and the null distribution on a histogram like in Figure 2B of the manuscript. 
+
+```{r, eval = FALSE}
+# Plot on a histogram
+ggplot(results$scores.summary, aes(x=z.summary)) + 
+      geom_histogram(color="black", fill="white", bins = 10)+
+      xlab("Preservation score")+
+      ylab("Frequency")+
+      geom_vline(xintercept=observed.score, color="red3", linetype="solid")+
+      scale_y_continuous(expand = c(0,0))+
+      theme_classic()+
+      theme(plot.title = element_text(hjust = 0.5))
+```
 
 # Conclusion
 
-It appears that module c13/d15 is unique to the EAE condition. This analysis provides a great deal of evidence suggesting this is a transcriptional network that is gained in this disease status and is not present in healthy astrocytes. 
+This analysis provides a great deal of evidence suggesting this is a transcriptional network that is gained in this disease status and is not present in healthy astrocytes. Further investigation will reveal that this network corresponds to the reactive astrocyte transcriptional network, which indeed is active in the EAE model and is absent in healthy astrocytes. Please see Tommasini and Fogel. BMC Bioinformatics. 2023. for more details. 
 
 ```{r}
 sessionInfo()

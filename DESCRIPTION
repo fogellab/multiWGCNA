@@ -1,7 +1,7 @@
 Package: multiWGCNA
 Type: Package
 Title: multiWGCNA
-Version: 0.99.4
+Version: 1.1.1
 Authors@R: c(
     person("Dario", "Tommasini", email="dtommasini0@gmail.com", 
       role = c("aut","cre"), 
@@ -47,6 +47,6 @@ Imports:
     methods,
     SummarizedExperiment
 Depends: 
-    R (>= 4.0.0),
+    R (>= 4.3.0),
     ggalluvial
 Config/testthat/edition: 3

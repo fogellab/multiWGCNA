@@ -616,6 +616,14 @@ PreservationPermutationTest = function(referenceDatExpr,
 #'
 #' @export
 #' 
+#' @examples
+#' # Remove outlier modules
+#' permutationTestResultsFiltered = lapply(permutationTestResults, function(x) x[!x$is.outlier.module,])
+#' 
+#' # Find preservation score distribution for a given module size
+#' scores.summary = PreservationScoreDistribution(permutationTestResultsFiltered, 
+#'                                                moduleOfInterestSize = 303)
+#'                                                         
 PreservationScoreDistribution = function(preservationData, moduleOfInterestSize){
   
   # Save z.summary scores and observed module sizes

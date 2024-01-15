@@ -164,15 +164,15 @@ This corresponds to Figure 2D from Tommasini and Fogel. BMC Bioinformatics. 2023
 
 # Follow up with a preservation analysis
 
-Typically, you would want to follow this up with a preservation analysis between EAE and WT (described in general_workflow.Rmd). 
+Typically, you would want to follow this up with a preservation analysis between EAE and WT (described in general_workflow.Rmd). This is slow so we don't actually run this in the vignette. 
 
 ```{r, eval = FALSE, fig.height = 3, fig.width = 7}
 # To enable multi-threading
-# library(doParallel)
-# library(WGCNA)
-# nCores = 2
-# registerDoParallel(cores = nCores)
-# enableWGCNAThreads(nThreads = nCores)
+library(doParallel)
+library(WGCNA)
+nCores = 2
+registerDoParallel(cores = nCores)
+enableWGCNAThreads(nThreads = nCores)
 
 registerDoSEQ()
 disableWGCNAThreads()
@@ -182,7 +182,7 @@ results$preservation=iterate(astrocyte_networks[c("EAE", "WT")],
                              preservationComparisons, 
                              write=FALSE, 
                              plot=TRUE, 
-                             nPermutations=6)
+                             nPermutations=100)
 ```
 
 # Determining if preservation value is significant
@@ -207,12 +207,15 @@ results$permutation.test = PreservationPermutationTest(astrocyte_networks$combin
                                                        )
 ```
 
-Since module preservation scores are dependent on the module size (larger modules have larger preservation scores), we generate the null distribution of preservation scores based on similarly sized modules from each permutation. 
+Because this step is slow, we provide pre-computed results within the package, stored as `permutationTestResults`. Since module preservation scores are dependent on the module size (larger modules have larger preservation scores), we generate the null distribution of preservation scores based on similarly sized modules from each permutation. Note that we have to filter out "outlier modules" first, as these are modules where the correlations are driven by a single sample. 
 
-```{r, eval = FALSE}
+```{r, eval = TRUE}
+# Remove outlier modules
+permutationTestResultsFiltered = lapply(permutationTestResults, function(x) x[!x$is.outlier.module,])
+
 # Extract the preservation score distribution
-results$scores.summary = PreservationScoreDistribution(results$permutation.test, 
-                                                       moduleOfInterestSize = 300 # The size of the module of interest (dM15)
+results$scores.summary = PreservationScoreDistribution(permutationTestResultsFiltered, 
+                                                       moduleOfInterestSize = 303 # The size of the module of interest (dM15)
                                                        )
 
 # Observed preservation score of dM15
@@ -221,16 +224,16 @@ observed.score = 9.16261490617938
 # How many times did we observe a score lower than or equal to this observed score?
 z.summary.dist = results$scores.summary$z.summary
 below=length(z.summary.dist[z.summary.dist <= observed.score])
-probability= below/nPermutations
+probability= below/100
 message("Probability of observing a score of ", round(observed.score, 2), " is ", probability)
 ```
 
 You can plot the observed score and the null distribution on a histogram like in Figure 2B of the manuscript. 
 
-```{r, eval = FALSE}
+```{r, eval = TRUE}
 # Plot on a histogram
 ggplot(results$scores.summary, aes(x=z.summary)) + 
-      geom_histogram(color="black", fill="white", bins = 10)+
+      geom_histogram(color="black", fill="white", bins = 15)+
       xlab("Preservation score")+
       ylab("Frequency")+
       geom_vline(xintercept=observed.score, color="red3", linetype="solid")+
@@ -241,7 +244,7 @@ ggplot(results$scores.summary, aes(x=z.summary)) +
 
 # Conclusion
 
-This analysis provides a great deal of evidence suggesting this is a transcriptional network that is gained in this disease status and is not present in healthy astrocytes. Further investigation will reveal that this network corresponds to the reactive astrocyte transcriptional network, which indeed is active in the EAE model and is absent in healthy astrocytes. Please see Tommasini and Fogel. BMC Bioinformatics. 2023. for more details. 
+This analysis provides a great deal of evidence suggesting that dM15 is a transcriptional network that is gained in this disease status and is not present in healthy astrocytes. Further investigation will reveal that this network corresponds to the reactive astrocyte transcriptional network, which indeed is active in the EAE model and is absent in healthy astrocytes. Please see Tommasini and Fogel. BMC Bioinformatics. 2023. for more details. 
 
 ```{r}
 sessionInfo()

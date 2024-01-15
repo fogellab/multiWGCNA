@@ -43,6 +43,8 @@ library(ExperimentHub)
 eh = ExperimentHub()
 eh_query = query(eh, c("multiWGCNAdata"))
 astrocyte_networks = eh_query[["EH8222"]] 
+astrocyte_se = eh_query[["EH8223"]] 
+sampleTable = colData(astrocyte_se)
 results = list()
 results$permutation.test = PreservationPermutationTest(astrocyte_networks$combined@datExpr[sample(17000,3000),], 
                                                        sampleTable, 

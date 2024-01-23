@@ -210,6 +210,9 @@ results$permutation.test = PreservationPermutationTest(astrocyte_networks$combin
 Because this step is slow, we provide pre-computed results within the package, stored as `permutationTestResults`. Since module preservation scores are dependent on the module size (larger modules have larger preservation scores), we generate the null distribution of preservation scores based on similarly sized modules from each permutation. Note that we have to filter out "outlier modules" first, as these are modules where the correlations are driven by a single sample. 
 
 ```{r, eval = TRUE}
+# Load pre-computed results
+data(permutationTestResults) 
+
 # Remove outlier modules
 permutationTestResultsFiltered = lapply(permutationTestResults, function(x) x[!x$is.outlier.module,])
 

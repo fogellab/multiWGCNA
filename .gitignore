@@ -2,7 +2,6 @@
 /Meta/
 *.o
 *.so
-*.rda
 *.RData
 .DS_Store
 .Rproj.user

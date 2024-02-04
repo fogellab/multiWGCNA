@@ -26,9 +26,10 @@ devtools::install_github("fogellab/multiWGCNA")
 
 # Vignettes
 
-Please refer to the autism_full_workflow.Rmd vignette for a detailed example of how to use multiWGCNA.
+We recommend running through both of the vignettes before applying multiWGCNA to your own data:
 
-For a more in-depth tutorial discussing the preservation analyses from the manuscript (Tommasini and Fogel. BMC Bioinformatics. 2023), please refer to the astrocyte_map2.Rmd vignette. 
+* The autism_full_workflow.Rmd vignette provides a quick example of how to use multiWGCNA.
+* The astrocyte_map2.Rmd vignette provides a more in-depth tutorial discussing the preservation analyses from the manuscript and functions for visualization. 
 
 # Citation
 

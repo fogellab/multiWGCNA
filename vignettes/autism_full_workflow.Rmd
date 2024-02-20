@@ -76,6 +76,8 @@ autism_se = autism_se[sample(rownames(autism_se), 1500),]
 
 # Check the data
 assays(autism_se)[[1]][1:5, 1:5]
+# sampleTable$Status = paste0("test_", sampleTable$Status, "_test")
+# sampleTable$Sample = paste0(sampleTable$Sample, "_test")
 sampleTable
 
 # Define our conditions for trait 1 (disease) and 2 (brain region)
@@ -87,7 +89,7 @@ conditions2 = unique(sampleTable[,3])
 
 Also, let's find best trait for each module and identify outlier modules (ie modules driven by a single sample). 
 
-Let's use power = 10 since Voineagu et al. 2011 used that for all their networks. They also constructed "unsigned" networks and a mergeCutHeight of 0.10 so that modules with similar expression are merged. This step may take a while. 
+Let's use power = 10 since Voineagu et al. 2011 used that for all their networks. They also constructed "unsigned" networks and a mergeCutHeight of 0.10 so that modules with similar expression are merged. This step may take a minute.  
 
 ```{r}
 # Construct the combined networks and all the sub-networks (autism only, controls only, FC only, and TC only)

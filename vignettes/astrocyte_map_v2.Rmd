@@ -168,21 +168,22 @@ Typically, you would want to follow this up with a preservation analysis between
 
 ```{r, eval = FALSE, fig.height = 3, fig.width = 7}
 # To enable multi-threading
-library(doParallel)
-library(WGCNA)
-nCores = 2
-registerDoParallel(cores = nCores)
-enableWGCNAThreads(nThreads = nCores)
+# library(doParallel)
+# library(WGCNA)
+# nCores = 2
+# registerDoParallel(cores = nCores)
+# enableWGCNAThreads(nThreads = nCores)
 
-registerDoSEQ()
-disableWGCNAThreads()
+# Turn off multi-threading
+# registerDoSEQ()
+# disableWGCNAThreads()
 
 # Calculate preservation statistics
 results$preservation=iterate(astrocyte_networks[c("EAE", "WT")], 
                              preservationComparisons, 
                              write=FALSE, 
                              plot=TRUE, 
-                             nPermutations=100)
+                             nPermutations=2)
 ```
 
 # Determining if preservation value is significant

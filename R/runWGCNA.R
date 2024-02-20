@@ -68,20 +68,20 @@ traitCor <- function(WGCNAobject, write=FALSE){
 	moduleEigengenes=t(WGCNAobject@moduleEigengenes)
 	datExpr2=cleanDatExpr(WGCNAobject@datExpr)
 	traitData=WGCNAobject@conditions
-        identifier=name(WGCNAobject)
+  identifier=name(WGCNAobject)
 	nSamples=nrow(datExpr2)
 	Traits=traitData[match(rownames(datExpr2), traitData$Sample),-1]
-        rownames(Traits)=traitData[match(rownames(datExpr2), traitData$Sample),c("Sample")]
-        datTraits=as.data.frame(Traits)
-        moduleTraitCorL = cor(moduleEigengenes, datTraits, use = "p");
-        moduleTraitPvalueL = corPvalueStudent(moduleTraitCorL, nSamples);
-        colnames(moduleTraitPvalueL) = paste0("p.value.", colnames(moduleTraitCorL));
-        traitCor=cbind(Module=gsub("ME", "", rownames(moduleTraitCorL)), moduleTraitCorL, moduleTraitPvalueL)
-        rownames(traitCor)=seq_len(nrow(traitCor))
-        if(write) write.csv(traitData, paste0(identifier,"_conditions.csv"), row.names=FALSE)
-	      if(write) write.csv(traitCor, paste0(identifier,"_TraitCor.csv"), row.names=FALSE)
-        WGCNAobject@trait=as.data.frame(traitCor)
-        return(WGCNAobject)
+  rownames(Traits)=traitData[match(rownames(datExpr2), traitData$Sample),c("Sample")]
+  datTraits=as.data.frame(Traits)
+  moduleTraitCorL = cor(moduleEigengenes, datTraits, use = "p");
+  moduleTraitPvalueL = corPvalueStudent(moduleTraitCorL, nSamples);
+  colnames(moduleTraitPvalueL) = paste0("p.value.", colnames(moduleTraitCorL));
+  traitCor=cbind(Module=gsub("ME", "", rownames(moduleTraitCorL)), moduleTraitCorL, moduleTraitPvalueL)
+  rownames(traitCor)=seq_len(nrow(traitCor))
+  if(write) write.csv(traitData, paste0(identifier,"_conditions.csv"), row.names=FALSE)
+  if(write) write.csv(traitCor, paste0(identifier,"_TraitCor.csv"), row.names=FALSE)
+  WGCNAobject@trait=as.data.frame(traitCor)
+  return(WGCNAobject)
 }
 
 findModuleEigengenes <- function(WGCNAobject, write=FALSE){

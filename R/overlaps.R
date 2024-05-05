@@ -1,3 +1,97 @@
+#' TOMFlowPlot
+#'
+#' Plots a sankey flow diagram showing the movement of genes from one WGCNA
+#' to another WGCNA. Uses the ggalluvial framework. 
+#'
+#' @param WGCNAlist list of WGCNA objects
+#' @param networks list of network names of length 2
+#' @param toms a list of TOM distance objects of length 2
+#' @param genes_to_label genes to label across two networks
+#' @param alpha alpha of flows
+#' @param color color of flows
+#' @param width width of the strata
+#' 
+#' @return a ggplot object
+#' 
+#' @author Dario Tommasini
+#'
+#' @import flashClust
+#' @import ggalluvial
+#' @import WGCNA
+#' @import stringr
+#' @export
+TOMFlowPlot = function(WGCNAlist, networks, toms, genes_to_label, alpha = 0.1, color = 'black', width = 0.05){
+  
+  stopifnot(length(networks) == 2)
+  stopifnot(length(toms) == 2)
+  stopifnot(length(genes_to_label) > 0)
+  
+  # Read in files (equivalent to object@datExpr slot of WGCNA object)
+  datasets = WGCNAlist[networks]
+  
+  # Make common list of genes
+  allCommonGenes=datasets[[1]]@datExpr$X[order(datasets[[1]]@datExpr$X)]
+  
+  # First extract the order from hierarchical clustering of TOM dissimilarity matrix
+  orderList=list()
+  positionList=list()
+  for(element in seq_along(networks)){
+    
+    # Get TOM
+    TOM=toms[[element]]
+    dissTOM=1-TOM
+    
+    # Cluster TOM
+    message("Clustering TOM tree ", element, "...")
+    geneTree = flashClust(as.dist(dissTOM), method="average")
+    
+    # Compile data
+    geneOrder=data.frame(Gene=datasets[[element]]@datExpr$X[geneTree$order], 
+                         Color=datasets[[element]]@datExpr$dynamicColors[geneTree$order])
+    geneOrder$order=1:length(allCommonGenes)
+    sortedOrder=geneOrder[order(geneOrder$Gene),]
+    orderList[[element]]=sortedOrder
+  }
+  
+  # Combine results
+  df=do.call(cbind, orderList)
+  colnames(df)=c("one.gene","one.color", "one.order", "two.gene", "two.color", "two.order")
+  df$Count=1
+  head(df)
+  df$one.gene=paste0("1_", df$one.gene)
+  df$one.gene=factor(df$one.gene, levels=df$one.gene[order(df$one.order)])
+  df$two.gene=paste0("2_", df$two.gene)
+  df$two.gene=factor(df$two.gene, levels=df$two.gene[order(df$two.order)])
+  colors=c(rev(df$one.color[order(df$one.order)]), rev(df$two.color[order(df$two.order)]))
+  
+  # Choose module to label
+  df$module="other"
+  df$module[allCommonGenes %in% genes_to_label]="labeled"
+  df$module = factor(df$module, levels = c("other", "labeled"))
+  
+  # Set unlabeled genes to NAs to avoid labeling them, speeds up plotting as well
+  temp1 = subset(df, module != "labeled")
+  temp1$two.gene = NA
+  temp2 = subset(df, module != "labeled")
+  temp2$one.gene = NA
+  
+  new_df = rbind(subset(df, module == "labeled"), 
+                 temp1, temp2)
+  
+  # Flow plot
+  plt = ggplot(new_df, aes(y = Count, axis1 = one.gene, axis2 = two.gene)) +
+      geom_flow(aes(fill = module), width=width, curve_type = "cubic", alpha = alpha, fill = color) +
+      geom_stratum(width = width, fill = colors, size=0, alpha = 1) +
+      ylab("Genes") + 
+      theme(axis.ticks.x = element_blank(), panel.background = element_blank(),
+            panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
+      geom_text(stat = "stratum", aes(label = after_stat(stratum)), size = 0) +
+      scale_y_continuous(limits = c(0, nrow(df)))+
+      scale_x_discrete(expand=c(0,0), limits = networks, labels = networks)
+  
+  return(plt)
+}
+
 #' computeOverlapsFromWGCNA
 #'
 #' Computes overlap between the modules of two objects of class WGCNA

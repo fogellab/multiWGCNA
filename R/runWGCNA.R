@@ -5,11 +5,23 @@ performWGCNA <- function(datExpr, traitData, identifier, alphaLevel=0.05, write=
   if(is.null(arguments$networkType)) arguments$networkType = "unsigned"
   
   datExpr = t(cleanDatExpr(datExpr, checkGenesSamples = TRUE))
-  my_net = blockwiseModules(t(datExpr), ...)
+  
+  if('saveTOMs' %in% names(arguments)){
+    if(arguments$saveTOMs == TRUE) {
+      my_net = blockwiseModules(t(datExpr), saveTOMFileBase = identifier, ...)
+    } else {
+      my_net = blockwiseModules(t(datExpr), ...)
+    }
+  } else {
+    my_net = blockwiseModules(t(datExpr), ...)
+  }
+  
   degrees1=intramodularConnectivity.fromExpr(t(datExpr), my_net$colors,
-                                            networkType=arguments$networkType, power=arguments$power)
+                                            networkType=arguments$networkType, 
+                                            power=arguments$power)
+  dynamicColors=WGCNA::labels2colors(my_net$colors)
   dynamicLabels=paste(identifier, "_", str_pad(my_net$colors, 3, pad="0"), sep="")
-  summary = cbind(data.frame(X = rownames(datExpr), datExpr), degrees1, dynamicLabels)
+  summary = cbind(data.frame(X = rownames(datExpr), datExpr), degrees1, dynamicLabels, dynamicColors)
   if(write) write.csv(summary, file=paste0(identifier, "_summary.csv"), row.names=FALSE)
   myWGCNA <- new("WGCNA", datExpr=summary, conditions=traitData)
 	myWGCNA=findModuleEigengenes(myWGCNA, write=write)

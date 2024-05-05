@@ -3,6 +3,7 @@
 export(GetDatExpr)
 export(PreservationPermutationTest)
 export(PreservationScoreDistribution)
+export(TOMFlowPlot)
 export(bidirectionalBestMatches)
 export(cleanDatExpr)
 export(coexpressionLineGraph)

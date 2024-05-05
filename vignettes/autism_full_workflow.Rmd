@@ -70,7 +70,7 @@ autism_se = eh_query[["EH8219"]]
 # Collect the metadata in the sampleTable
 sampleTable = colData(autism_se)
 
-# Randomly sample 2000 genes from the expression matrix
+# Randomly sample 1500 genes from the expression matrix
 set.seed(1)
 autism_se = autism_se[sample(rownames(autism_se), 1500),]
 
@@ -98,7 +98,8 @@ autism_networks = constructNetworks(autism_se, sampleTable, conditions1, conditi
                                   minModuleSize = 40, maxBlockSize = 25000,
                                   reassignThreshold = 0, minKMEtoStay = 0.7,
                                   mergeCutHeight = 0.10, numericLabels = TRUE,
-                                  pamRespectsDendro = FALSE, verbose=3)
+                                  pamRespectsDendro = FALSE, verbose=3,
+                                  saveTOMs = TRUE)
 ```
 
 # Compare modules by overlap across conditions
@@ -112,6 +113,25 @@ results$overlaps=iterate(autism_networks, overlapComparisons, plot=TRUE)
 
 # Check the reciprocal best matches between the autism and control networks
 head(results$overlaps$autism_vs_controls$bestMatches)
+```
+
+You can use the TOMFlowPlot to plot the recruitment of genes from one network analysis to another. See Figure 6 from Tommasini and Fogel, 2023 for an example. Note that you will need to set saveTOMs = TRUE in the constructNetworks function above. 
+
+```{r, fig.height=6, fig.width=4}
+networks = c("autism", "controls")
+toms = lapply(networks, function(x) {
+  load(paste0(x, '-block.1.RData'))
+  get("TOM")
+})
+
+# Check module autism_005
+TOMFlowPlot(autism_networks, 
+            networks, 
+            toms, 
+            genes_to_label = topNGenes(autism_networks$autism, "autism_005"), 
+            color = 'black', 
+            alpha = 0.1, 
+            width = 0.05)
 ```
 
 # Perform differential module expression analysis 

@@ -183,6 +183,8 @@ constructNetworks <- function(datExpr, sampleTable, conditions1, conditions2, wr
 	  dir.create("combined")
 	  setwd("combined")
 	}
+	
+	message("### Working on combined network ###")
 	myNetworks = append(myNetworks, performWGCNA(datExpr, combinedTraitTable, "combined", alphaLevel = alphaLevel, plot = plot, ...))
 	if(write) setwd("..")
 	
@@ -192,6 +194,7 @@ constructNetworks <- function(datExpr, sampleTable, conditions1, conditions2, wr
 	    dir.create(trait)
 		  setwd(trait)
 	  }
+	  message("### Working on ", trait, " network ###")
 		myNetworks=append(myNetworks, performWGCNA(datExpr[,c("X", sampleTable$Sample[sampleTable[,2]==trait])], conditions1TraitTable[sampleTable[,2]==trait,], trait, plot=plot, ...))
 		if(write) setwd("..")
 	}
@@ -202,6 +205,7 @@ constructNetworks <- function(datExpr, sampleTable, conditions1, conditions2, wr
 	    dir.create(trait)
 		  setwd(trait)
 	  }
+	  message("### Working on ", trait, " network ###")
 		myNetworks=append(myNetworks, performWGCNA(datExpr[,c("X", sampleTable$Sample[sampleTable[,3]==trait])], conditions2TraitTable[sampleTable[,3]==trait,], trait, plot=plot, ...))
 		if(write) setwd("..")
 	}

@@ -87,9 +87,9 @@ conditions2 = unique(sampleTable[,3])
 
 # Perform network construction, module eigengene calculation, module-trait correlation 
 
-Also, let's find best trait for each module and identify outlier modules (ie modules driven by a single sample). 
+Network construction is usually the slowest step. This wrapper also finds the best trait association for each module and identifies outlier modules (i.e. modules driven by a single sample). 
 
-Let's use power = 10 since Voineagu et al. 2011 used that for all their networks. They also constructed "unsigned" networks and a mergeCutHeight of 0.10 so that modules with similar expression are merged. This step may take a minute.  
+Let's use power = 10 since Voineagu et al. 2011 used that for all their networks. They also constructed "unsigned" networks and a mergeCutHeight of 0.10 so that modules with similar expression are merged. Note that these parameter settings are meant to match Voineagu et al. 2011. For an example of more typical WGCNA settings, see the astrocyte vignette. 
 
 ```{r}
 # Construct the combined networks and all the sub-networks (autism only, controls only, FC only, and TC only)

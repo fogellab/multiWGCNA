@@ -166,6 +166,7 @@ constructNetworks <- function(datExpr, sampleTable, conditions1, conditions2, wr
 
   # Check input data format
   stopifnot(inherits(datExpr, "SummarizedExperiment") | inherits(datExpr, "data.frame"))
+  stopifnot("Sample" %in% colnames(sampleTable))
   
   # Put data in expected format, with genes in first column names "X"
   if(inherits(datExpr, "SummarizedExperiment")){

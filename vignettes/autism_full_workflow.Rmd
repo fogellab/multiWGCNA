@@ -55,7 +55,7 @@ Since this is purely an example of how to run the entire analysis from start to 
 Input data: 
 
 * The expression data can be either a SummarizedExperiment object or a data.frame with genes as rows and samples as columns
-* The sampleTable should be a data.frame with the first column named "Sample". The second and third column names can be arbitrary, i.e. "disease" or "Genotype"
+* The sampleTable should be a data.frame with the first column named 'Sample' (note the capitalized 'S'). The second and third column names can be arbitrary, i.e. "disease" or "Genotype"
 
 
 ```{r}
@@ -76,8 +76,6 @@ autism_se = autism_se[sample(rownames(autism_se), 1500),]
 
 # Check the data
 assays(autism_se)[[1]][1:5, 1:5]
-# sampleTable$Status = paste0("test_", sampleTable$Status, "_test")
-# sampleTable$Sample = paste0(sampleTable$Sample, "_test")
 sampleTable
 
 # Define our conditions for trait 1 (disease) and 2 (brain region)

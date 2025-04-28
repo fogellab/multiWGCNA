@@ -19,6 +19,7 @@ performWGCNA <- function(datExpr, traitData, identifier, alphaLevel=0.05, write=
   degrees1=intramodularConnectivity.fromExpr(t(datExpr), my_net$colors,
                                             networkType=arguments$networkType, 
                                             power=arguments$power)
+
   dynamicColors=WGCNA::labels2colors(my_net$colors)
   dynamicLabels=paste(identifier, "_", str_pad(my_net$colors, 3, pad="0"), sep="")
   summary = cbind(data.frame(X = rownames(datExpr), datExpr), degrees1, dynamicLabels, dynamicColors)
@@ -26,7 +27,7 @@ performWGCNA <- function(datExpr, traitData, identifier, alphaLevel=0.05, write=
   myWGCNA <- new("WGCNA", datExpr=summary, conditions=traitData)
 	myWGCNA=findModuleEigengenes(myWGCNA, write=write)
 	myWGCNA=traitCor(myWGCNA, write=write)
-	myWGCNA=findBestTrait(myWGCNA, alphaLevel = alphaLevel)
+	myWGCNA=findBestTrait(myWGCNA, alphaLevel = alphaLevel) # Edit 4/27/25: triggers error if there is no trait variance, so skip in that case
 	myWGCNA=findOutlierModules(myWGCNA)
 	if(plot) plotModules(myWGCNA, mode="PC1")
 	return(myWGCNA)
@@ -64,16 +65,25 @@ findOutlierModules <- function(WGCNAobject, byName=TRUE, method="Var", varCutoff
 }
 
 findBestTrait <- function(WGCNAobject, alphaLevel=0.05, p.adjust=FALSE, write=FALSE) {
-        traitTable=WGCNAobject@trait
-        group=apply(traitTable[,which(startsWith(colnames(traitTable),"p.value"))], 1, which.min)
-        traitTable$trait=gsub("p.value.", "", colnames(traitTable)[which(startsWith(colnames(traitTable), "p.value"))])[group]
-        bestPvalues=apply(traitTable[,which(startsWith(colnames(traitTable),"p.value"))], 1, function(x) x[[which.min(x)]])
-	      bestPvalues=as.numeric(bestPvalues)
-	      traitTable$log10Pvalue= -log10(bestPvalues)
-        traitTable$trait[traitTable$log10Pvalue<(-log10(as.numeric(alphaLevel)))]="None"
-        traitTable$Module=gsub("ME", "", traitTable$Module)
-        WGCNAobject@trait=traitTable
-        return(WGCNAobject)
+  traitTable=WGCNAobject@trait
+  
+  # Check for NAs (e.g. there is no sample variance)
+  if(anyNA(traitTable)){
+    traitTable$trait = "None"
+    traitTable$log10Pvalue = NA
+    traitTable$Module = gsub("ME", "", traitTable$Module)
+  } else {
+    group=apply(traitTable[,which(startsWith(colnames(traitTable),"p.value"))], 1, which.min)
+    traitTable$trait=gsub("p.value.", "", colnames(traitTable)[which(startsWith(colnames(traitTable), "p.value"))])[group]
+    bestPvalues=apply(traitTable[,which(startsWith(colnames(traitTable),"p.value"))], 1, function(x) x[[which.min(x)]])
+    bestPvalues=as.numeric(bestPvalues)
+    traitTable$log10Pvalue= -log10(bestPvalues)
+    traitTable$trait[traitTable$log10Pvalue<(-log10(as.numeric(alphaLevel)))]="None"
+    traitTable$Module=gsub("ME", "", traitTable$Module)
+  }
+  
+  WGCNAobject@trait=traitTable
+  return(WGCNAobject)
 }
 
 traitCor <- function(WGCNAobject, write=FALSE){

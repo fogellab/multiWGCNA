@@ -150,7 +150,7 @@ results$diffModExp = runDME(autism_networks[["combined"]],
                             # plot=TRUE, 
                             # out="combined_DME.pdf")
 
-# to run PERMANNOVA
+# to run PERMANOVA
 # library(vegan)
 # results$diffModExp = runDME(autism_networks[["combined"]], p.adjust="fdr", refCondition="Tissue", 
 #                          testCondition="Status", plot=TRUE, test="PERMANOVA", out="PERMANOVA_DME.pdf")

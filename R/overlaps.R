@@ -204,7 +204,7 @@ moduleComparisonPlot <- function(overlapDf, dataset1, dataset2) {
 	name1=str_split_fixed(data$mod1,"_",2)[,1][[1]]
 	name2=str_split_fixed(data$mod2,"_",2)[,1][[1]]
 	data$mod1=str_split_fixed(data$mod1,"_",2)[,2]
-	data$mod2=paste0(str_split_fixed(data$mod2,"_",2)[,2]," ") #add spaces to avoid ambiguous plot labels
+	data$mod2=paste0(str_split_fixed(data$mod2,"_",2)[,2]," ") # add spaces to avoid ambiguous plot labels
 	categories=unique(c(dataset1@trait$trait, dataset2@trait$trait))
 	palette=colors(length(categories), random=FALSE)
 	colors=palette[match(c(rev(dataset1@trait$trait), rev(dataset2@trait$trait)), categories)]
@@ -224,11 +224,11 @@ moduleComparisonPlot <- function(overlapDf, dataset1, dataset2) {
  		geom_stratum(width = .2, fill = colors) +
 		annotate("text", x=2.2, y=(1:length(categories))*(totalGenes/3)/length(categories),
 			label=categories, vjust=0, hjust=0, color=palette)+
-		geom_text(stat = "stratum", aes(label = gsub("^0+", "", after_stat(stratum))), size = 3, min.y=200) +
+		geom_text(stat = "stratum", aes(label = gsub("^0+", "", after_stat(stratum))), size = 3, min.y=50) +
 		coord_cartesian(xlim = c(0.9, 2.5), clip = "off") +
  		scale_x_discrete(expand=c(0,0), limits = c("Mod1", "Mod2"), labels=c(name1,name2))
 
-	plot = plot_grid(flowPlot, heatmap, labels = "AUTO", rel_widths = c(1, 2.5))
+	plot = plot_grid(flowPlot, NULL, heatmap, rel_widths = c(1, 0.2, 2.5), nrow = 1)
 	
 	return(plot)
 }
@@ -475,9 +475,10 @@ bidirectionalBestMatches <- function(comparisonList, plot=TRUE){
 				geom_text(aes(label = overlap), color = "black") +
 				labs(x=name1, y=name2) +
 			  ggtitle("Best matches") +
-				theme(axis.text.x = element_text(angle = 0, hjust=(0.5)), 
-				      panel.background=element_blank(),
-				      plot.title = element_text(hjust = 0.5))+
+  		  theme(axis.text.x = element_text(angle = 0, hjust=(0.5)), #angle = 90, hjust=1, vjust=(0.5)),
+  		        axis.text.y = element_text(hjust=1), plot.title = element_text(hjust = 0.5),
+  		        panel.background=element_blank(), axis.line=element_blank(),
+  		        axis.ticks=element_blank(), legend.key.size=unit(4, "mm"))
 				coord_fixed()
 		print(plt)
 	}

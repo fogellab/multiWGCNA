@@ -1,3 +1,26 @@
+#' name: Name of WGCNAobject
+#'
+#' Returns the module name for a given gene
+#'
+#' @param WGCNAobject an object of class WGCNA
+#' @param gene a gene symbol, should be present in WGCNA object
+#' @param use which module label to use e.g. dynamicLabels or dynamicColors
+#' 
+#' @return A module name
+#'
+#' @export
+#' 
+#' @examples 
+#' library(ExperimentHub)
+#' eh = ExperimentHub()
+#' eh_query = query(eh, c("multiWGCNAdata"))
+#' astrocyte_networks = eh_query[["EH8222"]]
+#' getModule(astrocyte_networks[[1]], 'Srgn')
+getModule <- function(WGCNAobject, gene, use = 'dynamicLabels'){
+  if(!gene %in% WGCNAobject@datExpr$X) stop('Gene not found!')
+  WGCNAobject@datExpr[WGCNAobject@datExpr$X == gene, use]
+}
+
 printModules <- function(WGCNAobject){
 	name=name(WGCNAobject)
 	dir_name=paste0(name, "_Genes")

@@ -92,6 +92,212 @@ TOMFlowPlot = function(WGCNAlist, networks, toms, genes_to_label, alpha = 0.1, c
   return(plt)
 }
 
+#' BuildTOMFlowDF
+#'
+#' Preprocess for plotting a sankey flow diagram showing the movement of genes from one WGCNA
+#' to another WGCNA. Uses the flashClust framework. 
+#'
+#' @param WGCNAlist list of WGCNA objects
+#' @param networks list of network names of length 2
+#' @param toms a list of TOM distance objects of length 2
+#' @param genes_to_label genes to label across two networks
+#' 
+#' @return a data.frame
+#' 
+#' @author Dario Tommasini, Xinye Li
+#'
+#' @import flashClust
+#' @import WGCNA
+#' @import stringr
+#' @export
+BuildTOMFlowDF <- function(WGCNAlist, networks, toms, genes_to_label) {
+  
+  stopifnot(length(networks) == length(toms))
+  stopifnot(length(genes_to_label) > 0)
+  
+  datasets <- WGCNAlist[networks]
+  allCommonGenes <- datasets[[1]]@datExpr$X[order(datasets[[1]]@datExpr$X)]
+  
+  # Calculate the ranking information for each network
+  orderList <- list()
+  colorList <- list()
+  
+  for(i in seq_along(networks)){
+    TOM <- toms[[i]]
+    dissTOM <- 1 - TOM
+    
+    message("Clustering TOM tree ", networks[i], "...")
+    geneTree <- flashClust::flashClust(as.dist(dissTOM), method="average")
+    
+    geneOrder <- data.frame(
+      Gene = datasets[[i]]@datExpr$X[geneTree$order],
+      Color = datasets[[i]]@datExpr$dynamicColors[geneTree$order],
+      Order = seq_along(allCommonGenes)
+    )
+    sortedOrder <- geneOrder[order(geneOrder$Gene), ]
+    orderList[[i]] <- sortedOrder
+    colorList[[i]] <- sortedOrder$Color
+  }
+  
+  # Merge all orderList into one dataframe
+  combined_df <- data.frame(Gene = orderList[[1]]$Gene)
+  
+  for(i in seq_along(orderList)){
+    combined_df[[paste0("G", i)]] <- paste0(i, "_", orderList[[i]]$Gene)
+    combined_df[[paste0("Color", i)]] <- colorList[[i]]
+    combined_df[[paste0("Order", i)]] <- orderList[[i]]$Order
+  }
+  
+  combined_df$Count <- 1
+  
+  # Construct the information of the module tag
+  combined_df$module <- "other"
+  combined_df$module[combined_df$Gene %in% genes_to_label] <- "labeled"
+  combined_df$module <- factor(combined_df$module, levels = c("other", "labeled"))
+  
+  # Construct new_df (long format)
+  long_df_list <- list()
+  for(i in seq_along(networks)){
+    temp_df <- combined_df[, c("Gene", paste0("G", i), paste0("Order", i), paste0("Color", i))]
+    colnames(temp_df) <- c("Gene", "Label", "Order", "Color")
+    temp_df$Network <- paste0("Network", i)
+    temp_df$module <- combined_df$module
+    long_df_list[[i]] <- temp_df
+  }
+  
+  new_df <- do.call(rbind, long_df_list)
+  
+  # Change to wide format
+  wide_df <- tidyr::pivot_wider(
+    new_df,
+    id_cols = Gene,
+    names_from = Network,
+    values_from = c(Label, Order, Color)
+  )
+  
+  # Restore module information
+  wide_df$module <- combined_df$module[match(wide_df$Gene, combined_df$Gene)]
+  wide_df$Count <- 1
+  wide_df <- as.data.frame(wide_df)
+  
+  return(wide_df)
+}
+
+#' PlotMultiNodesTOMflow
+#'
+#' Plots a sankey flow diagram showing the movement of genes from one WGCNA
+#' to multi-WGCNA networks. Uses the ggalluvial framework. 
+#'
+#' @param TOMDF created by BuildTOMFlowDF
+#' @param alpha alpha of flows
+#' @param width width of the strata
+#' @param color color of flows
+#' 
+#' @return a ggplot object
+#' 
+#' @author Dario Tommasini, Xinye Li
+#'
+#' @import flashClust
+#' @import ggalluvial
+#' @import WGCNA
+#' @import stringr
+#' @export
+PlotMultiNodesTOMflow <- function(TOMDF, alpha = 0.1, width = 0.05, color = "black") {
+  
+  # Split data
+  networks <- grep("^Label_Network", colnames(TOMDF), value = TRUE)
+  orders <- grep("^Order_Network", colnames(TOMDF), value = TRUE)
+  colors <- grep("^Color_Network", colnames(TOMDF), value = TRUE)
+  
+  # Equal the number of networks
+  network_count <- length(networks)
+  if(network_count < 2) {
+    stop("At least 2 networks are needed for drawing a Sankey plot.")
+  }
+  if(network_count > 5) {
+    stop("Currently only 2-5 networks are supported.")
+  }
+  
+  # Build basic df
+  df_columns <- c(networks, orders, colors, "module", "Count")
+  df <- TOMDF[, df_columns]
+  
+  # Sortting
+  for (i in seq_along(networks)) {
+    df[[networks[i]]] <- factor(df[[networks[i]]], 
+                                levels = df[[networks[i]]][order(df[[orders[i]]])])
+  }
+  
+  # Adjust connections
+  new_dfs <- list()
+  
+  # Keep connections between labeled genes
+  new_dfs[[1]] <- subset(df, module == "labeled")
+  
+  # Rm connections between others
+  for (i in seq_along(networks)) {
+    temp <- subset(df, module != "labeled")
+    # Set all other nodes' genes as NA, only keep current node for only drawing the current node
+    for (j in seq_along(networks)) {
+      if (j != i) {
+        temp[[networks[j]]] <- NA
+      }
+    }
+    new_dfs[[length(new_dfs) + 1]] <- temp
+  }
+  
+  # Combine the df
+  new_df <- do.call(rbind, new_dfs)
+  
+  # Set colors
+  all_node_colors <- list()
+  for (i in seq_along(networks)) {
+    sorted_df <- df[order(df[[orders[i]]]), ]
+    all_node_colors[[i]] <- rev(sorted_df[[colors[i]]])
+  }
+  
+  # combine colors
+  node_colors <- unlist(all_node_colors)
+  
+  # Build plot
+  plt <- ggplot(new_df)
+  
+  if (network_count == 2) {
+    plt <- plt + aes(y = Count, axis1 = !!sym(networks[1]), axis2 = !!sym(networks[2]))
+  } else if (network_count == 3) {
+    plt <- plt + aes(y = Count, axis1 = !!sym(networks[1]), axis2 = !!sym(networks[2]), 
+                     axis3 = !!sym(networks[3]))
+  } else if (network_count == 4) {
+    plt <- plt + aes(y = Count, axis1 = !!sym(networks[1]), axis2 = !!sym(networks[2]), 
+                     axis3 = !!sym(networks[3]), axis4 = !!sym(networks[4]))
+  } else if (network_count >= 5) {
+    plt <- plt + aes(y = Count, axis1 = !!sym(networks[1]), axis2 = !!sym(networks[2]), 
+                     axis3 = !!sym(networks[3]), axis4 = !!sym(networks[4]), 
+                     axis5 = !!sym(networks[5]))
+  }
+  
+  # Nodes & flows
+  plt <- plt +
+    geom_flow(aes(fill = module), width = width, curve_type = "cubic", alpha = alpha, fill = color) +
+    geom_stratum(width = width, fill = node_colors, size = 0, alpha = 1) +
+    ylab("Genes") +
+    theme(
+      axis.ticks.x = element_blank(),
+      panel.background = element_blank(),
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank()
+    ) +
+    geom_text(stat = "stratum", aes(label = after_stat(stratum)), size = 0) +
+    scale_y_continuous(limits = c(0, nrow(df))) +
+    scale_x_discrete(
+      expand = c(0, 0), 
+      limits = paste0("Network ", 1:network_count),
+      labels = paste0("Network ", 1:network_count)
+    )
+  
+  return(plt)
+}
+
 #' computeOverlapsFromWGCNA
 #'
 #' Computes overlap between the modules of two objects of class WGCNA

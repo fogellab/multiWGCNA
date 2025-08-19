@@ -249,7 +249,7 @@ PlotMultiNodesTOMflow <- function(TOMDF, labels = NULL, alpha = 0.1, width = 0.0
         temp[[networks[j]]] <- NA
       }
     }
-    print(head(temp))
+    # print(head(temp))
     new_dfs[[length(new_dfs) + 1]] <- temp
   }
   

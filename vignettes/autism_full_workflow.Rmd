@@ -109,7 +109,7 @@ For calculating significance of overlap, we use the hypergeometric test (also kn
 results=list()
 results$overlaps=iterate(autism_networks, overlapComparisons, plot=TRUE)
 
-# Check the reciprocal best matches between the autism and control networks
+# Check the reciprocal best matches between the aut ism and control networks
 head(results$overlaps$autism_vs_controls$bestMatches)
 ```
 

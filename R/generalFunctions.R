@@ -59,6 +59,10 @@ name <- function(WGCNAobject){
 	return(str_split_fixed(WGCNAobject@datExpr$dynamicLabels[[1]], "_", 2)[[1]])
 }
 
+getModuleOrder = function(WGCNAObject){
+  WGCNAObject@trait$Module
+}
+
 getLevel <- function(level, design){
 	if(level==1){
 		return("combined")

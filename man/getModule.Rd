@@ -8,6 +8,10 @@ getModule(WGCNAobject, gene, use = "dynamicLabels")
 }
 \arguments{
 \item{WGCNAobject}{an object of class WGCNA}
+
+\item{gene}{a gene symbol, should be present in WGCNA object}
+
+\item{use}{which module label to use e.g. dynamicLabels or dynamicColors}
 }
 \value{
 A module name

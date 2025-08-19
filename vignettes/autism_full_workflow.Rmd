@@ -113,23 +113,35 @@ results$overlaps=iterate(autism_networks, overlapComparisons, plot=TRUE)
 head(results$overlaps$autism_vs_controls$bestMatches)
 ```
 
-You can use the TOMFlowPlot to plot the recruitment of genes from one network analysis to another. See Figure 6 from Tommasini and Fogel, 2023 for an example. Note that you will need to set saveTOMs = TRUE in the constructNetworks function above. 
+You can use the ModuleFlotPlot to visualize the module overlap across the various networks: 
 
-```{r, fig.height=6, fig.width=4}
-networks = c("autism", "controls")
+```{r, fig.height=6, fig.width=8}
+ModuleFlowPlot(autism_networks, # WGCNA object list
+               comparisonList = results$overlaps, # overlap comparisons
+               networks = c('combined', 'autism', 'controls', 'FC', 'TC'), 
+               width = 0.3, # width of nodes
+               height = 0.2, # height of nodes
+               only.signif = TRUE, # Only significant overlaps
+               only.contiguous = TRUE, # Only contiguous comparisons (controlled by order)
+               col = c(autism = 'pink', FC = 'chartreuse', None = 'grey') # color palette
+               )
+```
+
+Of course, this doesn't give you gene-level resolution. To do that, you can use the TOMFlowPlot to plot the recruitment of genes from one network analysis to another. See Figure 6 from Tommasini and Fogel, 2023 for an example. Note that you will need to set saveTOMs = TRUE in the constructNetworks function above. In this example, we will observe the movement of module 5 from the autism network across all five computed networks. Thank you to Xinye Li for generalizing the function to more than two networks!
+
+```{r, fig.height=5, fig.width=8}
+networks = c('combined', 'autism', 'controls', 'FC', 'TC')
 toms = lapply(networks, function(x) {
   load(paste0(x, '-block.1.RData'))
   get("TOM")
 })
 
-# Check module autism_005
-TOMFlowPlot(autism_networks, 
-            networks, 
-            toms, 
-            genes_to_label = topNGenes(autism_networks$autism, "autism_005"), 
-            color = 'black', 
-            alpha = 0.1, 
-            width = 0.05)
+tom.df = BuildTOMFlowDF(autism_networks, 
+                        networks, 
+                        toms, 
+                        genes_to_label = topNGenes(autism_networks$autism, "autism_005"))
+
+PlotMultiNodesTOMflow(tom.df, labels = networks)
 ```
 
 # Perform differential module expression analysis 

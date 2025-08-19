@@ -90,6 +90,17 @@ results$overlaps = iterate(astrocyte_networks, overlapComparisons, plot=FALSE)
 head(results$overlaps$EAE_vs_WT$overlap)
 ```
 
+To compare module overlap across networks, one could use the ModuleFlowPlot function: 
+
+```{r}
+ModuleFlowPlot(astrocyte_networks,
+               results$overlaps, c('combined',  'EAE', 'WT', 'Sc', 'Hippo'),
+               y.scale = 15,
+               x.scale = 2,
+               only.signif = TRUE,
+               color.by = 'trait')
+```
+
 # Identify a module of interest
 
 Then, we perform differential module expression analysis to detect modules with disease-associated expression patterns. This incorporates the linear model described in the paper and tests for significance using ANOVA. 

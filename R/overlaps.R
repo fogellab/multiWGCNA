@@ -400,6 +400,9 @@ computeOverlapsFromWGCNA <- function(dataset1, dataset2) {
 #' @param only.contiguous only show continuous overlaps? Default is TRUE
 #' @param only.signif plot only significant overlap?
 #' @param show.legend show the legend? 
+#' @param scale.by.size scale the node height by the size of the module? Default is TRUE.
+#' @param spacer space between the nodes
+#' @param label.y adjust the y coordinate for the network labels, default is 1
 #' @param ... params to GetSignificantOverlap function for thresholds
 #'
 #' @return Returns a ggalluvial diagram comparing two networks
@@ -426,8 +429,8 @@ ModuleFlowPlot = function(WGCNAlist,
                           labels = NULL, 
                           alpha = 1, 
                           x.scale = 2, 
-                          y.scale = 2, 
-                          width = 0.2, 
+                          y.scale = 1, 
+                          width = 0.3, 
                           height = 0.2,
                           color.by = c('trait', 'network', 'none'),
                           color.low = 'cyan', 
@@ -438,6 +441,9 @@ ModuleFlowPlot = function(WGCNAlist,
                           only.contiguous = TRUE,
                           only.signif = FALSE,
                           show.legend = TRUE,
+                          scale.by.size = TRUE, 
+                          spacer = 10, 
+                          label.y = 50,
                           ...) {
   
   library(igraph)
@@ -525,7 +531,8 @@ ModuleFlowPlot = function(WGCNAlist,
     t(t(table(network@datExpr$dynamicLabels)))
   })
   module.size.df = do.call(rbind, mod.size.list)
-  V(graph)$n.genes = rescale(module.size.df[V(graph)$name,], to = c(0,1))
+  V(graph)$n.genes = module.size.df[V(graph)$name,]#rescale(module.size.df[V(graph)$name,], to = c(0,1))
+  # print(V(graph)$n.genes) 
   
   # edge attributes
   if(use.padj) {
@@ -546,8 +553,16 @@ ModuleFlowPlot = function(WGCNAlist,
       network = networks[[i]]
       n.modules = length(which(startsWith(admittedModules, network)))
       coords = cbind(i*x.scale, seq(1, 0, length.out = n.modules)*y.scale)
-      # y_positions = -(cumsum(mod.size.list[[network]])-as.vector(mod.size.list[[network]])/2)
-      # coords = cbind(i*x.scale, (rescale(y_positions*y.scale, to = c(0,1))))
+      if(scale.by.size){
+        v1 = cumsum(mod.size.list[[network]])
+        v2 = as.vector(mod.size.list[[network]])/2
+        spaces = seq(0, length(v1)-1) * spacer
+        y_positions = v1 + spaces - v2
+        # print(v1)
+        # print(v2)
+        # print(spaces)
+        coords = cbind(i*x.scale, ((-y_positions))*y.scale) #(rescale(-(y_positions+spaces)*y.scale, to = c(0,1))))
+      }
       myCoords = append(myCoords, list(coords))
     }
     my_layout=do.call(rbind, myCoords)
@@ -555,7 +570,7 @@ ModuleFlowPlot = function(WGCNAlist,
   
   labels_df <- data.frame(
     x = seq(1, length(networks))*x.scale,
-    y = rep(-0.4, length(networks)),
+    y = rep(label.y, length(networks)),
     text = networks
   )
   
@@ -567,8 +582,8 @@ ModuleFlowPlot = function(WGCNAlist,
     #                 label.padding = unit(0.2, "lines"), # controls rectangle size
     #                 label.r = unit(0, "lines"),         # removes rounded corners
     #                 fill = "white") +
-    # geom_node_tile(aes(width = 1, height = n.genes, fill = color)) +
-    geom_node_tile(aes(width = width, height = height, fill = color), alpha = alpha, color = 'black')+
+    {if(scale.by.size) geom_node_tile(aes(width = 1, height = n.genes, fill = color), alpha = alpha, color = 'black')}+
+    {if(!scale.by.size) geom_node_tile(aes(width = width, height = height, fill = color), alpha = alpha, color = 'black')}+
     # {if(!is.null(color.by)) geom_node_tile(aes(width = width, height = height, fill = color), alpha = alpha, color = 'black')}+
     scale_fill_manual(values = palette)+
     geom_node_text(aes(label = name_clean), vjust = 0.5) +

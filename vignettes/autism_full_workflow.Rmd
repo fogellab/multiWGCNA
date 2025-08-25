@@ -121,10 +121,13 @@ ModuleFlowPlot(autism_networks, # WGCNA object list
                networks = c('combined', 'autism', 'controls', 'FC', 'TC'), 
                width = 0.3, # width of nodes
                height = 0.2, # height of nodes
-               only.signif = TRUE, # Only significant overlaps
-               only.contiguous = TRUE, # Only contiguous comparisons (controlled by order)
-               col = c(autism = 'pink', FC = 'chartreuse', None = 'grey') # color palette
-               )
+               only.signif = TRUE, # only significant overlaps
+               only.contiguous = TRUE, # only contiguous comparisons (controlled by order)
+               scale.by.size = TRUE, # scale nodes by module size
+               spacer = 10, # space between nodes
+               label.y = 50, # adjust placement of the network labels
+               col = c(autism = 'pink', FC = 'lightgreen', None = 'grey') # color palette
+               ) 
 ```
 
 Of course, this doesn't give you gene-level resolution. To do that, you can use the TOMFlowPlot to plot the recruitment of genes from one network analysis to another. See Figure 6 from Tommasini and Fogel, 2023 for an example. Note that you will need to set saveTOMs = TRUE in the constructNetworks function above. In this example, we will observe the movement of module 5 from the autism network across all five computed networks. Thank you to Xinye Li for generalizing the function to more than two networks!

@@ -11,8 +11,8 @@ ModuleFlowPlot(
   labels = NULL,
   alpha = 1,
   x.scale = 2,
-  y.scale = 2,
-  width = 0.2,
+  y.scale = 1,
+  width = 0.3,
   height = 0.2,
   color.by = c("trait", "network", "none"),
   color.low = "cyan",
@@ -23,6 +23,9 @@ ModuleFlowPlot(
   only.contiguous = TRUE,
   only.signif = FALSE,
   show.legend = TRUE,
+  scale.by.size = TRUE,
+  spacer = 10,
+  label.y = 50,
   ...
 )
 }
@@ -56,6 +59,12 @@ ModuleFlowPlot(
 \item{only.signif}{plot only significant overlap?}
 
 \item{show.legend}{show the legend?}
+
+\item{scale.by.size}{scale the node height by the size of the module? Default is TRUE.}
+
+\item{spacer}{space between the nodes}
+
+\item{label.y}{adjust the y coordinate for the network labels, default is 1}
 
 \item{...}{params to GetSignificantOverlap function for thresholds}
 

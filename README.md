@@ -35,7 +35,7 @@ We recommend running through both of the vignettes before applying multiWGCNA to
 
 To cite multiWGCNA in publications, please use:
 
-  Tommasini, D, Fogel, BL (2023). multiWGCNA: an R package for deep mining gene
+  Tommasini, D., Fogel, B.L. (2023). multiWGCNA: an R package for deep mining gene
   co-expression networks in multi-trait expression data. BMC Bioinformatics, 24,
   1:115.
 
@@ -52,4 +52,23 @@ For LaTeX users, a BibTeX entry is available here:
     number = {1},
     pages = {115},
   }
+```
+
+Please also make sure to cite the original WGCNA package: 
+
+  Langfelder, P., Horvath, S. (2008). WGCNA: an R package for weighted correlation network 
+  analysis. BMC Bioinformatics 9, 559. 
+
+```
+@ARTICLE{Langfelder2008-fi,
+  title     = "{WGCNA}: an {R} package for weighted correlation network
+               analysis",
+  author    = "Langfelder, Peter and Horvath, Steve",
+  journal   = "BMC Bioinformatics",
+  volume    =  9,
+  number    =  1,
+  pages     = "559",
+  month     =  dec,
+  year      =  2008,
+}
 ```

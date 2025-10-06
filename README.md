@@ -60,7 +60,7 @@ Please also make sure to cite the original WGCNA package:
   analysis. BMC Bioinformatics 9, 559. 
 
 ```
-@ARTICLE{Langfelder2008-fi,
+@ARTICLE{,
   title     = "{WGCNA}: an {R} package for weighted correlation network
                analysis",
   author    = "Langfelder, Peter and Horvath, Steve",
